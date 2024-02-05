@@ -13,8 +13,8 @@ namespace tile_mapper
         private SpriteBatch _spriteBatch;
 
         // Specify your map size.
-        int MAP_WIDTH = 32;
-        int MAP_HEIGHT = 32;
+        int MAP_WIDTH = 16;
+        int MAP_HEIGHT = 16;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -55,6 +55,9 @@ namespace tile_mapper
 
         int currentPage = 0;
 
+        Map CurrentMap;
+        int CurrentLayer = 0;
+
         SpriteTile selected;
 
         public Game1()
@@ -84,6 +87,8 @@ namespace tile_mapper
 
             TileSpriteList = new List<List<SpriteTile>>();
 
+            
+
             for (int i = 0; i < SheetMenuPages; i++)
             {
                 List<SpriteTile> page = new List<SpriteTile>();
@@ -99,6 +104,9 @@ namespace tile_mapper
                         tile.Source = new Rectangle(xcord, ycord, TILE_SIZE, TILE_SIZE);
 
                         tile.Destination = new Rectangle();
+
+                        tile.ID = "X" + x.ToString() + "Y" + y.ToString();
+
                         page.Add(tile);
                     }
                 }
@@ -123,8 +131,9 @@ namespace tile_mapper
         {
             // Initialize program.
             GridMap = new GridTile[MAP_HEIGHT, MAP_WIDTH];
+            CurrentMap = new Map(MAP_HEIGHT, MAP_WIDTH);
 
-            for(int i = 0; i < MAP_HEIGHT; i++)
+            for (int i = 0; i < MAP_HEIGHT; i++)
             {
                 for (int j = 0; j < MAP_WIDTH; j++)
                 {
@@ -132,19 +141,25 @@ namespace tile_mapper
                     {
                         GridRect = new Rectangle(j, i, TILE_SIZE, TILE_SIZE)
                     };
+
+                    CurrentMap.layers[CurrentLayer].TileMap[i, j] = new Tile();
                 }
             }
             
 
-            ScaleX = 1f;
-            ScaleY = 1f;
+            
 
-            ScreenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-            ScreenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            ScreenWidth = 1920;
+            ScreenHeight = 1080;
+
+            
 
             _graphics.PreferredBackBufferWidth = ScreenWidth;
             _graphics.PreferredBackBufferHeight = ScreenHeight;
             _graphics.ApplyChanges();
+
+            ScaleX = 1f;
+            ScaleY = 1f;
 
             NewMap = new Button("New", new Rectangle(0, 0, 96, 48), 96, 0, ButtonAction.None);
             LoadMap = new Button("Load", new Rectangle(96, 0, 96, 48), 96, 0, ButtonAction.None);
@@ -164,6 +179,8 @@ namespace tile_mapper
             
 
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
+
+            
 
             base.Initialize();
 
@@ -190,6 +207,70 @@ namespace tile_mapper
             KeyboardState keyboardState = Keyboard.GetState();
             Velocity = Vector2.Zero;
             MousePos = new Vector2(mouseState.X, mouseState.Y);
+            Vector2 MousePosRelative = MousePos - Offset;
+
+            // Mouse is hoovering on button.
+            foreach (var button in buttons)
+            {
+                if (button.ButtonRect.Contains(MousePos))
+                {
+                    button.SourceRect.X = button.SelectionX;
+                }
+                else
+                {
+                    button.SourceRect.X = button.OriginalX;
+                }
+                
+            }
+
+            // Tile sheet is imported.
+            if(HasTileSheet)
+            {
+                foreach (var rect in TileSpriteList[currentPage])
+                {
+                    // User is hoovering on sprite tile.
+                    if (rect.Destination.Contains(MousePos))
+                    {
+                        // User selected a sprite.
+                        if (mouseState.LeftButton == ButtonState.Pressed)
+                        {
+                            selected = rect;
+                            selected.ID = rect.ID;
+                            selected.Source = rect.Source;
+                        }
+                        else
+                        {
+                            rect.hovers = true;
+                        }
+                    }
+                    else
+                    {
+                        rect.hovers = false;
+                    }
+                }
+            }
+            
+
+            if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
+            {
+                float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
+                // Adjust the scaling factor based on the scroll wheel delta
+                Scale += adjustment;
+
+                Scale = MathHelper.Clamp(Scale, 0.5f, 5.0f);
+
+            }
+
+            Vector2 MousePosInt = MousePosRelative;
+
+            MousePosInt /= Scale;
+            MousePosInt /= TILE_SIZE;
+
+            MousePosInt.X = (int)MousePosInt.X;
+            MousePosInt.Y = (int)MousePosInt.Y;
+
+            SelectedX = (int) MousePosInt.X;
+            SelectedY = (int) MousePosInt.Y;
 
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
@@ -209,77 +290,14 @@ namespace tile_mapper
                     }
                 }
 
-            }
-
-            foreach (var button in buttons)
-            {
-                if (button.ButtonRect.Contains(MousePos))
+                if (selected != null && SelectedX >= 0 && SelectedY >= 0 && SelectedX <= MAP_WIDTH-1 && SelectedY <= MAP_HEIGHT-1)
                 {
-                    button.SourceRect.X = button.SelectionX;
-                }
-                else
-                {
-                    button.SourceRect.X = button.OriginalX;
-                }
-                
-            }
-
-            if(HasTileSheet)
-            {
-                foreach (var rect in TileSpriteList[currentPage])
-                {
-                    if (rect.Destination.Contains(MousePos))
-                    {
-                        
-                        if (mouseState.LeftButton == ButtonState.Pressed)
-                        {
-                            selected = rect;
-                        }
-                        else
-                        {
-                            rect.hovers = true;
-                        }
-                    }
-                    else
-                    {
-                        rect.hovers = false;
-                    }
+                    CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
+                    CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
                 }
             }
-            
 
-            if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
-            {
-                // Calculate the center of the screen
-                Vector2 screenCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
-
-                Vector2 GridCenter = new Vector2(Offset.X + Scale * MAP_WIDTH * TILE_SIZE/2, Offset.Y + Scale * MAP_HEIGHT * TILE_SIZE/2);
-                Vector2 offsetToCenter = screenCenter - GridCenter;
-
-                float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
-                // Adjust the scaling factor based on the scroll wheel delta
-                Scale += adjustment;
-
-                Scale = MathHelper.Clamp(Scale, 0.5f, 5.0f);
-
-
-
-                // Offset -= offsetToCenter * adjustment;
-
-            }
-
-            MousePos -= Offset;
-
-            MousePos /= Scale;
-            MousePos /= TILE_SIZE;
-
-            MousePos.X = (int)MousePos.X;
-            MousePos.Y = (int)MousePos.Y;
-
-            SelectedX = (int) MousePos.X;
-            SelectedY = (int)MousePos.Y;
-
-            if(keyboardState.IsKeyDown(Keys.A))
+            if (keyboardState.IsKeyDown(Keys.A))
                 Velocity.X += (float) (MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
             if(keyboardState.IsKeyDown(Keys.S))
                 Velocity.Y -= (float) (MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
@@ -299,10 +317,24 @@ namespace tile_mapper
         {
             GraphicsDevice.Clear(Color.DimGray);
 
-            // TODO: Add your drawing code here
-
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
+            for (int i = 0; i < MAP_HEIGHT - 1; i++)
+            {
+                for (int j = 0; j < MAP_WIDTH - 1; j++)
+                {
+                    if (CurrentMap != null &&
+                        CurrentMap.layers[CurrentLayer] != null &&
+                        CurrentMap.layers[CurrentLayer].TileMap != null &&
+                        CurrentMap.layers[CurrentLayer].TileMap[j, i] != null &&
+                        CurrentMap.layers[CurrentLayer].TileMap[j, i].ID != "0")
+                        {
+                        Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+
+                        _spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[CurrentLayer].TileMap[j, i].Source, Color.White);
+                    }
+                }
+            }
             for (int i = 0;i < MAP_HEIGHT;i++)
             {
                 for(int j = 0; j < MAP_WIDTH;j++)
@@ -355,7 +387,10 @@ namespace tile_mapper
 
                     if (j == SelectedY && i == SelectedX)
                     {
-                        _spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
+                        if(selected != null)
+                            _spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
+                        else
+                            _spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
                     }
                 }
             }
@@ -395,7 +430,7 @@ namespace tile_mapper
                         _spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X, rectangle.Destination.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
                         if (rectangle.hovers)
                             _spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(320, 0, 16, 16), Color.White);
-                        if(selected != null && rectangle.Destination == selected.Destination)
+                        if(selected != null && rectangle.ID == selected.ID)
                         {
                             _spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(336, 0, 16, 16), Color.White);
                         }
@@ -403,6 +438,8 @@ namespace tile_mapper
                 }
             }
 
+            string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
+            _spriteBatch.DrawString(font, Cords, new Vector2(144 - font.MeasureString(Cords).X/2, ScreenHeight / 2 - (256 + 32)  - font.MeasureString(Cords).Y / 2), Color.White);
 
             _spriteBatch.End();
 

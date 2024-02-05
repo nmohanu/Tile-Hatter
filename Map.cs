@@ -9,6 +9,9 @@ namespace tile_mapper
     {
         public Rectangle Destination;
         public Rectangle Source;
+
+        public string ID;
+
         public bool hovers = false;
     }
 
@@ -63,7 +66,8 @@ namespace tile_mapper
 
     internal class Tile
     {
-        public int ID;
+        public string ID = "0";
+        public Rectangle Source;
     }
 
     internal class Map
@@ -71,7 +75,7 @@ namespace tile_mapper
         int height;
         int width;
 
-        Layer[] layers = new Layer[3];
+        public Layer[] layers = new Layer[3];
 
         public Map(int height, int width)
         {
@@ -96,6 +100,7 @@ namespace tile_mapper
 
         public Tile[,] TileMap;
 
+
         public Layer(int depth, int width, int height)
         {
             this.Depth = depth;
@@ -103,11 +108,6 @@ namespace tile_mapper
             this.Height = height;
 
             TileMap = new Tile[height, width];
-
-            foreach (var tile in TileMap)
-            {
-                tile.ID = 0;
-            }
         }
     }
 }
