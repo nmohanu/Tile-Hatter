@@ -1,10 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace tile_mapper
 {
@@ -13,6 +9,7 @@ namespace tile_mapper
     {
         public Rectangle Destination;
         public Rectangle Source;
+        public bool hovers = false;
     }
 
     public enum ButtonAction

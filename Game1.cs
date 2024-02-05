@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace tile_mapper
 {
@@ -53,6 +52,10 @@ namespace tile_mapper
         int SheetWidth;
         int SheetHeight;
         int SheetMenuPages;
+
+        int currentPage = 0;
+
+        SpriteTile selected;
 
         public Game1()
         {
@@ -133,8 +136,8 @@ namespace tile_mapper
             }
             
 
-            ScaleX = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / 1920;
-            ScaleY = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / 1080;
+            ScaleX = 1f;
+            ScaleY = 1f;
 
             ScreenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
             ScreenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
@@ -188,6 +191,26 @@ namespace tile_mapper
             Velocity = Vector2.Zero;
             MousePos = new Vector2(mouseState.X, mouseState.Y);
 
+            if (mouseState.LeftButton == ButtonState.Pressed)
+            {
+                System.Diagnostics.Debug.WriteLine(MousePos);
+
+                foreach (var button in buttons)
+                {
+                    if (button.IsVisible && button.ButtonRect.Contains(MousePos))
+                    {
+                        switch (button.Action)
+                        {
+                            case ButtonAction.Import:
+                                OpenFile(TileSheetPath);
+                                button.IsVisible = false;
+                                break;
+                        }
+                    }
+                }
+
+            }
+
             foreach (var button in buttons)
             {
                 if (button.ButtonRect.Contains(MousePos))
@@ -198,7 +221,32 @@ namespace tile_mapper
                 {
                     button.SourceRect.X = button.OriginalX;
                 }
+                
             }
+
+            if(HasTileSheet)
+            {
+                foreach (var rect in TileSpriteList[currentPage])
+                {
+                    if (rect.Destination.Contains(MousePos))
+                    {
+                        
+                        if (mouseState.LeftButton == ButtonState.Pressed)
+                        {
+                            selected = rect;
+                        }
+                        else
+                        {
+                            rect.hovers = true;
+                        }
+                    }
+                    else
+                    {
+                        rect.hovers = false;
+                    }
+                }
+            }
+            
 
             if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
             {
@@ -230,27 +278,6 @@ namespace tile_mapper
 
             SelectedX = (int) MousePos.X;
             SelectedY = (int)MousePos.Y;
-
-
-            if (mouseState.LeftButton == ButtonState.Pressed)
-            {
-                System.Diagnostics.Debug.WriteLine(MousePos);
-
-                foreach(var button in buttons)
-                {
-                    if(button.IsVisible)
-                    {
-                        switch (button.Action)
-                        {
-                            case ButtonAction.Import:
-                                OpenFile(TileSheetPath);
-                                button.IsVisible = false;
-                                break;
-                        }
-                    }
-                }
-
-            }
 
             if(keyboardState.IsKeyDown(Keys.A))
                 Velocity.X += (float) (MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
@@ -366,6 +393,12 @@ namespace tile_mapper
                     foreach (var rectangle in list)
                     {
                         _spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X, rectangle.Destination.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
+                        if (rectangle.hovers)
+                            _spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(320, 0, 16, 16), Color.White);
+                        if(selected != null && rectangle.Destination == selected.Destination)
+                        {
+                            _spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(336, 0, 16, 16), Color.White);
+                        }
                     }
                 }
             }
