@@ -30,12 +30,16 @@ namespace tile_mapper
         Button EditMap;
         Button GoLeft;
         Button GoRight;
+        Button SaveMap;
+        Button Import;
         List<Button> buttons = new List<Button>();
         SpriteFont font;
         float TextScale = 0.6f;
         float ScaleX;
         float ScaleY;
         Vector2 MousePos;
+        int SelectedX;
+        int SelectedY;
 
         int ScreenWidth;
         int ScreenHeight;
@@ -80,15 +84,20 @@ namespace tile_mapper
 
             NewMap = new Button("New", new Rectangle(0, 0, 96, 48), 96, 0);
             LoadMap = new Button("Load", new Rectangle(96, 0, 96, 48), 96, 0);
-            EditMap = new Button("Edit", new Rectangle(96 * 2, 0, 96, 48), 96, 0);
+            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 48), 96, 0);
             GoLeft = new Button("", new Rectangle(96, ScreenHeight/2 + 256 - 48, 32, 32), 224, 192);
             GoRight = new Button("", new Rectangle(160, ScreenHeight / 2 + 256 - 48, 32, 32), 288, 256);
+            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 48), 96, 0);
+            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 48), 96, 0);
 
             buttons.Add(NewMap);
+            buttons.Add(SaveMap);
             buttons.Add(LoadMap);
             buttons.Add(EditMap);
             buttons.Add(GoLeft);
             buttons.Add(GoRight);
+            buttons.Add(Import);
+            
 
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
 
@@ -147,17 +156,21 @@ namespace tile_mapper
                 // Offset -= offsetToCenter * adjustment;
 
             }
-            
+
+            MousePos -= Offset;
+
+            MousePos /= Scale;
+            MousePos /= TILE_SIZE;
+
+            MousePos.X = (int)MousePos.X;
+            MousePos.Y = (int)MousePos.Y;
+
+            SelectedX = (int) MousePos.X;
+            SelectedY = (int)MousePos.Y;
+
+
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
-                MousePos -= Offset;
-
-                MousePos /= Scale;
-                MousePos /= TILE_SIZE;
-
-                MousePos.X = (int) MousePos.X;
-                MousePos.Y = (int) MousePos.Y;
-
                 System.Diagnostics.Debug.WriteLine(MousePos);
             }
 
@@ -232,9 +245,13 @@ namespace tile_mapper
                         SourceRect.X = 224;
                     }
 
-
                     Rectangle DestRect = new Rectangle((int) (i * TILE_SIZE * Scale + Offset.X), (int) (j * TILE_SIZE * Scale + Offset.Y), (int) (TILE_SIZE * Scale +1), (int) (TILE_SIZE * Scale +1));
                     _spriteBatch.Draw(Grid, DestRect, SourceRect, Color.White);
+
+                    if (j == SelectedY && i == SelectedX)
+                    {
+                        _spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
+                    }
                 }
             }
             // UI elements
