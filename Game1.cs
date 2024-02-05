@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace tile_mapper
@@ -40,9 +41,18 @@ namespace tile_mapper
         Vector2 MousePos;
         int SelectedX;
         int SelectedY;
+        string TileSheetPath = "../../../Content/Temp/tile_sheet.png";
+        Texture2D TileSheet;
+        Rectangle TileMenu;
+        List<List<SpriteTile>> TileSpriteList;
+        bool HasTileSheet = false;
 
         int ScreenWidth;
         int ScreenHeight;
+
+        int SheetWidth;
+        int SheetHeight;
+        int SheetMenuPages;
 
         public Game1()
         {
@@ -52,6 +62,58 @@ namespace tile_mapper
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+        }
+
+        public void OpenFile(string path)
+        {
+            using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open))
+            {
+                TileSheet = Texture2D.FromStream(GraphicsDevice, stream);
+            }
+
+            SheetWidth = TileSheet.Width / TILE_SIZE;
+            SheetHeight = TileSheet.Height / TILE_SIZE;
+
+            SheetMenuPages = (int) Math.Ceiling((float) (SheetWidth*SheetHeight / 55));
+
+            if (SheetMenuPages == 0)
+                SheetMenuPages++;
+
+            TileSpriteList = new List<List<SpriteTile>>();
+
+            for (int i = 0; i < SheetMenuPages; i++)
+            {
+                List<SpriteTile> page = new List<SpriteTile>();
+
+                for (int y = 0; y < SheetHeight; y++)
+                {
+                    for (int x = 0; x < SheetWidth; x++)
+                    {
+                        int xcord = x * TILE_SIZE;
+                        int ycord = y * TILE_SIZE;
+
+                        SpriteTile tile = new SpriteTile();
+                        tile.Source = new Rectangle(xcord, ycord, TILE_SIZE, TILE_SIZE);
+
+                        tile.Destination = new Rectangle();
+                        page.Add(tile);
+                    }
+                }
+
+                for(int j = 0; j < SheetHeight*SheetWidth; j++)
+                {
+                    int x = TileMenu.X + (j % 5) * TILE_SIZE * 2;
+                    int y = TileMenu.Y + (j / 5) * TILE_SIZE * 2;
+
+                    page[j].Destination = new Rectangle(x, y, TILE_SIZE * 2, TILE_SIZE * 2);
+                }
+
+                TileSpriteList.Add(page);
+            }
+
+            HasTileSheet = true;
+
+            System.Diagnostics.Debug.WriteLine(TileSheetPath);
         }
 
         protected override void Initialize()
@@ -69,7 +131,6 @@ namespace tile_mapper
                     };
                 }
             }
-
             
 
             ScaleX = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / 1920;
@@ -82,13 +143,13 @@ namespace tile_mapper
             _graphics.PreferredBackBufferHeight = ScreenHeight;
             _graphics.ApplyChanges();
 
-            NewMap = new Button("New", new Rectangle(0, 0, 96, 48), 96, 0);
-            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 48), 96, 0);
-            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 48), 96, 0);
-            GoLeft = new Button("", new Rectangle(96, ScreenHeight/2 + 256 - 48, 32, 32), 224, 192);
-            GoRight = new Button("", new Rectangle(160, ScreenHeight / 2 + 256 - 48, 32, 32), 288, 256);
-            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 48), 96, 0);
-            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 48), 96, 0);
+            NewMap = new Button("New", new Rectangle(0, 0, 96, 48), 96, 0, ButtonAction.None);
+            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 48), 96, 0, ButtonAction.None);
+            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 48), 96, 0, ButtonAction.None);
+            GoLeft = new Button("", new Rectangle(96, ScreenHeight/2 + 256 - 48, 32, 32), 224, 192, ButtonAction.None);
+            GoRight = new Button("", new Rectangle(160, ScreenHeight / 2 + 256 - 48, 32, 32), 288, 256, ButtonAction.None);
+            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 48), 96, 0, ButtonAction.None);
+            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 48), 96, 0, ButtonAction.Import);
 
             buttons.Add(NewMap);
             buttons.Add(SaveMap);
@@ -102,6 +163,8 @@ namespace tile_mapper
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
 
             base.Initialize();
+
+            TileMenu = new Rectangle(64, ScreenHeight/2 - 256 + 64, 80, 352);
         }
 
         protected override void LoadContent()
@@ -172,6 +235,21 @@ namespace tile_mapper
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
                 System.Diagnostics.Debug.WriteLine(MousePos);
+
+                foreach(var button in buttons)
+                {
+                    if(button.IsVisible)
+                    {
+                        switch (button.Action)
+                        {
+                            case ButtonAction.Import:
+                                OpenFile(TileSheetPath);
+                                button.IsVisible = false;
+                                break;
+                        }
+                    }
+                }
+
             }
 
             if(keyboardState.IsKeyDown(Keys.A))
@@ -261,21 +339,35 @@ namespace tile_mapper
             // Buttons
             foreach (var button in buttons)
             {
-                _spriteBatch.Draw(UI, new Vector2(button.ButtonRect.X, button.ButtonRect.Y), button.SourceRect, Color.White);
-                _spriteBatch.DrawString(
-                font,
-                button.Text,
-                new Vector2(
-                        button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
-                        button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
-                    ),
-                    Color.White,
-                    0f, // Rotation angle, set to 0 for no rotation
-                    Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
-                    TextScale, // Scale factor
-                    SpriteEffects.None, // Sprite effects, set to None for no effects
-                    0f // Depth, set to 0 for the default depth
-                );
+                if(button.IsVisible)
+                {
+                    _spriteBatch.Draw(UI, new Vector2(button.ButtonRect.X, button.ButtonRect.Y), button.SourceRect, Color.White);
+                    _spriteBatch.DrawString(
+                    font,
+                    button.Text,
+                    new Vector2(
+                            button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
+                            button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
+                        ),
+                        Color.White,
+                        0f, // Rotation angle, set to 0 for no rotation
+                        Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
+                        TextScale, // Scale factor
+                        SpriteEffects.None, // Sprite effects, set to None for no effects
+                        0f // Depth, set to 0 for the default depth
+                    );
+                }
+            }
+
+            if (HasTileSheet)
+            {
+                foreach (var list in TileSpriteList)
+                {
+                    foreach (var rectangle in list)
+                    {
+                        _spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X, rectangle.Destination.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
+                    }
+                }
             }
 
 

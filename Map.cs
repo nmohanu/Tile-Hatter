@@ -8,19 +8,34 @@ using System.Threading.Tasks;
 
 namespace tile_mapper
 {
+
+    public class SpriteTile
+    {
+        public Rectangle Destination;
+        public Rectangle Source;
+    }
+
+    public enum ButtonAction
+    {
+        None,
+        Import
+    }
     internal class Button
     {
         public string Text;
+        public ButtonAction Action;
         public Rectangle ButtonRect;
         public Rectangle SourceRect = new Rectangle(0, 48, 96, 48);
         public int SelectionX;
         public int OriginalX;
-        public Button(string text, Rectangle rect, int selectionX, int originalX) 
+        public bool IsVisible = true;
+        public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action) 
         {
             this.Text = text;
             this.ButtonRect = rect;
             this.SelectionX = selectionX;
             this.OriginalX = originalX;
+            this.Action = action;
 
             SourceRect.Width = rect.Width;
             SourceRect.Height = rect.Height;
