@@ -28,21 +28,24 @@ namespace tile_mapper
                 spriteBatch.Draw(UI, new Vector2(Destination.X, Destination.Y), Source, Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
                 foreach (var button in buttons)
                 {
-                    spriteBatch.Draw(UI, button.ButtonRect, button.SourceRect, Color.White);
-                    spriteBatch.DrawString(
-                    font,
-                    button.Text,
-                    new Vector2(
-                            button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
-                            button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
-                        ),
-                        Color.White,
-                        0f, // Rotation angle, set to 0 for no rotation
-                        Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
-                        TextScale, // Scale factor
-                        SpriteEffects.None, // Sprite effects, set to None for no effects
-                        0f // Depth, set to 0 for the default depth
-                    );
+                    if(button.IsVisible)
+                    {
+                        spriteBatch.Draw(UI, button.ButtonRect, button.SourceRect, Color.White);
+                        spriteBatch.DrawString(
+                        font,
+                        button.Text,
+                        new Vector2(
+                                button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
+                                button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
+                            ),
+                            Color.White,
+                            0f, // Rotation angle, set to 0 for no rotation
+                            Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
+                            TextScale, // Scale factor
+                            SpriteEffects.None, // Sprite effects, set to None for no effects
+                            0f // Depth, set to 0 for the default depth
+                        );
+                    }
                 }  
             }
         }
@@ -114,6 +117,17 @@ namespace tile_mapper
 
             SourceRect.Width = rect.Width;
             SourceRect.Height = rect.Height;
+        }
+        public void ChangeSourceX(Vector2 MousePos)
+        {
+            if (this.ButtonRect.Contains(MousePos))
+            {
+                this.SourceRect.X = this.SelectionX;
+            }
+            else
+            {
+                this.SourceRect.X = this.OriginalX;
+            }
         }
     }
 

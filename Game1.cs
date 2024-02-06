@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace tile_mapper
 {
@@ -13,8 +14,8 @@ namespace tile_mapper
         private SpriteBatch _spriteBatch;
 
         // Specify your map size.
-        int MAP_WIDTH = 512;
-        int MAP_HEIGHT = 512;
+        int MAP_WIDTH = 256;
+        int MAP_HEIGHT = 256;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -32,7 +33,6 @@ namespace tile_mapper
         Button Import;
         Button Layer;
         Button Settings;
-        List<Button> buttons = new List<Button>();
         SpriteFont font;
         float TextScale = 0.6f;
         float ScaleX;
@@ -43,6 +43,8 @@ namespace tile_mapper
         string TileSheetPath = "../../../Content/Temp/tile_sheet.png";
         Texture2D TileSheet;
         UI_Menu TileMenu;
+        UI_Menu TopBar;
+        List<UI_Menu> UI_Elements;
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
         MouseState PreviousMouseState;
@@ -83,62 +85,7 @@ namespace tile_mapper
             IsMouseVisible = true;
         }
 
-        public void OpenFile(string path)
-        {
-            using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open))
-            {
-                TileSheet = Texture2D.FromStream(GraphicsDevice, stream);
-            }
-
-            SheetWidth = TileSheet.Width / TILE_SIZE;
-            SheetHeight = TileSheet.Height / TILE_SIZE;
-
-            SheetMenuPages = (int) Math.Ceiling((float) (SheetWidth*SheetHeight / 55));
-
-            if (SheetMenuPages == 0)
-                SheetMenuPages++;
-
-            TileSpriteList = new List<List<SpriteTile>>();
-
-            
-
-            for (int i = 0; i < SheetMenuPages; i++)
-            {
-                List<SpriteTile> page = new List<SpriteTile>();
-
-                for (int y = 0; y < SheetHeight; y++)
-                {
-                    for (int x = 0; x < SheetWidth; x++)
-                    {
-                        int xcord = x * TILE_SIZE;
-                        int ycord = y * TILE_SIZE;
-
-                        SpriteTile tile = new SpriteTile();
-                        tile.Source = new Rectangle(xcord, ycord, TILE_SIZE, TILE_SIZE);
-
-                        tile.Destination = new Rectangle();
-
-                        tile.ID = "X" + x.ToString() + "Y" + y.ToString();
-
-                        page.Add(tile);
-                    }
-                }
-
-                for(int j = 0; j < SheetHeight*SheetWidth; j++)
-                {
-                    int x = TileMenu.Destination.X + (j % 5) * TILE_SIZE * 2;
-                    int y = TileMenu.Destination.Y + (j / 5) * TILE_SIZE * 2;
-
-                    page[j].Destination = new Rectangle(x, y, TILE_SIZE * 2, TILE_SIZE * 2);
-                }
-
-                TileSpriteList.Add(page);
-            }
-
-            HasTileSheet = true;
-
-            System.Diagnostics.Debug.WriteLine(TileSheetPath);
-        }
+        
 
         protected override void Initialize()
         {
@@ -164,6 +111,7 @@ namespace tile_mapper
 
             PreviousMouseState = new MouseState();
             PreviousKeybordState = new KeyboardState();
+            UI_Elements = new List<UI_Menu>();
 
             ScreenWidth = 1920;
             ScreenHeight = 1080;
@@ -185,19 +133,22 @@ namespace tile_mapper
             Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer);
             Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None);
 
-            buttons.Add(NewMap);
-            buttons.Add(SaveMap);
-            buttons.Add(LoadMap);
-            buttons.Add(EditMap);
-            buttons.Add(Layer);
-            buttons.Add(Settings);
-            
-
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
 
             TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
+            TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
+
             TileMenu.buttons.Add(Import);
             TileMenu.IsVisible = true;
+
+            TileMenu.buttons.Add(NewMap);
+            TileMenu.buttons.Add(SaveMap);
+            TileMenu.buttons.Add(LoadMap);
+            TileMenu.buttons.Add(EditMap);
+            TileMenu.buttons.Add(Layer);
+            TileMenu.buttons.Add(Settings);
+
+            UI_Elements.Add(TileMenu);
 
             base.Initialize();
         }
@@ -225,18 +176,13 @@ namespace tile_mapper
             MousePos = new Vector2(mouseState.X, mouseState.Y);
             Vector2 MousePosRelative = MousePos - Offset;
 
-            // Mouse is hoovering on button.
-            foreach (var button in buttons)
+            // Check if mouse is hoovering on button.
+            foreach (var UI in UI_Elements)
             {
-                if (button.ButtonRect.Contains(MousePos))
+                foreach (var button in UI.buttons)
                 {
-                    button.SourceRect.X = button.SelectionX;
+                    button.ChangeSourceX(MousePos);
                 }
-                else
-                {
-                    button.SourceRect.X = button.OriginalX;
-                }
-                
             }
 
             // Tile sheet is imported.
@@ -288,29 +234,26 @@ namespace tile_mapper
             SelectedX = (int) MousePosInt.X;
             SelectedY = (int) MousePosInt.Y;
 
-
-            // Click (Left).
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            if (mouseState.LeftButton == ButtonState.Pressed) // Click (Left).
             {
-                System.Diagnostics.Debug.WriteLine(MousePos);
-
-                // Only execute once at click.
-                if(PreviousMouseState.LeftButton != ButtonState.Pressed)
+                if(PreviousMouseState.LeftButton != ButtonState.Pressed) // Only execute once at click.
                 {
-                    foreach (var button in buttons)
+                    foreach (var UI in UI_Elements)
                     {
-                        if (button.IsVisible && button.ButtonRect.Contains(MousePos))
+                        if (UI.IsVisible)
                         {
-                            switch (button.Action)
+                            switch(UI.HandleClicks(MousePos))
                             {
                                 case ButtonAction.Import:
                                     OpenFile(TileSheetPath);
-                                    button.IsVisible = false;
+                                    UI.buttons.FirstOrDefault(element => element.Text == "Import").IsVisible = false;
                                     break;
                                 case ButtonAction.Layer:
+                                    string ToFind = "Layer: " + CurrentLayer.ToString();
                                     CurrentLayer++;
                                     CurrentLayer = CurrentLayer % 3;
-                                    button.Text = "Layer: " + CurrentLayer.ToString();
+                                    
+                                    UI.buttons.FirstOrDefault(element => element.Text == ToFind).Text = "Layer: " + CurrentLayer.ToString();
                                     break;
                                 case ButtonAction.Save:
                                     WriteFile();
@@ -375,10 +318,8 @@ namespace tile_mapper
             Renderer.RenderGrid(_spriteBatch, MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY);
 
             // UI elements
-            _spriteBatch.Draw(UI, new Vector2(0, 0), new Rectangle(0, 0, 1920, 48), Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
+            TopBar.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
             TileMenu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
-            // Buttons
-            Renderer.DrawButtons(buttons, _spriteBatch, font, TextScale, UI);
 
             Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
 
@@ -397,6 +338,63 @@ namespace tile_mapper
         internal void WriteFile()
         {
             
+        }
+
+        public void OpenFile(string path)
+        {
+            using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open))
+            {
+                TileSheet = Texture2D.FromStream(GraphicsDevice, stream);
+            }
+
+            SheetWidth = TileSheet.Width / TILE_SIZE;
+            SheetHeight = TileSheet.Height / TILE_SIZE;
+
+            SheetMenuPages = (int)Math.Ceiling((float)(SheetWidth * SheetHeight / 55));
+
+            if (SheetMenuPages == 0)
+                SheetMenuPages++;
+
+            TileSpriteList = new List<List<SpriteTile>>();
+
+
+
+            for (int i = 0; i < SheetMenuPages; i++)
+            {
+                List<SpriteTile> page = new List<SpriteTile>();
+
+                for (int y = 0; y < SheetHeight; y++)
+                {
+                    for (int x = 0; x < SheetWidth; x++)
+                    {
+                        int xcord = x * TILE_SIZE;
+                        int ycord = y * TILE_SIZE;
+
+                        SpriteTile tile = new SpriteTile();
+                        tile.Source = new Rectangle(xcord, ycord, TILE_SIZE, TILE_SIZE);
+
+                        tile.Destination = new Rectangle();
+
+                        tile.ID = "X" + x.ToString() + "Y" + y.ToString();
+
+                        page.Add(tile);
+                    }
+                }
+
+                for (int j = 0; j < SheetHeight * SheetWidth; j++)
+                {
+                    int x = TileMenu.Destination.X + (j % 5) * TILE_SIZE * 2;
+                    int y = TileMenu.Destination.Y + (j / 5) * TILE_SIZE * 2;
+
+                    page[j].Destination = new Rectangle(x, y, TILE_SIZE * 2, TILE_SIZE * 2);
+                }
+
+                TileSpriteList.Add(page);
+            }
+
+            HasTileSheet = true;
+
+            System.Diagnostics.Debug.WriteLine(TileSheetPath);
         }
     } 
 }
