@@ -182,8 +182,6 @@ namespace tile_mapper
             NewMap = new Button("New", new Rectangle(0, 0, 96, 32), 96, 0, ButtonAction.None);
             LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 96, 0, ButtonAction.None);
             EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 96, 0, ButtonAction.None);
-            GoLeft = new Button("", new Rectangle(96, ScreenHeight/2 + 256 - 48, 32, 32), 224, 192, ButtonAction.None);
-            GoRight = new Button("", new Rectangle(160, ScreenHeight / 2 + 256 - 48, 32, 32), 288, 256, ButtonAction.None);
             SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save);
             Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 32), 96, 0, ButtonAction.Import);
             Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer);
@@ -193,8 +191,6 @@ namespace tile_mapper
             buttons.Add(SaveMap);
             buttons.Add(LoadMap);
             buttons.Add(EditMap);
-            buttons.Add(GoLeft);
-            buttons.Add(GoRight);
             buttons.Add(Import);
             buttons.Add(Layer);
             buttons.Add(Settings);
@@ -390,44 +386,9 @@ namespace tile_mapper
             _spriteBatch.Draw(UI, new Vector2(0, ScreenHeight / 2 - 256), new Rectangle(0, 96, 288, 520), Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
 
             // Buttons
-            foreach (var button in buttons)
-            {
-                if(button.IsVisible)
-                {
-                    _spriteBatch.Draw(UI, new Vector2(button.ButtonRect.X, button.ButtonRect.Y), button.SourceRect, Color.White);
-                    _spriteBatch.DrawString(
-                    font,
-                    button.Text,
-                    new Vector2(
-                            button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
-                            button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
-                        ),
-                        Color.White,
-                        0f, // Rotation angle, set to 0 for no rotation
-                        Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
-                        TextScale, // Scale factor
-                        SpriteEffects.None, // Sprite effects, set to None for no effects
-                        0f // Depth, set to 0 for the default depth
-                    );
-                }
-            }
+            Renderer.DrawButtons(buttons, _spriteBatch, font, TextScale, UI);
 
-            if (HasTileSheet)
-            {
-                foreach (var list in TileSpriteList)
-                {
-                    foreach (var rectangle in list)
-                    {
-                        _spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X, rectangle.Destination.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
-                        if (rectangle.hovers)
-                            _spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(320, 0, 16, 16), Color.White);
-                        if(selected != null && rectangle.ID == selected.ID)
-                        {
-                            _spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(336, 0, 16, 16), Color.White);
-                        }
-                    }
-                }
-            }
+            Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
 
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
 

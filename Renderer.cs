@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,6 +77,51 @@ namespace tile_mapper
 
                                 spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White * 0.5f);
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void DrawButtons(List<Button> buttons, SpriteBatch spriteBatch, SpriteFont font, float TextScale, Texture2D UI)
+        {
+            foreach (var button in buttons)
+            {
+                if (button.IsVisible)
+                {
+                    spriteBatch.Draw(UI, new Vector2(button.ButtonRect.X, button.ButtonRect.Y), button.SourceRect, Color.White);
+                    spriteBatch.DrawString(
+                    font,
+                    button.Text,
+                    new Vector2(
+                            button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
+                            button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
+                        ),
+                        Color.White,
+                        0f, // Rotation angle, set to 0 for no rotation
+                        Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
+                        TextScale, // Scale factor
+                        SpriteEffects.None, // Sprite effects, set to None for no effects
+                        0f // Depth, set to 0 for the default depth
+                    );
+                }
+            }
+        }
+
+        public static void DrawPalette(bool HasTileSheet, List<List<SpriteTile>> TileSpriteList, SpriteBatch spriteBatch, SpriteTile selected, Texture2D Grid, Texture2D TileSheet)
+        {
+            if (HasTileSheet)
+            {
+                foreach (var list in TileSpriteList)
+                {
+                    foreach (var rectangle in list)
+                    {
+                        spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X, rectangle.Destination.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
+                        if (rectangle.hovers)
+                            spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(320, 0, 16, 16), Color.White);
+                        if (selected != null && rectangle.ID == selected.ID)
+                        {
+                            spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(336, 0, 16, 16), Color.White);
                         }
                     }
                 }
