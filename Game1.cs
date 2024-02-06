@@ -13,8 +13,8 @@ namespace tile_mapper
         private SpriteBatch _spriteBatch;
 
         // Specify your map size.
-        int MAP_WIDTH = 512;
-        int MAP_HEIGHT = 512;
+        int MAP_WIDTH = 256;
+        int MAP_HEIGHT = 256;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -22,7 +22,7 @@ namespace tile_mapper
         Texture2D UI;
         float Scale = 1f;
         float OriginalScrollWheelValue = 0f;
-        float MoveSpeed = 256f;
+        float MoveSpeed = 512;
         Vector2 Velocity = Vector2.Zero;
         Vector2 Offset = Vector2.Zero;
         Button NewMap;
@@ -48,12 +48,16 @@ namespace tile_mapper
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
         MouseState PreviousMouseState;
+        KeyboardState PreviousKeybordState;
         string SaveFilePath;
         string OpenFilePath;
         
+        Stack<UserAction> Actions = new Stack<UserAction>();
 
         int ScreenWidth;
         int ScreenHeight;
+
+        Vector2 ScreenCenter;
 
         int SheetWidth;
         int SheetHeight;
@@ -156,11 +160,12 @@ namespace tile_mapper
 
 
             PreviousMouseState = new MouseState();
+            PreviousKeybordState = new KeyboardState();
 
-            ScreenWidth = 1280;
-            ScreenHeight = 720;
+            ScreenWidth = 1920;
+            ScreenHeight = 1080;
 
-            
+            ScreenCenter = new Vector2(ScreenWidth, ScreenHeight);
 
             _graphics.PreferredBackBufferWidth = ScreenWidth;
             _graphics.PreferredBackBufferHeight = ScreenHeight;
@@ -169,15 +174,15 @@ namespace tile_mapper
             ScaleX = 1f;
             ScaleY = 1f;
 
-            NewMap = new Button("New", new Rectangle(0, 0, 96, 48), 96, 0, ButtonAction.None);
-            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 48), 96, 0, ButtonAction.None);
-            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 48), 96, 0, ButtonAction.None);
+            NewMap = new Button("New", new Rectangle(0, 0, 96, 32), 96, 0, ButtonAction.None);
+            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 96, 0, ButtonAction.None);
+            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 96, 0, ButtonAction.None);
             GoLeft = new Button("", new Rectangle(96, ScreenHeight/2 + 256 - 48, 32, 32), 224, 192, ButtonAction.None);
             GoRight = new Button("", new Rectangle(160, ScreenHeight / 2 + 256 - 48, 32, 32), 288, 256, ButtonAction.None);
-            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 48), 96, 0, ButtonAction.Save);
-            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 48), 96, 0, ButtonAction.Import);
-            Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 48), 96, 0, ButtonAction.Layer);
-            Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 48), 96, 0, ButtonAction.None);
+            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save);
+            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 32), 96, 0, ButtonAction.Import);
+            Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer);
+            Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None);
 
             buttons.Add(NewMap);
             buttons.Add(SaveMap);
@@ -263,11 +268,14 @@ namespace tile_mapper
             // User is scrolling (zooming on map)
             if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
             {
+                Vector2 Center = new Vector2(Offset.X + TILE_SIZE * Scale * MAP_WIDTH , Offset.Y + TILE_SIZE * Scale * MAP_HEIGHT);
                 float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
                 // Adjust the scaling factor based on the scroll wheel delta
                 Scale += adjustment;
-                Scale = MathHelper.Clamp(Scale, 0.5f, 5.0f);
+                Scale = MathHelper.Clamp(Scale, 0.5f, 5f);
 
+                Vector2 CenterNew = new Vector2(Offset.X + TILE_SIZE * Scale * MAP_WIDTH, Offset.Y + TILE_SIZE * Scale * MAP_HEIGHT);
+                Offset += ((Center - CenterNew) / 2);
             }
 
             // Calculate mouse X and Y position on the grid.
@@ -316,6 +324,7 @@ namespace tile_mapper
                 {
                     CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
                     CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
+                    Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
                 }
             }
 
@@ -328,11 +337,30 @@ namespace tile_mapper
             if(keyboardState.IsKeyDown(Keys.W))
                 Velocity.Y += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
 
+            // Undo last action.
+            if(keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !PreviousKeybordState.IsKeyDown(Keys.Z))
+            {
+
+                if(Actions.Count > 0)
+                {
+                    UserAction UndoAction = Actions.Peek();
+
+                    if(UndoAction.Action == UserAction.ActionType.Draw)
+                    {
+                        CurrentMap.layers[CurrentLayer].TileMap[UndoAction.y, UndoAction.x] = new Tile();
+                    }
+
+                    Actions.Pop();
+                }
+            }
+               
+
             Offset += Velocity;
 
             OriginalScrollWheelValue = mouseState.ScrollWheelValue;
 
             PreviousMouseState = mouseState;
+            PreviousKeybordState = keyboardState;
 
             base.Update(gameTime);
         }

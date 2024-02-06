@@ -4,8 +4,25 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace tile_mapper
 {
-
-    public class SpriteTile
+    internal class UserAction
+    {
+        public ActionType Action;
+        public int x, y, Layer;
+       
+        public UserAction(ActionType action, int layer, int x, int y) 
+        {
+            this.Action = action;
+            this.Layer = layer;
+            this.x = x;
+            this.y = y;
+        }
+        public enum ActionType
+        {
+            Draw,
+            Remove
+        }
+    }
+    internal class SpriteTile
     {
         public Rectangle Destination;
         public Rectangle Source;
