@@ -355,7 +355,7 @@ namespace tile_mapper
 
                     if(UndoAction.Action == UserAction.ActionType.Draw)
                     {
-                        CurrentMap.layers[CurrentLayer].TileMap[UndoAction.y, UndoAction.x] = new Tile();
+                        CurrentMap.layers[UndoAction.Layer].TileMap[UndoAction.y, UndoAction.x] = new Tile();
                     }
 
                     Actions.Pop();
