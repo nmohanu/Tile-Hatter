@@ -13,8 +13,8 @@ namespace tile_mapper
         private SpriteBatch _spriteBatch;
 
         // Specify your map size.
-        int MAP_WIDTH = 256;
-        int MAP_HEIGHT = 256;
+        int MAP_WIDTH = 512;
+        int MAP_HEIGHT = 512;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -68,6 +68,10 @@ namespace tile_mapper
         Map CurrentMap;
         int CurrentLayer = 0;
 
+        private int frameCounter;
+        private TimeSpan elapsedTime;
+        private float fps;
+
         SpriteTile selected;
 
         public Game1()
@@ -75,6 +79,7 @@ namespace tile_mapper
             _graphics = new GraphicsDeviceManager(this);
             _graphics.PreferredBackBufferWidth = ScreenWidth;
             _graphics.PreferredBackBufferHeight = ScreenHeight;
+            IsFixedTimeStep = false;
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -217,6 +222,9 @@ namespace tile_mapper
 
         protected override void Update(GameTime gameTime)
         {
+            // Calculate fps
+            fps = (float)(1.0f / gameTime.ElapsedGameTime.TotalSeconds);
+
             // Helper variables.
             MouseState mouseState = Mouse.GetState();
             KeyboardState keyboardState = Keyboard.GetState();
@@ -371,93 +379,12 @@ namespace tile_mapper
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-            for (int i = 0; i < MAP_HEIGHT - 1; i++)
-            {
-                for (int j = 0; j < MAP_WIDTH - 1; j++)
-                {
-                    for(int k = 0; k < 2; k++)
-                    {
-                        if (CurrentMap != null &&
-                        CurrentMap.layers[k] != null &&
-                        CurrentMap.layers[k].TileMap != null &&
-                        CurrentMap.layers[k].TileMap[j, i] != null &&
-                        CurrentMap.layers[k].TileMap[j, i].ID != "0")
-                        {
-                            if(k == CurrentLayer)
-                            {
-                                Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+            // Draw map (all layers)
+            Renderer.RenderMap(MAP_HEIGHT, MAP_WIDTH, CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset);
 
-                                _spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White);
-                            }
-                            else
-                            {
-                                Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+            // Grid 
+            Renderer.RenderGrid(_spriteBatch, MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY);
 
-                                _spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White * 0.5f);
-                            }
-                        }
-                    }
-                }
-            }
-            for (int i = 0;i < MAP_HEIGHT;i++)
-            {
-                for(int j = 0; j < MAP_WIDTH;j++)
-                {
-                    Rectangle SourceRect = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
-
-                    if (i + 1 == MAP_HEIGHT / 2 && j + 1 == MAP_WIDTH / 2)
-                    {
-                        // Middle of the grid
-                        SourceRect.X = 192;
-                    }
-                    else if (i + 1 == MAP_HEIGHT / 2)
-                    {
-                        // Middle row
-                        SourceRect.X = 160;
-                    }
-                    else if (j + 1 == MAP_WIDTH / 2)
-                    {
-                        // Middle column
-                        SourceRect.X = 128;
-                    }
-                    else if ((i + 1) % 4 == 0 && (j + 1) % 4 == 0)
-                    {
-                        // Every 4th cell
-                        SourceRect.X = 96;
-                    }
-                    else if ((i + 1) % 4 == 0)
-                    {
-                        // Every 4th cell in a column
-                        SourceRect.X = 64;
-                    }
-                    else if ((j + 1) % 4 == 0)
-                    {
-                        // Every 4th cell in a row
-                        SourceRect.X = 32;
-                    }
-                    if (i + 1 == MAP_HEIGHT / 2 && (j + 1) % 4 == 0 && j + 1 != MAP_WIDTH/2)
-                    {
-                        // Middle row, every 4th cell
-                        SourceRect.X = 256;
-                    }
-                    else if (j + 1 == MAP_WIDTH / 2 && (i + 1) % 4 == 0 && i + 1 != MAP_HEIGHT/2)
-                    {
-                        // Middle column, every 4th cell
-                        SourceRect.X = 224;
-                    }
-
-                    Rectangle DestRect = new Rectangle((int) (i * TILE_SIZE * Scale + Offset.X), (int) (j * TILE_SIZE * Scale + Offset.Y), (int) (TILE_SIZE * Scale +1), (int) (TILE_SIZE * Scale +1));
-                    _spriteBatch.Draw(Grid, DestRect, SourceRect, Color.White);
-
-                    if (j == SelectedY && i == SelectedX)
-                    {
-                        if(selected != null)
-                            _spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
-                        else
-                            _spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
-                    }
-                }
-            }
             // UI elements
             _spriteBatch.Draw(UI, new Vector2(0, 0), new Rectangle(0, 0, 1920, 48), Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
             _spriteBatch.Draw(UI, new Vector2(0, ScreenHeight / 2 - 256), new Rectangle(0, 96, 288, 520), Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
@@ -503,7 +430,10 @@ namespace tile_mapper
             }
 
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
+
             _spriteBatch.DrawString(font, Cords, new Vector2(144 - font.MeasureString(Cords).X/2, ScreenHeight / 2 - (256 + 24)  - font.MeasureString(Cords).Y / 2), Color.White);
+
+            _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
 
             _spriteBatch.End();
 
