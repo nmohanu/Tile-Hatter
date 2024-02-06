@@ -19,7 +19,8 @@ namespace tile_mapper
     {
         None,
         Import,
-        Layer
+        Layer,
+        Save
     }
     internal class Button
     {

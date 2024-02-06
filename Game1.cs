@@ -13,8 +13,8 @@ namespace tile_mapper
         private SpriteBatch _spriteBatch;
 
         // Specify your map size.
-        int MAP_WIDTH = 16;
-        int MAP_HEIGHT = 16;
+        int MAP_WIDTH = 512;
+        int MAP_HEIGHT = 512;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -48,6 +48,8 @@ namespace tile_mapper
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
         MouseState PreviousMouseState;
+        string SaveFilePath;
+        string OpenFilePath;
         
 
         int ScreenWidth;
@@ -172,7 +174,7 @@ namespace tile_mapper
             EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 48), 96, 0, ButtonAction.None);
             GoLeft = new Button("", new Rectangle(96, ScreenHeight/2 + 256 - 48, 32, 32), 224, 192, ButtonAction.None);
             GoRight = new Button("", new Rectangle(160, ScreenHeight / 2 + 256 - 48, 32, 32), 288, 256, ButtonAction.None);
-            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 48), 96, 0, ButtonAction.None);
+            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 48), 96, 0, ButtonAction.Save);
             Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 48), 96, 0, ButtonAction.Import);
             Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 48), 96, 0, ButtonAction.Layer);
             Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 48), 96, 0, ButtonAction.None);
@@ -210,9 +212,7 @@ namespace tile_mapper
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
+            // Helper variables.
             MouseState mouseState = Mouse.GetState();
             KeyboardState keyboardState = Keyboard.GetState();
             Velocity = Vector2.Zero;
@@ -260,51 +260,58 @@ namespace tile_mapper
                 }
             }
             
-
+            // User is scrolling (zooming on map)
             if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
             {
                 float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
                 // Adjust the scaling factor based on the scroll wheel delta
                 Scale += adjustment;
-
                 Scale = MathHelper.Clamp(Scale, 0.5f, 5.0f);
 
             }
 
+            // Calculate mouse X and Y position on the grid.
             Vector2 MousePosInt = MousePosRelative;
-
             MousePosInt /= Scale;
             MousePosInt /= TILE_SIZE;
-
             MousePosInt.X = (int)MousePosInt.X;
             MousePosInt.Y = (int)MousePosInt.Y;
-
             SelectedX = (int) MousePosInt.X;
             SelectedY = (int) MousePosInt.Y;
 
-            if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed)
+
+            // Click (Left).
+            if (mouseState.LeftButton == ButtonState.Pressed)
             {
                 System.Diagnostics.Debug.WriteLine(MousePos);
 
-                foreach (var button in buttons)
+                // Only execute once at click.
+                if(PreviousMouseState.LeftButton != ButtonState.Pressed)
                 {
-                    if (button.IsVisible && button.ButtonRect.Contains(MousePos))
+                    foreach (var button in buttons)
                     {
-                        switch (button.Action)
+                        if (button.IsVisible && button.ButtonRect.Contains(MousePos))
                         {
-                            case ButtonAction.Import:
-                                OpenFile(TileSheetPath);
-                                button.IsVisible = false;
-                                break;
-                            case ButtonAction.Layer:
-                                CurrentLayer++;
-                                CurrentLayer = CurrentLayer % 3;
-                                button.Text = "Layer: " + CurrentLayer.ToString();
-                                break;
+                            switch (button.Action)
+                            {
+                                case ButtonAction.Import:
+                                    OpenFile(TileSheetPath);
+                                    button.IsVisible = false;
+                                    break;
+                                case ButtonAction.Layer:
+                                    CurrentLayer++;
+                                    CurrentLayer = CurrentLayer % 3;
+                                    button.Text = "Layer: " + CurrentLayer.ToString();
+                                    break;
+                                case ButtonAction.Save:
+                                    WriteFile();
+                                    break;
+                            }
                         }
                     }
                 }
-
+                
+                // Execute each frame if mouse button is held.
                 if (selected != null && SelectedX >= 0 && SelectedY >= 0 && SelectedX <= MAP_WIDTH-1 && SelectedY <= MAP_HEIGHT-1)
                 {
                     CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
@@ -474,5 +481,13 @@ namespace tile_mapper
 
             base.Draw(gameTime);
         }
-    }
+
+
+        internal void WriteFile()
+        {
+            
+        }
+    } 
 }
+
+
