@@ -1,9 +1,65 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 
 namespace tile_mapper
 {
+    internal class UI_Menu
+    {
+        public bool IsVisible;
+        public Rectangle Source;
+        public Rectangle Destination;
+        public List<Button> buttons;
+
+        public UI_Menu(bool IsVisible, Rectangle Source, Rectangle Destination)
+        {
+            buttons = new List<Button>();
+            this.IsVisible = IsVisible;
+            this.Source = Source;
+            this.Destination = Destination;
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Texture2D UI, int ScreenHeight, int ScreenWidth, float ScaleX, float ScaleY, SpriteFont font, float TextScale)
+        {
+            if(IsVisible)
+            {
+                spriteBatch.Draw(UI, new Vector2(Destination.X, Destination.Y), Source, Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
+                foreach (var button in buttons)
+                {
+                    spriteBatch.Draw(UI, button.ButtonRect, button.SourceRect, Color.White);
+                    spriteBatch.DrawString(
+                    font,
+                    button.Text,
+                    new Vector2(
+                            button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
+                            button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
+                        ),
+                        Color.White,
+                        0f, // Rotation angle, set to 0 for no rotation
+                        Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
+                        TextScale, // Scale factor
+                        SpriteEffects.None, // Sprite effects, set to None for no effects
+                        0f // Depth, set to 0 for the default depth
+                    );
+                }  
+            }
+        }
+
+        public ButtonAction HandleClicks(Vector2 MousePos)
+        {
+            foreach (var button in buttons)
+            {
+                if (button.IsVisible && button.ButtonRect.Contains(MousePos))
+                {
+                    return button.Action;
+                }
+            }
+            return ButtonAction.None;
+        }
+    }
+
     internal class UserAction
     {
         public ActionType Action;

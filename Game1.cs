@@ -28,8 +28,6 @@ namespace tile_mapper
         Button NewMap;
         Button LoadMap;
         Button EditMap;
-        Button GoLeft;
-        Button GoRight;
         Button SaveMap;
         Button Import;
         Button Layer;
@@ -44,7 +42,7 @@ namespace tile_mapper
         int SelectedY;
         string TileSheetPath = "../../../Content/Temp/tile_sheet.png";
         Texture2D TileSheet;
-        Rectangle TileMenu;
+        UI_Menu TileMenu;
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
         MouseState PreviousMouseState;
@@ -128,8 +126,8 @@ namespace tile_mapper
 
                 for(int j = 0; j < SheetHeight*SheetWidth; j++)
                 {
-                    int x = TileMenu.X + (j % 5) * TILE_SIZE * 2;
-                    int y = TileMenu.Y + (j / 5) * TILE_SIZE * 2;
+                    int x = TileMenu.Destination.X + (j % 5) * TILE_SIZE * 2;
+                    int y = TileMenu.Destination.Y + (j / 5) * TILE_SIZE * 2;
 
                     page[j].Destination = new Rectangle(x, y, TILE_SIZE * 2, TILE_SIZE * 2);
                 }
@@ -183,7 +181,7 @@ namespace tile_mapper
             LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 96, 0, ButtonAction.None);
             EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 96, 0, ButtonAction.None);
             SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save);
-            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 32), 96, 0, ButtonAction.Import);
+            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import);
             Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer);
             Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None);
 
@@ -191,18 +189,17 @@ namespace tile_mapper
             buttons.Add(SaveMap);
             buttons.Add(LoadMap);
             buttons.Add(EditMap);
-            buttons.Add(Import);
             buttons.Add(Layer);
             buttons.Add(Settings);
             
 
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
 
-            
+            TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
+            TileMenu.buttons.Add(Import);
+            TileMenu.IsVisible = true;
 
             base.Initialize();
-
-            TileMenu = new Rectangle(64, ScreenHeight/2 - 256 + 64, 80, 352);
         }
 
         protected override void LoadContent()
@@ -350,9 +347,7 @@ namespace tile_mapper
                     UserAction UndoAction = Actions.Peek();
 
                     if(UndoAction.Action == UserAction.ActionType.Draw)
-                    {
                         CurrentMap.layers[UndoAction.Layer].TileMap[UndoAction.y, UndoAction.x] = new Tile();
-                    }
 
                     Actions.Pop();
                 }
@@ -360,9 +355,7 @@ namespace tile_mapper
                
 
             Offset += Velocity;
-
             OriginalScrollWheelValue = mouseState.ScrollWheelValue;
-
             PreviousMouseState = mouseState;
             PreviousKeybordState = keyboardState;
 
@@ -383,8 +376,7 @@ namespace tile_mapper
 
             // UI elements
             _spriteBatch.Draw(UI, new Vector2(0, 0), new Rectangle(0, 0, 1920, 48), Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
-            _spriteBatch.Draw(UI, new Vector2(0, ScreenHeight / 2 - 256), new Rectangle(0, 96, 288, 520), Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
-
+            TileMenu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
             // Buttons
             Renderer.DrawButtons(buttons, _spriteBatch, font, TextScale, UI);
 
