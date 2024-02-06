@@ -18,7 +18,8 @@ namespace tile_mapper
     public enum ButtonAction
     {
         None,
-        Import
+        Import,
+        Layer
     }
     internal class Button
     {

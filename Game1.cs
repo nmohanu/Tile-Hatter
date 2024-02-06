@@ -32,6 +32,8 @@ namespace tile_mapper
         Button GoRight;
         Button SaveMap;
         Button Import;
+        Button Layer;
+        Button Settings;
         List<Button> buttons = new List<Button>();
         SpriteFont font;
         float TextScale = 0.6f;
@@ -45,6 +47,8 @@ namespace tile_mapper
         Rectangle TileMenu;
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
+        MouseState PreviousMouseState;
+        
 
         int ScreenWidth;
         int ScreenHeight;
@@ -142,15 +146,17 @@ namespace tile_mapper
                         GridRect = new Rectangle(j, i, TILE_SIZE, TILE_SIZE)
                     };
 
-                    CurrentMap.layers[CurrentLayer].TileMap[i, j] = new Tile();
+                    CurrentMap.layers[0].TileMap[i, j] = new Tile();
+                    CurrentMap.layers[1].TileMap[i, j] = new Tile();
+                    CurrentMap.layers[2].TileMap[i, j] = new Tile();
                 }
             }
-            
 
-            
 
-            ScreenWidth = 1920;
-            ScreenHeight = 1080;
+            PreviousMouseState = new MouseState();
+
+            ScreenWidth = 1280;
+            ScreenHeight = 720;
 
             
 
@@ -168,6 +174,8 @@ namespace tile_mapper
             GoRight = new Button("", new Rectangle(160, ScreenHeight / 2 + 256 - 48, 32, 32), 288, 256, ButtonAction.None);
             SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 48), 96, 0, ButtonAction.None);
             Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 24, 96, 48), 96, 0, ButtonAction.Import);
+            Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 48), 96, 0, ButtonAction.Layer);
+            Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 48), 96, 0, ButtonAction.None);
 
             buttons.Add(NewMap);
             buttons.Add(SaveMap);
@@ -176,6 +184,8 @@ namespace tile_mapper
             buttons.Add(GoLeft);
             buttons.Add(GoRight);
             buttons.Add(Import);
+            buttons.Add(Layer);
+            buttons.Add(Settings);
             
 
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
@@ -272,7 +282,7 @@ namespace tile_mapper
             SelectedX = (int) MousePosInt.X;
             SelectedY = (int) MousePosInt.Y;
 
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed)
             {
                 System.Diagnostics.Debug.WriteLine(MousePos);
 
@@ -285,6 +295,11 @@ namespace tile_mapper
                             case ButtonAction.Import:
                                 OpenFile(TileSheetPath);
                                 button.IsVisible = false;
+                                break;
+                            case ButtonAction.Layer:
+                                CurrentLayer++;
+                                CurrentLayer = CurrentLayer % 3;
+                                button.Text = "Layer: " + CurrentLayer.ToString();
                                 break;
                         }
                     }
@@ -310,6 +325,8 @@ namespace tile_mapper
 
             OriginalScrollWheelValue = mouseState.ScrollWheelValue;
 
+            PreviousMouseState = mouseState;
+
             base.Update(gameTime);
         }
 
@@ -323,15 +340,27 @@ namespace tile_mapper
             {
                 for (int j = 0; j < MAP_WIDTH - 1; j++)
                 {
-                    if (CurrentMap != null &&
-                        CurrentMap.layers[CurrentLayer] != null &&
-                        CurrentMap.layers[CurrentLayer].TileMap != null &&
-                        CurrentMap.layers[CurrentLayer].TileMap[j, i] != null &&
-                        CurrentMap.layers[CurrentLayer].TileMap[j, i].ID != "0")
+                    for(int k = 0; k < 2; k++)
+                    {
+                        if (CurrentMap != null &&
+                        CurrentMap.layers[k] != null &&
+                        CurrentMap.layers[k].TileMap != null &&
+                        CurrentMap.layers[k].TileMap[j, i] != null &&
+                        CurrentMap.layers[k].TileMap[j, i].ID != "0")
                         {
-                        Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+                            if(k == CurrentLayer)
+                            {
+                                Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
 
-                        _spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[CurrentLayer].TileMap[j, i].Source, Color.White);
+                                _spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White);
+                            }
+                            else
+                            {
+                                Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+
+                                _spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White * 0.5f);
+                            }
+                        }
                     }
                 }
             }
@@ -439,7 +468,7 @@ namespace tile_mapper
             }
 
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
-            _spriteBatch.DrawString(font, Cords, new Vector2(144 - font.MeasureString(Cords).X/2, ScreenHeight / 2 - (256 + 32)  - font.MeasureString(Cords).Y / 2), Color.White);
+            _spriteBatch.DrawString(font, Cords, new Vector2(144 - font.MeasureString(Cords).X/2, ScreenHeight / 2 - (256 + 24)  - font.MeasureString(Cords).Y / 2), Color.White);
 
             _spriteBatch.End();
 
