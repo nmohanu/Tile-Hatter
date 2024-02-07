@@ -116,7 +116,7 @@ namespace tile_mapper
                 {
                     foreach (var rectangle in list)
                     {
-                        spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X, rectangle.Destination.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
+                        spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X + 32, rectangle.Destination.Y + 32), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
                         if (rectangle.hovers)
                             spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(320, 0, 16, 16), Color.White);
                         if (selected != null && rectangle.ID == selected.ID)

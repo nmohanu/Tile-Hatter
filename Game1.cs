@@ -169,20 +169,22 @@ namespace tile_mapper
             // Calculate fps
             fps = (float)(1.0f / gameTime.ElapsedGameTime.TotalSeconds);
 
-            // Helper variables.
+            // Mouse
             MouseState mouseState = Mouse.GetState();
-            KeyboardState keyboardState = Keyboard.GetState();
-            Velocity = Vector2.Zero;
             MousePos = new Vector2(mouseState.X, mouseState.Y);
             Vector2 MousePosRelative = MousePos - Offset;
+            HandleLeftClick(mouseState);
+
+            // Keyboard.
+            KeyboardState keyboardState = Keyboard.GetState();
+            Velocity = Vector2.Zero;
+            HandleKeyboard(keyboardState, gameTime);
 
             // Check if mouse is hoovering on button.
             foreach (var UI in UI_Elements)
             {
                 foreach (var button in UI.buttons)
-                {
                     button.ChangeSourceX(MousePos);
-                }
             }
 
             // Tile sheet is imported.
@@ -234,53 +236,6 @@ namespace tile_mapper
             SelectedX = (int) MousePosInt.X;
             SelectedY = (int) MousePosInt.Y;
 
-            if (mouseState.LeftButton == ButtonState.Pressed) // Click (Left).
-            {
-                if(PreviousMouseState.LeftButton != ButtonState.Pressed) // Only execute once at click.
-                {
-                    foreach (var UI in UI_Elements)
-                    {
-                        if (UI.IsVisible)
-                        {
-                            switch(UI.HandleClicks(MousePos))
-                            {
-                                case ButtonAction.Import:
-                                    OpenFile(TileSheetPath);
-                                    UI.buttons.FirstOrDefault(element => element.Text == "Import").IsVisible = false;
-                                    break;
-                                case ButtonAction.Layer:
-                                    string ToFind = "Layer: " + CurrentLayer.ToString();
-                                    CurrentLayer++;
-                                    CurrentLayer = CurrentLayer % 3;
-                                    
-                                    UI.buttons.FirstOrDefault(element => element.Text == ToFind).Text = "Layer: " + CurrentLayer.ToString();
-                                    break;
-                                case ButtonAction.Save:
-                                    WriteFile();
-                                    break;
-                            }
-                        }
-                    }
-                }
-                
-                // Execute each frame if mouse button is held.
-                if (selected != null && SelectedX >= 0 && SelectedY >= 0 && SelectedX <= MAP_WIDTH-1 && SelectedY <= MAP_HEIGHT-1)
-                {
-                    CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
-                    CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
-                    Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
-                }
-            }
-
-            if (keyboardState.IsKeyDown(Keys.A))
-                Velocity.X += (float) (MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
-            if(keyboardState.IsKeyDown(Keys.S))
-                Velocity.Y -= (float) (MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
-            if(keyboardState.IsKeyDown(Keys.D))
-                Velocity.X -= (float) (MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
-            if(keyboardState.IsKeyDown(Keys.W))
-                Velocity.Y += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
-
             // Undo last action.
             if(keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !PreviousKeybordState.IsKeyDown(Keys.Z))
             {
@@ -321,12 +276,14 @@ namespace tile_mapper
             TopBar.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
             TileMenu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
 
+            // Sprite palette menu
             Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
 
+            // Draw cordinates
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
-
             _spriteBatch.DrawString(font, Cords, new Vector2(144 - font.MeasureString(Cords).X/2, ScreenHeight / 2 - (256 + 24)  - font.MeasureString(Cords).Y / 2), Color.White);
 
+            // TEMP
             _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
 
             _spriteBatch.End();
@@ -340,7 +297,7 @@ namespace tile_mapper
             
         }
 
-        public void OpenFile(string path)
+        internal void OpenFile(string path)
         {
             using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open))
             {
@@ -396,7 +353,64 @@ namespace tile_mapper
 
             System.Diagnostics.Debug.WriteLine(TileSheetPath);
         }
-    } 
+
+        internal void HandleLeftClick(MouseState mouseState)
+        {
+            if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left).
+            {
+                foreach (var UI in UI_Elements)
+                {
+                    if (UI.IsVisible)
+                    {
+                        switch (UI.HandleClicks(MousePos))
+                        {
+                            case ButtonAction.Import:
+                                OpenFile(TileSheetPath);
+                                UI.buttons.FirstOrDefault(element => element.Text == "Import").IsVisible = false;
+                                break;
+                            case ButtonAction.Layer:
+                                string ToFind = "Layer: " + CurrentLayer.ToString();
+                                CurrentLayer++;
+                                CurrentLayer = CurrentLayer % 3;
+
+                                UI.buttons.FirstOrDefault(element => element.Text == ToFind).Text = "Layer: " + CurrentLayer.ToString();
+                                break;
+                            case ButtonAction.Save:
+                                WriteFile();
+                                break;
+                        }
+                    }
+                }
+            }
+            else if (mouseState.LeftButton == ButtonState.Pressed)
+            {
+                HandleLeftHold();
+            }
+        }
+
+        internal void HandleLeftHold()
+        {
+            // Execute each frame if mouse button is held.
+            if (selected != null && SelectedX >= 0 && SelectedY >= 0 && SelectedX <= MAP_WIDTH - 1 && SelectedY <= MAP_HEIGHT - 1)
+            {
+                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
+                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
+                Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+            }
+        }
+
+        internal void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime)
+        {
+            if (keyboardState.IsKeyDown(Keys.A))
+                Velocity.X += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+            if (keyboardState.IsKeyDown(Keys.S))
+                Velocity.Y -= (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+            if (keyboardState.IsKeyDown(Keys.D))
+                Velocity.X -= (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+            if (keyboardState.IsKeyDown(Keys.W))
+                Velocity.Y += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+        }
+    }
 }
 
 
