@@ -14,8 +14,8 @@ namespace tile_mapper
         private SpriteBatch _spriteBatch;
 
         // Specify your map size.
-        int MAP_WIDTH = 64;
-        int MAP_HEIGHT = 64;
+        int MAP_WIDTH = 256;
+        int MAP_HEIGHT = 256;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -23,7 +23,7 @@ namespace tile_mapper
         Texture2D UI;
         float Scale = 1f;
         float OriginalScrollWheelValue = 0f;
-        float MoveSpeed = 512;
+        float MoveSpeed = 1024;
         Vector2 Velocity = Vector2.Zero;
         Vector2 Offset = Vector2.Zero;
         Button NewMap;
@@ -115,8 +115,8 @@ namespace tile_mapper
             PreviousKeybordState = new KeyboardState();
             UI_Elements = new List<UI_Menu>();
 
-            ScreenWidth = 1280;
-            ScreenHeight = 720;
+            ScreenWidth = 1920;
+            ScreenHeight = 1080;
 
             ScreenCenter = new Vector2(ScreenWidth, ScreenHeight);
 
@@ -175,16 +175,17 @@ namespace tile_mapper
             // Calculate fps
             fps = (float)(1.0f / gameTime.ElapsedGameTime.TotalSeconds);
 
+            // Keyboard.
+            KeyboardState keyboardState = Keyboard.GetState();
+            Velocity = Vector2.Zero;
+            HandleKeyboard(keyboardState, gameTime);
+
             // Mouse
             MouseState mouseState = Mouse.GetState();
             MousePos = new Vector2(mouseState.X, mouseState.Y);
             Vector2 MousePosRelative = MousePos - Offset;
             HandleLeftClick(mouseState);
-
-            // Keyboard.
-            KeyboardState keyboardState = Keyboard.GetState();
-            Velocity = Vector2.Zero;
-            HandleKeyboard(keyboardState, gameTime);
+            HandleLeftHold(mouseState, keyboardState);
 
             // Check if mouse is hoovering on button.
             foreach (var UI in UI_Elements)
@@ -248,6 +249,12 @@ namespace tile_mapper
                 SelectedY = (int)MousePosInt.Y;
             }
 
+            if(keyboardState.IsKeyDown(Keys.Enter) && !PreviousKeybordState.IsKeyDown(Keys.Enter) && Selection.Width >= 4 && Selection.Height >= 4)
+            {
+                CurrentMap.CreateArea(Selection, "BLAH");
+
+            }
+
             // Undo last action.
             if(keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !PreviousKeybordState.IsKeyDown(Keys.Z))
             {
@@ -279,7 +286,7 @@ namespace tile_mapper
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             // Draw map (all layers)
-            Renderer.RenderMap(MAP_HEIGHT, MAP_WIDTH, CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset);
+            Renderer.RenderMap(MAP_HEIGHT, MAP_WIDTH, CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
 
             // Grid 
             Renderer.RenderGrid(_spriteBatch, MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection);
@@ -405,28 +412,33 @@ namespace tile_mapper
                 Selection.Width = 0;
                 Selection.Height = 0;
             }
-            else if (mouseState.LeftButton == ButtonState.Pressed)
-            {
-                HandleLeftHold();
-            }
         }
 
-        internal void HandleLeftHold()
+        internal void HandleLeftHold(MouseState mouseState, KeyboardState keyboardState)
         {
             // Execute each frame if mouse button is held.
-            if (selected != null && SelectedX >= 0 && SelectedY >= 0 && SelectedX <= MAP_WIDTH - 1 && SelectedY <= MAP_HEIGHT - 1)
+            if (mouseState.LeftButton == ButtonState.Pressed && selected != null)
             {
-                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
-                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
-                Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+                foreach(var area in CurrentMap.areas)
+                {
+                    if(area.AreaCords.Contains(SelectedX, SelectedY))
+                    {
+                        CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
+                        CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
+                        Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+                    }
+                }
             }
-            if (SelectionStart.X >= 0 && SelectionStart.Y >= 0 && SelectionStart.X <= MAP_WIDTH && SelectionStart.Y <= MAP_HEIGHT && (SelectedX != ClickPoint.X || SelectedY != ClickPoint.Y))
+            if (mouseState.LeftButton == ButtonState.Pressed && keyboardState.IsKeyDown(Keys.LeftShift) && SelectionStart.X >= 0 && SelectionStart.Y >= 0 && SelectionStart.X <= MAP_WIDTH && SelectionStart.Y <= MAP_HEIGHT && (SelectedX != ClickPoint.X || SelectedY != ClickPoint.Y))
             {
                 SelectionEnd = new Point(SelectedX, SelectedY);
                 // Create a square of the selection
                 Point TopLeft = new Point(Math.Min(SelectionStart.X, SelectionEnd.X), Math.Min(SelectionStart.Y, SelectionEnd.Y));
-                Point BottomLeft = new Point(Math.Max(SelectionStart.X, SelectionEnd.X), Math.Max(SelectionStart.Y, SelectionEnd.Y));
-                Selection = new Rectangle(TopLeft.X, TopLeft.Y, BottomLeft.X - TopLeft.X + 1, BottomLeft.Y - TopLeft.Y + 1);
+                Point BottomRight = new Point(Math.Max(SelectionStart.X, SelectionEnd.X), Math.Max(SelectionStart.Y, SelectionEnd.Y));
+                BottomRight.X = Math.Min(BottomRight.X, MAP_WIDTH);
+                BottomRight.Y = Math.Min(BottomRight.Y, MAP_HEIGHT);
+                Selection = new Rectangle(TopLeft.X, TopLeft.Y, BottomRight.X - TopLeft.X + 1, BottomRight.Y - TopLeft.Y + 1);
+                
             }
                 
         }

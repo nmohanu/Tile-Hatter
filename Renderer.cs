@@ -76,33 +76,50 @@ namespace tile_mapper
                 }
             }
         }
-        public static void RenderMap(int MAP_HEIGHT, int MAP_WIDTH, Canvas CurrentMap, int CurrentLayer, SpriteBatch spriteBatch, Texture2D TileSheet, int TILE_SIZE, float Scale, Vector2 Offset)
+        public static void RenderMap(int MAP_HEIGHT, int MAP_WIDTH, Canvas CurrentMap, int CurrentLayer, SpriteBatch spriteBatch, Texture2D TileSheet, int TILE_SIZE, float Scale, Vector2 Offset, int ScreenWidth, int ScreenHeight, Texture2D Grid)
         {
-            if(CurrentMap.areas.Count() > 0) // TODO: Only render layers if they are within an area. AREA CREATION ASAP.
-            {
-                for (int i = 0; i < MAP_HEIGHT - 1; i++)
-                {
-                    for (int j = 0; j < MAP_WIDTH - 1; j++)
-                    {
-                        for (int k = 0; k <= 2; k++)
-                        {
-                            if (CurrentMap != null &&
-                            CurrentMap.layers[k] != null &&
-                            CurrentMap.layers[k].TileMap != null &&
-                            CurrentMap.layers[k].TileMap[j, i] != null &&
-                            CurrentMap.layers[k].TileMap[j, i].ID != "0")
-                            {
-                                if (k == CurrentLayer)
-                                {
-                                    Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+            Vector2 Difference = new Vector2(-Offset.X, -Offset.Y);
 
-                                    spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White);
+            int StartX = (int)(Difference.X / TILE_SIZE / Scale);
+            int EndX = (int)((Difference.X + ScreenWidth) / TILE_SIZE / Scale);
+            int StartY = (int)(Difference.Y / TILE_SIZE / Scale);
+            int EndY = (int)((Difference.Y + ScreenHeight) / TILE_SIZE / Scale);
+
+            EndX++;
+            EndY++;
+
+            StartX = Math.Max(0, StartX);
+            EndX = Math.Min(EndX, MAP_WIDTH);
+            StartY = Math.Max(0, StartY);
+            EndY = Math.Min(EndY, MAP_HEIGHT);
+
+            if (CurrentMap.areas.Count() > 0) // TODO: Only render layers if they are within an area. AREA CREATION ASAP.
+            {
+                foreach (var area in CurrentMap.areas)
+                {
+                    for (int i = Math.Max(area.AreaCords.X, StartX); i < Math.Min(area.AreaCords.X + area.AreaCords.Width - 1, EndX); i++)
+                    {
+                        for (int j = Math.Max(area.AreaCords.Y, StartY); j < Math.Min(area.AreaCords.Y + area.AreaCords.Height - 1, EndY); j++)
+                        {
+                            for (int k = 0; k <= CurrentMap.LayerAmount; k++)
+                            {
+                                Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+
+                                if (CurrentMap.layers[k].TileMap[j, i].ID != "0")
+                                {
+
+                                    if (k == CurrentLayer)
+                                    {
+                                        spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White);
+                                    }
+                                    else
+                                    {
+                                        spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White * 0.5f);
+                                    }
                                 }
                                 else
                                 {
-                                    Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
-
-                                    spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White * 0.5f);
+                                    spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.Gray * 0.2f);
                                 }
                             }
                         }

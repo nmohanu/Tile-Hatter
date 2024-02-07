@@ -163,17 +163,13 @@ namespace tile_mapper
 
     internal class Area
     {
-        public int LeftX;
-        public int RightX;
-        public int TopY;
-        public int BottomY;
+        public Rectangle AreaCords;
+        public string AreaName;
 
-        public Area(int leftX, int rightX, int topY, int bottomY)
+        public Area(Rectangle areaCords, string areaName)
         {
-            this.LeftX = leftX;
-            this.RightX = rightX;
-            this.TopY = topY;
-            this.BottomY = bottomY;
+            this.AreaCords = areaCords;
+            this.AreaName = areaName;
         }
     }
 
@@ -181,6 +177,7 @@ namespace tile_mapper
     {
         public int height;
         public int width;
+        public int LayerAmount = 2;
 
         public Layer[] layers = new Layer[3];
 
@@ -198,6 +195,11 @@ namespace tile_mapper
             layers[0] = Terrain;
             layers[1] = Objects;
             layers[2] = Foreground;
+        }
+
+        public void CreateArea(Rectangle Selection, string AreaName)
+        {
+            areas.Add(new Area(Selection, AreaName));
         }
     }
 
