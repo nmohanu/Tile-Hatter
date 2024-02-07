@@ -45,6 +45,7 @@ namespace tile_mapper
         UI_Menu TileMenu;
         UI_Menu TopBar;
         UI_Menu GeneralOverlay;
+        UI_Menu Properties;
         List<UI_Menu> UI_Elements;
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
@@ -142,6 +143,7 @@ namespace tile_mapper
             TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
             GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, ScreenWidth, ScreenHeight));
+            Properties = new UI_Menu(true, new Rectangle(1760, 32, 160, 1048), new Rectangle(1760, 32, 0, 0));
 
             TopBar.buttons.Add(NewMap);
             TopBar.buttons.Add(SaveMap);
@@ -155,6 +157,7 @@ namespace tile_mapper
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
             UI_Elements.Add(GeneralOverlay);
+            UI_Elements.Add(Properties);
 
             base.Initialize();
         }

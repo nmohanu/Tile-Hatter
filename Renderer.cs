@@ -93,13 +93,13 @@ namespace tile_mapper
             StartY = Math.Max(0, StartY);
             EndY = Math.Min(EndY, MAP_HEIGHT);
 
-            if (CurrentMap.areas.Count() > 0) // TODO: Only render layers if they are within an area. AREA CREATION ASAP.
+            if (CurrentMap.areas.Count() > 0)
             {
                 foreach (var area in CurrentMap.areas)
                 {
-                    for (int i = Math.Max(area.AreaCords.X, StartX); i < Math.Min(area.AreaCords.X + area.AreaCords.Width - 1, EndX); i++)
+                    for (int i = Math.Max(area.AreaCords.X, StartX); i < Math.Min(area.AreaCords.X + area.AreaCords.Width, EndX); i++)
                     {
-                        for (int j = Math.Max(area.AreaCords.Y, StartY); j < Math.Min(area.AreaCords.Y + area.AreaCords.Height - 1, EndY); j++)
+                        for (int j = Math.Max(area.AreaCords.Y, StartY); j < Math.Min(area.AreaCords.Y + area.AreaCords.Height, EndY); j++)
                         {
                             for (int k = 0; k <= CurrentMap.LayerAmount; k++)
                             {
