@@ -14,8 +14,8 @@ namespace tile_mapper
         private SpriteBatch _spriteBatch;
 
         // Specify your map size.
-        int MAP_WIDTH = 256;
-        int MAP_HEIGHT = 256;
+        int MAP_WIDTH = 512;
+        int MAP_HEIGHT = 512;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -65,7 +65,7 @@ namespace tile_mapper
 
         int currentPage = 0;
 
-        Map CurrentMap;
+        Canvas CurrentMap;
         int CurrentLayer = 0;
 
         private float fps;
@@ -89,7 +89,7 @@ namespace tile_mapper
         {
             // Initialize program.
             GridMap = new GridTile[MAP_HEIGHT, MAP_WIDTH];
-            CurrentMap = new Map(MAP_HEIGHT, MAP_WIDTH);
+            CurrentMap = new Canvas(MAP_HEIGHT, MAP_WIDTH);
 
             for (int i = 0; i < MAP_HEIGHT; i++)
             {

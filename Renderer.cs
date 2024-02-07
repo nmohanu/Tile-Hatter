@@ -51,31 +51,34 @@ namespace tile_mapper
                 }
             }
         }
-        public static void RenderMap(int MAP_HEIGHT, int MAP_WIDTH, Map CurrentMap, int CurrentLayer, SpriteBatch spriteBatch, Texture2D TileSheet, int TILE_SIZE, float Scale, Vector2 Offset)
+        public static void RenderMap(int MAP_HEIGHT, int MAP_WIDTH, Canvas CurrentMap, int CurrentLayer, SpriteBatch spriteBatch, Texture2D TileSheet, int TILE_SIZE, float Scale, Vector2 Offset)
         {
-            for (int i = 0; i < MAP_HEIGHT - 1; i++)
+            if(CurrentMap.areas.Count() > 0)
             {
-                for (int j = 0; j < MAP_WIDTH - 1; j++)
+                for (int i = 0; i < MAP_HEIGHT - 1; i++)
                 {
-                    for (int k = 0; k <= 2; k++)
+                    for (int j = 0; j < MAP_WIDTH - 1; j++)
                     {
-                        if (CurrentMap != null &&
-                        CurrentMap.layers[k] != null &&
-                        CurrentMap.layers[k].TileMap != null &&
-                        CurrentMap.layers[k].TileMap[j, i] != null &&
-                        CurrentMap.layers[k].TileMap[j, i].ID != "0")
+                        for (int k = 0; k <= 2; k++)
                         {
-                            if (k == CurrentLayer)
+                            if (CurrentMap != null &&
+                            CurrentMap.layers[k] != null &&
+                            CurrentMap.layers[k].TileMap != null &&
+                            CurrentMap.layers[k].TileMap[j, i] != null &&
+                            CurrentMap.layers[k].TileMap[j, i].ID != "0")
                             {
-                                Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+                                if (k == CurrentLayer)
+                                {
+                                    Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
 
-                                spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White);
-                            }
-                            else
-                            {
-                                Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+                                    spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White);
+                                }
+                                else
+                                {
+                                    Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
 
-                                spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White * 0.5f);
+                                    spriteBatch.Draw(TileSheet, DestRect, CurrentMap.layers[k].TileMap[j, i].Source, Color.White * 0.5f);
+                                }
                             }
                         }
                     }

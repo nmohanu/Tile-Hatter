@@ -161,14 +161,32 @@ namespace tile_mapper
         public Rectangle Source;
     }
 
-    internal class Map
+    internal class Area
     {
-        int height;
-        int width;
+        public int LeftX;
+        public int RightX;
+        public int TopY;
+        public int BottomY;
+
+        public Area(int leftX, int rightX, int topY, int bottomY)
+        {
+            this.LeftX = leftX;
+            this.RightX = rightX;
+            this.TopY = topY;
+            this.BottomY = bottomY;
+        }
+    }
+
+    internal class Canvas
+    {
+        public int height;
+        public int width;
 
         public Layer[] layers = new Layer[3];
 
-        public Map(int height, int width)
+        public List<Area> areas = new List<Area>();
+
+        public Canvas(int height, int width)
         {
             this.height = height;
             this.width = width;
