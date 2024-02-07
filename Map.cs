@@ -104,7 +104,7 @@ namespace tile_mapper
         public string Text;
         public ButtonAction Action;
         public Rectangle ButtonRect;
-        public Rectangle SourceRect = new Rectangle(0, 48, 96, 48);
+        public Rectangle SourceRect = new Rectangle(0, 48, 96, 48); // Standard button
         public int SelectionX;
         public int OriginalX;
         public bool IsVisible = true;

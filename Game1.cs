@@ -44,12 +44,12 @@ namespace tile_mapper
         Texture2D TileSheet;
         UI_Menu TileMenu;
         UI_Menu TopBar;
+        UI_Menu GeneralOverlay;
         List<UI_Menu> UI_Elements;
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
         MouseState PreviousMouseState;
         KeyboardState PreviousKeybordState;
-        List<Button> buttons;
         Button OpenPalette;
         
         Stack<UserAction> Actions = new Stack<UserAction>();
@@ -110,7 +110,6 @@ namespace tile_mapper
             PreviousMouseState = new MouseState();
             PreviousKeybordState = new KeyboardState();
             UI_Elements = new List<UI_Menu>();
-            buttons = new List<Button>();
 
             ScreenWidth = 1280;
             ScreenHeight = 720;
@@ -131,19 +130,14 @@ namespace tile_mapper
             Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import, true);
             Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer, true);
             Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 96 / 2, 32, 96), 0, 32, ButtonAction.OpenPalette, true)
-            {
-                SourceRect = new Rectangle(0, 624, 32, 96)
-            };
+            OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 96 / 2, 32, 96), 32, 0, ButtonAction.OpenPalette, true);
+            OpenPalette.SourceRect = new Rectangle(0, 624, 32, 96);
 
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
 
             TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
-
-
-
-            TileMenu.buttons.Add(Import);
+            GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, ScreenWidth, ScreenHeight));
 
             TopBar.buttons.Add(NewMap);
             TopBar.buttons.Add(SaveMap);
@@ -152,10 +146,11 @@ namespace tile_mapper
             TopBar.buttons.Add(Layer);
             TopBar.buttons.Add(Settings);
 
-            buttons.Add(OpenPalette);
-
+            GeneralOverlay.buttons.Add(OpenPalette);
+            TileMenu.buttons.Add(Import);
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
+            UI_Elements.Add(GeneralOverlay);
 
             base.Initialize();
         }
@@ -286,18 +281,17 @@ namespace tile_mapper
             Renderer.RenderGrid(_spriteBatch, MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY);
 
             // UI elements
-            TopBar.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
-            TileMenu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
-
-            // Buttons
-            Renderer.DrawButtons(buttons, _spriteBatch, font, TextScale, UI);
+            foreach (var menu in UI_Elements)
+            {
+                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
+            }
 
             // Sprite palette menu
             Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
 
             // Draw cordinates
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
-            _spriteBatch.DrawString(font, Cords, new Vector2(144 - font.MeasureString(Cords).X/2, ScreenHeight / 2 - (256 + 24)  - font.MeasureString(Cords).Y / 2), Color.White);
+            _spriteBatch.DrawString(font, Cords, new Vector2(64 - font.MeasureString(Cords).X/2, 32  + font.MeasureString(Cords).Y / 2), Color.White);
 
             // TEMP
             _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
@@ -374,7 +368,7 @@ namespace tile_mapper
 
         internal void HandleLeftClick(MouseState mouseState)
         {
-            if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left).
+            if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
             {
                 foreach (var UI in UI_Elements)
                 {
@@ -396,19 +390,9 @@ namespace tile_mapper
                             case ButtonAction.Save:
                                 WriteFile();
                                 break;
-                        }
-                    }
-                }
-
-                foreach (var button in buttons)
-                {
-                    if (button.ButtonRect.Contains(MousePos))
-                    {
-                        switch (button.Action)
-                        {
                             case ButtonAction.OpenPalette:
                                 TileMenu.IsVisible = true;
-                                button.IsVisible = false;
+                                GeneralOverlay.buttons[0].IsVisible = false;
                                 break;
                         }
                     }

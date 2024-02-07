@@ -57,7 +57,7 @@ namespace tile_mapper
             {
                 for (int j = 0; j < MAP_WIDTH - 1; j++)
                 {
-                    for (int k = 0; k < 2; k++)
+                    for (int k = 0; k <= 2; k++)
                     {
                         if (CurrentMap != null &&
                         CurrentMap.layers[k] != null &&
