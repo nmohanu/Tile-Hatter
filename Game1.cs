@@ -14,8 +14,8 @@ namespace tile_mapper
         private SpriteBatch _spriteBatch;
 
         // Specify your map size.
-        int MAP_WIDTH = 512;
-        int MAP_HEIGHT = 512;
+        int MAP_WIDTH = 64;
+        int MAP_HEIGHT = 64;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -51,6 +51,10 @@ namespace tile_mapper
         MouseState PreviousMouseState;
         KeyboardState PreviousKeybordState;
         Button OpenPalette;
+        Point SelectionStart;
+        Point SelectionEnd;
+        Point ClickPoint;
+        Rectangle Selection;
         
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -278,7 +282,7 @@ namespace tile_mapper
             Renderer.RenderMap(MAP_HEIGHT, MAP_WIDTH, CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset);
 
             // Grid 
-            Renderer.RenderGrid(_spriteBatch, MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY);
+            Renderer.RenderGrid(_spriteBatch, MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection);
 
             // UI elements
             foreach (var menu in UI_Elements)
@@ -295,8 +299,6 @@ namespace tile_mapper
 
             // TEMP
             _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
-
-            
 
             _spriteBatch.End();
 
@@ -397,6 +399,11 @@ namespace tile_mapper
                         }
                     }
                 }
+                ClickPoint = new Point(SelectedX, SelectedY);
+                SelectionStart = ClickPoint;
+                SelectionEnd = SelectionStart;
+                Selection.Width = 0;
+                Selection.Height = 0;
             }
             else if (mouseState.LeftButton == ButtonState.Pressed)
             {
@@ -413,6 +420,15 @@ namespace tile_mapper
                 CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
                 Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
             }
+            if (SelectionStart.X >= 0 && SelectionStart.Y >= 0 && SelectionStart.X <= MAP_WIDTH && SelectionStart.Y <= MAP_HEIGHT && (SelectedX != ClickPoint.X || SelectedY != ClickPoint.Y))
+            {
+                SelectionEnd = new Point(SelectedX, SelectedY);
+                // Create a square of the selection
+                Point TopLeft = new Point(Math.Min(SelectionStart.X, SelectionEnd.X), Math.Min(SelectionStart.Y, SelectionEnd.Y));
+                Point BottomLeft = new Point(Math.Max(SelectionStart.X, SelectionEnd.X), Math.Max(SelectionStart.Y, SelectionEnd.Y));
+                Selection = new Rectangle(TopLeft.X, TopLeft.Y, BottomLeft.X - TopLeft.X + 1, BottomLeft.Y - TopLeft.Y + 1);
+            }
+                
         }
 
         internal void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime)

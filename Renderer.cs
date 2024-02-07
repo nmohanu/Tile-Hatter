@@ -12,11 +12,30 @@ namespace tile_mapper
 {
     internal static class Renderer
     {
-        public static void RenderGrid(SpriteBatch spriteBatch, int MAP_HEIGHT, int MAP_WIDTH, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY)
+        public static void RenderGrid(SpriteBatch spriteBatch, int MAP_HEIGHT, int MAP_WIDTH, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection)
         {
-            for (int i = 0; i < MAP_HEIGHT; i++)
+
+            Vector2 Difference = new Vector2(- Offset.X, - Offset.Y);
+
+            int StartX = (int) (Difference.X / TILE_SIZE / Scale);
+            int EndX = (int) ((Difference.X  + ScreenWidth) / TILE_SIZE / Scale);
+            int StartY = (int) (Difference.Y / TILE_SIZE / Scale);
+            int EndY = (int) ((Difference.Y + ScreenHeight) / TILE_SIZE / Scale);
+
+            EndX++;
+            EndY++;
+
+            StartX = Math.Max(0, StartX);
+            EndX = Math.Min(EndX, MAP_WIDTH);
+            StartY = Math.Max(0, StartY);
+            EndY = Math.Min(EndY, MAP_HEIGHT);
+
+            // Prevent weird edges since it's rounded down.
+            
+
+            for (int i = StartX; i < EndX; i++)
             {
-                for (int j = 0; j < MAP_WIDTH; j++)
+                for (int j = StartY; j < EndY; j++)
                 {
                    // Calculate what texture to draw.
                     Rectangle SourceRect = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
@@ -48,12 +67,18 @@ namespace tile_mapper
                         else
                             spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
                     }
+
+                    
+                    if(Selection.Contains(new Point(i, j)))
+                    {
+                        spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
+                    }
                 }
             }
         }
         public static void RenderMap(int MAP_HEIGHT, int MAP_WIDTH, Canvas CurrentMap, int CurrentLayer, SpriteBatch spriteBatch, Texture2D TileSheet, int TILE_SIZE, float Scale, Vector2 Offset)
         {
-            if(CurrentMap.areas.Count() > 0)
+            if(CurrentMap.areas.Count() > 0) // TODO: Only render layers if they are within an area. AREA CREATION ASAP.
             {
                 for (int i = 0; i < MAP_HEIGHT - 1; i++)
                 {
