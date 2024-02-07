@@ -28,7 +28,7 @@ namespace tile_mapper
                 spriteBatch.Draw(UI, new Vector2(Destination.X, Destination.Y), Source, Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
                 foreach (var button in buttons)
                 {
-                    if(button.IsVisible)
+                    if(button != null && button.IsVisible)
                     {
                         spriteBatch.Draw(UI, button.ButtonRect, button.SourceRect, Color.White);
                         spriteBatch.DrawString(
@@ -54,7 +54,7 @@ namespace tile_mapper
         {
             foreach (var button in buttons)
             {
-                if (button.IsVisible && button.ButtonRect.Contains(MousePos))
+                if (button != null && button.IsVisible && button.ButtonRect.Contains(MousePos))
                 {
                     return button.Action;
                 }
@@ -96,7 +96,8 @@ namespace tile_mapper
         None,
         Import,
         Layer,
-        Save
+        Save,
+        OpenPalette
     }
     internal class Button
     {
@@ -107,13 +108,14 @@ namespace tile_mapper
         public int SelectionX;
         public int OriginalX;
         public bool IsVisible = true;
-        public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action) 
+        public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible) 
         {
             this.Text = text;
             this.ButtonRect = rect;
             this.SelectionX = selectionX;
             this.OriginalX = originalX;
             this.Action = action;
+            this.IsVisible = isVisible;
 
             SourceRect.Width = rect.Width;
             SourceRect.Height = rect.Height;

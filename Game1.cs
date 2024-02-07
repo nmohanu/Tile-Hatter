@@ -49,8 +49,8 @@ namespace tile_mapper
         bool HasTileSheet = false;
         MouseState PreviousMouseState;
         KeyboardState PreviousKeybordState;
-        string SaveFilePath;
-        string OpenFilePath;
+        List<Button> buttons;
+        Button OpenPalette;
         
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -68,8 +68,6 @@ namespace tile_mapper
         Map CurrentMap;
         int CurrentLayer = 0;
 
-        private int frameCounter;
-        private TimeSpan elapsedTime;
         private float fps;
 
         SpriteTile selected;
@@ -112,9 +110,10 @@ namespace tile_mapper
             PreviousMouseState = new MouseState();
             PreviousKeybordState = new KeyboardState();
             UI_Elements = new List<UI_Menu>();
+            buttons = new List<Button>();
 
-            ScreenWidth = 1920;
-            ScreenHeight = 1080;
+            ScreenWidth = 1280;
+            ScreenHeight = 720;
 
             ScreenCenter = new Vector2(ScreenWidth, ScreenHeight);
 
@@ -125,30 +124,38 @@ namespace tile_mapper
             ScaleX = 1f;
             ScaleY = 1f;
 
-            NewMap = new Button("New", new Rectangle(0, 0, 96, 32), 96, 0, ButtonAction.None);
-            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 96, 0, ButtonAction.None);
-            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 96, 0, ButtonAction.None);
-            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save);
-            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import);
-            Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer);
-            Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None);
+            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 96, 0, ButtonAction.None, true);
+            NewMap = new Button("New", new Rectangle(0, 0, 96, 32), 96, 0, ButtonAction.None, true);
+            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 96, 0, ButtonAction.None, true);
+            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save, true);
+            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import, true);
+            Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer, true);
+            Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None, true);
+            OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 96 / 2, 32, 96), 0, 32, ButtonAction.OpenPalette, true)
+            {
+                SourceRect = new Rectangle(0, 624, 32, 96)
+            };
 
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
 
             TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
 
-            TileMenu.buttons.Add(Import);
-            TileMenu.IsVisible = true;
 
-            TileMenu.buttons.Add(NewMap);
-            TileMenu.buttons.Add(SaveMap);
-            TileMenu.buttons.Add(LoadMap);
-            TileMenu.buttons.Add(EditMap);
-            TileMenu.buttons.Add(Layer);
-            TileMenu.buttons.Add(Settings);
+
+            TileMenu.buttons.Add(Import);
+
+            TopBar.buttons.Add(NewMap);
+            TopBar.buttons.Add(SaveMap);
+            TopBar.buttons.Add(LoadMap);
+            TopBar.buttons.Add(EditMap);
+            TopBar.buttons.Add(Layer);
+            TopBar.buttons.Add(Settings);
+
+            buttons.Add(OpenPalette);
 
             UI_Elements.Add(TileMenu);
+            UI_Elements.Add(TopBar);
 
             base.Initialize();
         }
@@ -184,7 +191,8 @@ namespace tile_mapper
             foreach (var UI in UI_Elements)
             {
                 foreach (var button in UI.buttons)
-                    button.ChangeSourceX(MousePos);
+                    if(button != null)
+                        button.ChangeSourceX(MousePos);
             }
 
             // Tile sheet is imported.
@@ -233,8 +241,13 @@ namespace tile_mapper
             MousePosInt /= TILE_SIZE;
             MousePosInt.X = (int)MousePosInt.X;
             MousePosInt.Y = (int)MousePosInt.Y;
-            SelectedX = (int) MousePosInt.X;
-            SelectedY = (int) MousePosInt.Y;
+
+            // Only update the selected square if user is not using scroll wheel.
+            if(mouseState.ScrollWheelValue == OriginalScrollWheelValue)
+            {
+                SelectedX = (int)MousePosInt.X;
+                SelectedY = (int)MousePosInt.Y;
+            }
 
             // Undo last action.
             if(keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !PreviousKeybordState.IsKeyDown(Keys.Z))
@@ -276,6 +289,9 @@ namespace tile_mapper
             TopBar.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
             TileMenu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
 
+            // Buttons
+            Renderer.DrawButtons(buttons, _spriteBatch, font, TextScale, UI);
+
             // Sprite palette menu
             Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
 
@@ -285,6 +301,8 @@ namespace tile_mapper
 
             // TEMP
             _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
+
+            
 
             _spriteBatch.End();
 
@@ -377,6 +395,20 @@ namespace tile_mapper
                                 break;
                             case ButtonAction.Save:
                                 WriteFile();
+                                break;
+                        }
+                    }
+                }
+
+                foreach (var button in buttons)
+                {
+                    if (button.ButtonRect.Contains(MousePos))
+                    {
+                        switch (button.Action)
+                        {
+                            case ButtonAction.OpenPalette:
+                                TileMenu.IsVisible = true;
+                                button.IsVisible = false;
                                 break;
                         }
                     }
