@@ -21,11 +21,7 @@ namespace tile_mapper
             Eraser
         }
 
-        // Specify your map size.
-        //int MAP_WIDTH = 64;
-        //int MAP_HEIGHT = 64;
         int TILE_SIZE = 16;
-        GridTile[,] GridMap;
         Texture2D Grid;
         SpriteSheet SpriteSheet;
         Texture2D UI;
@@ -93,6 +89,7 @@ namespace tile_mapper
             _graphics.PreferredBackBufferWidth = ScreenWidth;
             _graphics.PreferredBackBufferHeight = ScreenHeight;
             IsFixedTimeStep = false;
+
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -225,40 +222,38 @@ namespace tile_mapper
                     }
                 }
             }
-            
             // User is scrolling (zooming on map)
             if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
             {
                 Vector2 Center = new Vector2(Offset.X, Offset.Y);
+                Vector2 MouseBefore = (MousePos - Offset)/Scale;
+
                 float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
                 // Adjust the scaling factor based on the scroll wheel delta
                 Scale += adjustment;
                 Scale = MathHelper.Clamp(Scale, 0.5f, 5f);
+                // Vector2 MouseAfter = MouseBefore * Scale;
 
                 Vector2 CenterNew = new Vector2(Offset.X, Offset.Y );
+
                 Offset += ((Center - CenterNew) / 2);
+                Vector2 mouseAfter = (new Vector2(mouseState.X, mouseState.Y) - Offset) / Scale;
+
+                Vector2 mousePositionDifference = MouseBefore - mouseAfter;
+                // Adjust the offset to keep the mouse position stationary
+                Offset -= mousePositionDifference * Scale;
             }
 
-            // Calculate mouse X and Y position on the grid.
-            Vector2 MousePosInt = MousePosRelative;
-            MousePosInt /= Scale;
-            MousePosInt /= TILE_SIZE;
-            MousePosInt.X = (int)MousePosInt.X;
-            MousePosInt.Y = (int)MousePosInt.Y;
 
             // Only update the selected square if user is not using scroll wheel.
-            if(mouseState.ScrollWheelValue == OriginalScrollWheelValue)
+            if (mouseState.ScrollWheelValue == OriginalScrollWheelValue)
             {
-                SelectedX = (int)MousePosInt.X;
-                SelectedY = (int)MousePosInt.Y;
-                //SelectedX = Math.Max((int)MousePosInt.X, 0);
-                //SelectedY = Math.Max((int)MousePosInt.Y, 0);
-                //SelectedX = Math.Min(SelectedX, CurrentMap.width-1);
-                //SelectedY = Math.Min(SelectedY, CurrentMap.height-1);
-
+                Vector2 mousePosInt = MousePosRelative / Scale / TILE_SIZE;
+                SelectedX = (int)Math.Floor(mousePosInt.X);
+                SelectedY = (int)Math.Floor(mousePosInt.Y);
             }
 
-            if(keyboardState.IsKeyDown(Keys.Enter) && !PreviousKeybordState.IsKeyDown(Keys.Enter) && Selection.Width >= 4 && Selection.Height >= 4)
+            if (keyboardState.IsKeyDown(Keys.Enter) && !PreviousKeybordState.IsKeyDown(Keys.Enter) && Selection.Width >= 4 && Selection.Height >= 4)
             {
                 bool allowed = true;
                 foreach(var area in CurrentMap.areas)
@@ -311,7 +306,7 @@ namespace tile_mapper
             Renderer.RenderMap(CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
 
             // Grid 
-            Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection);
+            Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection, CurrentMap);
 
             // UI elements
             foreach (var menu in UI_Elements)
@@ -350,14 +345,10 @@ namespace tile_mapper
             SheetWidth = TileSheet.Width / TILE_SIZE;
             SheetHeight = TileSheet.Height / TILE_SIZE;
 
-            SheetMenuPages = (int)Math.Ceiling((float)(SheetWidth * SheetHeight / 55));
-
-            if (SheetMenuPages == 0)
-                SheetMenuPages++;
+            SheetMenuPages = (int)Math.Ceiling((float)(SheetWidth * SheetHeight / 120));
+            SheetMenuPages++;
 
             TileSpriteList = new List<List<SpriteTile>>();
-
-
 
             for (int i = 0; i < SheetMenuPages; i++)
             {
@@ -383,8 +374,8 @@ namespace tile_mapper
 
                 for (int j = 0; j < SheetHeight * SheetWidth; j++)
                 {
-                    int x = TileMenu.Destination.X + (j % 5) * TILE_SIZE * 2;
-                    int y = TileMenu.Destination.Y + (j / 5) * TILE_SIZE * 2;
+                    int x = TileMenu.Destination.X + 16 + (j % 8) * TILE_SIZE * 2;
+                    int y = TileMenu.Destination.Y + 16 + (j / 8) * TILE_SIZE * 2;
 
                     page[j].Destination = new Rectangle(x, y, TILE_SIZE * 2, TILE_SIZE * 2);
                 }
@@ -560,45 +551,51 @@ namespace tile_mapper
         }
 
         internal void FillClicked()
-        {
-            Area areaClicked = null;
-            foreach (var area in CurrentMap.areas)
             {
-                if (area.AreaCords.Contains(SelectedX, SelectedY))
+                Area areaClicked = null;
+                foreach (var area in CurrentMap.areas)
                 {
-                    areaClicked = area;
+                    if (area.AreaCords.Contains(SelectedX, SelectedY))
+                    {
+                        areaClicked = area;
+                        break;
+                    }
+                }
+                if (areaClicked == null)
+                {
+                    return;
+                }
+
+                string IDToFill = areaClicked.layers[CurrentLayer].TileMap[SelectedY - areaClicked.AreaCords.Y, SelectedX - areaClicked.AreaCords.X].ID;
+
+                HashSet<(int, int)> visited = new HashSet<(int, int)>();
+                Queue<(int, int)> queue = new Queue<(int, int)>();
+                queue.Enqueue((SelectedX, SelectedY));
+
+                while (queue.Count > 0)
+                {
+                    var (x, y) = queue.Dequeue();
+
+                    if (!areaClicked.AreaCords.Contains(x, y) || areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID != IDToFill || visited.Contains((x, y)))
+                    {
+                        continue;
+                    }
+
+                    visited.Add((x, y));
+
+                    // Fill the current tile
+                    areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
+                    areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].Source = selected.Source;
+
+                    // Enqueue neighboring tiles
+                    queue.Enqueue((x + 1, y));
+                    queue.Enqueue((x - 1, y));
+                    queue.Enqueue((x, y + 1));
+                    queue.Enqueue((x, y - 1));
                 }
             }
-            if(areaClicked == null)
-            {
-                return;
-            }
 
-            string IDToFill = areaClicked.layers[CurrentLayer].TileMap[SelectedY - areaClicked.AreaCords.Y, SelectedX - areaClicked.AreaCords.X].ID;
-
-            FillNeighbours(IDToFill, SelectedX, SelectedY, areaClicked);
-            
         }
-
-        internal void FillNeighbours(string IDToFill, int x, int y, Area areaClicked)
-        {
-            if (!areaClicked.AreaCords.Contains(x, y) || 
-               areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID != IDToFill ||
-               areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID == selected.ID)
-            {
-                return; // Finished
-            }
-            else
-            {
-                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
-                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].Source = selected.Source;
-                FillNeighbours(IDToFill, x + 1, y, areaClicked);
-                FillNeighbours(IDToFill, x - 1, y, areaClicked);
-                FillNeighbours(IDToFill, x, y + 1, areaClicked);
-                FillNeighbours(IDToFill, x, y - 1, areaClicked);
-            }
-        }
-    }
 }
 
 

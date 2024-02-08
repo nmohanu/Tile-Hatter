@@ -12,7 +12,7 @@ namespace tile_mapper
 {
     internal static class Renderer
     {
-        public static void RenderGrid(SpriteBatch spriteBatch, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection)
+        public static void RenderGrid(SpriteBatch spriteBatch, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection, Canvas CurrentMap)
         {
 
             Vector2 Difference = new Vector2(- Offset.X, - Offset.Y);
@@ -21,18 +21,19 @@ namespace tile_mapper
             int EndX = (int) ((Difference.X  + ScreenWidth) / TILE_SIZE / Scale);
             int StartY = (int) (Difference.Y / TILE_SIZE / Scale);
             int EndY = (int) ((Difference.Y + ScreenHeight) / TILE_SIZE / Scale);
-
+            // Prevent weird edges since it's rounded down.
+            StartX--;
+            StartY--;
             EndX++;
             EndY++;
 
-            // Prevent weird edges since it's rounded down.
-            
+            Color color = Color.Gray * 0.2f;
 
             for (int i = StartX; i < EndX; i++)
             {
                 for (int j = StartY; j < EndY; j++)
                 {
-                   // Calculate what texture to draw.
+                    // Calculate what texture to draw.
                     Rectangle SourceRect = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
                     if (i + 1 == 0 && j + 1 == 0)
                         SourceRect.X = 192; // Middle of the grid
@@ -63,10 +64,18 @@ namespace tile_mapper
                             spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
                     }
 
-                    
-                    if(Selection.Contains(new Point(i, j)))
+
+                    if (Selection.Contains(new Point(i, j)))
                     {
                         spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
+                    }
+
+                    foreach (var area in CurrentMap.areas)
+                    {
+                        if (area.AreaCords.Contains(i, j))
+                        {
+                            spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), color);
+                        }
                     }
                 }
             }
@@ -82,6 +91,8 @@ namespace tile_mapper
 
             EndX++;
             EndY++;
+
+            
 
             if (CurrentMap.areas.Count() > 0)
             {
@@ -109,7 +120,7 @@ namespace tile_mapper
                                 }
                                 else
                                 {
-                                    spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.Gray * 0.2f);
+                                    //spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), color);
                                 }
                             }
                         }
@@ -126,7 +137,7 @@ namespace tile_mapper
                 {
                     foreach (var rectangle in list)
                     {
-                        spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X + 32, rectangle.Destination.Y + 32), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
+                        spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X, rectangle.Destination.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
                         if (rectangle.hovers)
                             spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(320, 0, 16, 16), Color.White);
                         if (selected != null && rectangle.ID == selected.ID)

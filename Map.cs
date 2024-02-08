@@ -137,13 +137,7 @@ namespace tile_mapper
         }
     }
 
-    internal class GridTile
-    {
-        int x;
-        int y;
 
-        public Rectangle GridRect;
-    }
     internal class SpriteSheet
     {
         public Texture2D Texture;
