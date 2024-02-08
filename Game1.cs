@@ -22,8 +22,8 @@ namespace tile_mapper
         }
 
         // Specify your map size.
-        int MAP_WIDTH = 256;
-        int MAP_HEIGHT = 256;
+        int MAP_WIDTH = 64;
+        int MAP_HEIGHT = 64;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -148,6 +148,12 @@ namespace tile_mapper
             Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer, true);
             Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None, true);
             OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 96 / 2, 32, 96), 32, 0, ButtonAction.OpenPalette, true);
+            DrawTool = new Button("", new Rectangle(96 * 6, 0, 32, 32), 192, 192, ButtonAction.DrawTool, true);
+            FillTool = new Button("", new Rectangle(96 * 6 + 32, 0, 32, 32), 192 + 32, 192 + 32, ButtonAction.FillTool, true);
+            EraserTool = new Button("", new Rectangle(96 * 6 + 64, 0, 32, 32), 192 + 64, 192 + 64, ButtonAction.EraserTool, true);
+
+
+            DrawTool.SourceRect.Y = 48;
             OpenPalette.SourceRect = new Rectangle(0, 624, 32, 96);
 
 
@@ -164,6 +170,9 @@ namespace tile_mapper
             TopBar.buttons.Add(EditMap);
             TopBar.buttons.Add(Layer);
             TopBar.buttons.Add(Settings);
+            TopBar.buttons.Add(DrawTool);
+            TopBar.buttons.Add(FillTool);
+            TopBar.buttons.Add(EraserTool);
 
             GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
@@ -225,6 +234,7 @@ namespace tile_mapper
                             selected = rect;
                             selected.ID = rect.ID;
                             selected.Source = rect.Source;
+                            Tool = SelectedTool.Draw;
                         }
                         else
                         {
@@ -422,6 +432,15 @@ namespace tile_mapper
                                 TileMenu.IsVisible = true;
                                 GeneralOverlay.buttons[0].IsVisible = false;
                                 break;
+                            case ButtonAction.DrawTool:
+                                Tool = SelectedTool.Draw;
+                                break;
+                            case ButtonAction.FillTool:
+                                Tool = SelectedTool.Fill;
+                                break;
+                            case ButtonAction.EraserTool:
+                                Tool = SelectedTool.Eraser;
+                                break;
                         }
                     }
                 }
@@ -442,9 +461,22 @@ namespace tile_mapper
                 {
                     if(area.AreaCords.Contains(SelectedX, SelectedY))
                     {
-                        CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
-                        CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
-                        Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+                        switch (Tool)
+                        {
+                            case SelectedTool.Draw:
+                                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
+                                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
+                                Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+                                break;
+                            case SelectedTool.Eraser:
+                                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = "0";
+                                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = new Rectangle();
+                                break;
+                            case SelectedTool.Fill:
+                                // TODO fill
+                                break;
+                        }
+                        
                     }
                 }
             }

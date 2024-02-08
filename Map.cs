@@ -97,7 +97,10 @@ namespace tile_mapper
         Import,
         Layer,
         Save,
-        OpenPalette
+        OpenPalette,
+        DrawTool,
+        FillTool,
+        EraserTool
     }
     internal class Button
     {
