@@ -64,6 +64,7 @@ namespace tile_mapper
         Button FillTool;
         Button EraserTool;
         Button ClickedLayerButton;
+        Button ClickedAreaButton;
         
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -170,7 +171,12 @@ namespace tile_mapper
 
             SpriteSheet = new SpriteSheet(TILE_SIZE);
             SpriteSheet.Texture = Content.Load<Texture2D>("tile_sheet");
-            UI = Content.Load<Texture2D>("UI");
+
+            using (FileStream stream = new FileStream("../../../Content/UI.png", FileMode.Open))
+            {
+                UI = Texture2D.FromStream(GraphicsDevice, stream);
+            }
+            //UI = Content.Load<Texture2D>("UI");
             Grid = Content.Load<Texture2D>("grid");
             font = Content.Load<SpriteFont>("font");
         }
@@ -417,6 +423,8 @@ namespace tile_mapper
                     SelectionEnd = SelectionStart;
                     Selection.Width = 0;
                     Selection.Height = 0;
+                    if(ClickedAreaButton != null)
+                        ClickedAreaButton.IsPressed = false;
                 }
                 Button buttonClicked = null;
 
@@ -471,7 +479,10 @@ namespace tile_mapper
                                 if (area.AreaName == buttonClicked.Text)
                                 {
                                     Selection = area.AreaCords;
-
+                                    buttonClicked.IsPressed = true;
+                                    if(ClickedAreaButton != null)
+                                        ClickedAreaButton.IsPressed = false;
+                                    ClickedAreaButton = buttonClicked;
                                 }
                             }
                             break;
