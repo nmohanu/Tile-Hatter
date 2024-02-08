@@ -13,6 +13,14 @@ namespace tile_mapper
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
+        public enum SelectedTool
+        {
+            None,
+            Draw,
+            Fill,
+            Eraser
+        }
+
         // Specify your map size.
         int MAP_WIDTH = 256;
         int MAP_HEIGHT = 256;
@@ -56,6 +64,10 @@ namespace tile_mapper
         Point SelectionEnd;
         Point ClickPoint;
         Rectangle Selection;
+        SelectedTool Tool = SelectedTool.None;
+        Button DrawTool;
+        Button FillTool;
+        Button EraserTool;
         
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -137,6 +149,7 @@ namespace tile_mapper
             Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None, true);
             OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 96 / 2, 32, 96), 32, 0, ButtonAction.OpenPalette, true);
             OpenPalette.SourceRect = new Rectangle(0, 624, 32, 96);
+
 
             Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
 
@@ -248,8 +261,11 @@ namespace tile_mapper
             // Only update the selected square if user is not using scroll wheel.
             if(mouseState.ScrollWheelValue == OriginalScrollWheelValue)
             {
-                SelectedX = (int)MousePosInt.X;
-                SelectedY = (int)MousePosInt.Y;
+                SelectedX = Math.Max((int)MousePosInt.X, 0);
+                SelectedY = Math.Max((int)MousePosInt.Y, 0);
+                SelectedX = Math.Min(SelectedX, CurrentMap.width-1);
+                SelectedY = Math.Min(SelectedY, CurrentMap.height-1);
+
             }
 
             if(keyboardState.IsKeyDown(Keys.Enter) && !PreviousKeybordState.IsKeyDown(Keys.Enter) && Selection.Width >= 4 && Selection.Height >= 4)
@@ -305,7 +321,7 @@ namespace tile_mapper
 
             // Draw cordinates
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
-            _spriteBatch.DrawString(font, Cords, new Vector2(64 - font.MeasureString(Cords).X/2, 32  + font.MeasureString(Cords).Y / 2), Color.White);
+            _spriteBatch.DrawString(font, Cords, new Vector2(96 - font.MeasureString(Cords).X/2, 32  + font.MeasureString(Cords).Y / 2), Color.White);
 
             // TEMP
             _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
