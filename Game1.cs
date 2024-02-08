@@ -522,19 +522,7 @@ namespace tile_mapper
             {
                 return;
             }
-
-           
-
-            Area ClickedArea = null;
-
-            bool FillSelection = false;
-
-            if(Selection.Width > 0 || Selection.Height > 0)
-            {
-                FillSelection = true;
-            }
-
-            
+        
             foreach(var area in CurrentMap.areas)
             {
                 for (int i = Selection.Y; i < Selection.Y + Selection.Height; i++)
@@ -544,6 +532,7 @@ namespace tile_mapper
                         if (area.AreaCords.Contains(j, i))
                         {
                             area.layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID = selected.ID;
+                            area.layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source = selected.Source;
                         }
                     }
                 }
@@ -582,6 +571,7 @@ namespace tile_mapper
             else
             {
                 areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
+                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].Source = selected.Source;
                 FillNeighbours(IDToFill, x + 1, y, areaClicked);
                 FillNeighbours(IDToFill, x - 1, y, areaClicked);
                 FillNeighbours(IDToFill, x, y + 1, areaClicked);
