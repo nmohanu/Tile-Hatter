@@ -35,7 +35,6 @@ namespace tile_mapper
         Button EditMap;
         Button SaveMap;
         Button Import;
-        Button Layer;
         Button Settings;
         SpriteFont font;
         float TextScale = 0.6f;
@@ -64,6 +63,7 @@ namespace tile_mapper
         Button DrawTool;
         Button FillTool;
         Button EraserTool;
+        Button ClickedLayerButton;
         
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -120,8 +120,7 @@ namespace tile_mapper
             EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 96, 0, ButtonAction.None, true);
             SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save, true);
             Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import, true);
-            Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer, true);
-            Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None, true);
+            Settings = new Button("Settings ", new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.None, true);
             OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 96 / 2, 32, 96), 32, 0, ButtonAction.OpenPalette, true);
             DrawTool = new Button("", new Rectangle(96 * 6, 0, 32, 32), 192, 192, ButtonAction.DrawTool, true);
             FillTool = new Button("", new Rectangle(96 * 6 + 32, 0, 32, 32), 192 + 32, 192 + 32, ButtonAction.FillTool, true);
@@ -139,11 +138,17 @@ namespace tile_mapper
             GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
             Properties = new UI_Menu(true, new Rectangle(1760, 32, 160, 1048), new Rectangle(1760, 32, 160, 0));
 
+            for(int i = 0; i <= CurrentMap.LayerAmount; i++)
+            {
+                Button button = new Button("Layer: " + (i + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + 16 + 32 * i + 8 * i + 256, 96, 32), 96, 0, ButtonAction.Layer, true);
+                button.HelperInt = i;
+                Properties.buttons.Add(button);
+            }
+
             TopBar.buttons.Add(NewMap);
             TopBar.buttons.Add(SaveMap);
             TopBar.buttons.Add(LoadMap);
             TopBar.buttons.Add(EditMap);
-            TopBar.buttons.Add(Layer);
             TopBar.buttons.Add(Settings);
             TopBar.buttons.Add(DrawTool);
             TopBar.buttons.Add(FillTool);
@@ -191,8 +196,12 @@ namespace tile_mapper
             foreach (var UI in UI_Elements)
             {
                 foreach (var button in UI.buttons)
-                    if(button != null)
+                    if(button != null && !button.IsPressed)
                         button.ChangeSourceX(MousePos);
+                    else if(button.IsPressed)
+                    {
+                        button.SourceRect.X = button.SelectionX;
+                    }
             }
 
             // Tile sheet is imported.
@@ -267,7 +276,7 @@ namespace tile_mapper
                 {
                     string name = "Area: " + (CurrentMap.areas.Count() + 1).ToString();
                     CurrentMap.CreateArea(Selection, name);
-                    Properties.buttons.Add(new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + CurrentMap.areas.Count() * 32 - 32, 96, 32), 96, 0, ButtonAction.SelectArea, true));
+                    Properties.buttons.Add(new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + CurrentMap.areas.Count() * 32 - 32 + 16 + 8* CurrentMap.areas.Count() - 8, 96, 32), 96, 0, ButtonAction.SelectArea, true));
 
                 }
             }
@@ -433,10 +442,11 @@ namespace tile_mapper
                             buttonClicked.IsVisible = false;
                             break;
                         case ButtonAction.Layer:
-                            string ToFind = "Layer: " + CurrentLayer.ToString();
-                            CurrentLayer++;
-                            CurrentLayer = CurrentLayer % 3;
-                            buttonClicked.Text = "Layer: " + CurrentLayer.ToString();
+                            CurrentLayer = buttonClicked.HelperInt;
+                            if(ClickedLayerButton != null)
+                                ClickedLayerButton.IsPressed = false;
+                            buttonClicked.IsPressed = true;
+                            ClickedLayerButton = buttonClicked;
                             break;
                         case ButtonAction.Save:
                             WriteFile();
@@ -461,6 +471,7 @@ namespace tile_mapper
                                 if (area.AreaName == buttonClicked.Text)
                                 {
                                     Selection = area.AreaCords;
+
                                 }
                             }
                             break;

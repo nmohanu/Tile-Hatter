@@ -112,6 +112,8 @@ namespace tile_mapper
         public int SelectionX;
         public int OriginalX;
         public bool IsVisible = true;
+        public int HelperInt;
+        public bool IsPressed = false;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible) 
         {
             this.Text = text;
