@@ -260,10 +260,21 @@ namespace tile_mapper
 
             if(keyboardState.IsKeyDown(Keys.Enter) && !PreviousKeybordState.IsKeyDown(Keys.Enter) && Selection.Width >= 4 && Selection.Height >= 4)
             {
-                string name = "Area: " + (CurrentMap.areas.Count() + 1).ToString();
-                CurrentMap.CreateArea(Selection, name);
-                Properties.buttons.Add(new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + CurrentMap.areas.Count() * 32 - 32, 96, 32), 96, 0, ButtonAction.SelectArea, true));
+                bool allowed = true;
+                foreach(var area in CurrentMap.areas)
+                {
+                    if(area.AreaCords.Intersects(Selection))
+                    {
+                        allowed = false;
+                    }
+                }
+                if(allowed)
+                {
+                    string name = "Area: " + (CurrentMap.areas.Count() + 1).ToString();
+                    CurrentMap.CreateArea(Selection, name);
+                    Properties.buttons.Add(new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + CurrentMap.areas.Count() * 32 - 32, 96, 32), 96, 0, ButtonAction.SelectArea, true));
 
+                }
             }
 
             // Undo last action.
@@ -488,7 +499,16 @@ namespace tile_mapper
                                 break;
                             case SelectedTool.Fill:
                                 if(PreviousMouseState.LeftButton != ButtonState.Pressed) // Exception
-                                FillClicked();
+                                {
+                                    bool allowed = true;
+                                    foreach (var UI in UI_Elements)
+                                    {
+                                        if (UI.Destination.Contains(MousePos))
+                                            allowed = false;
+                                    }
+                                    if(allowed)
+                                        FillClicked();
+                                }
                                 break;
                         }
                     }
