@@ -22,8 +22,8 @@ namespace tile_mapper
         }
 
         // Specify your map size.
-        int MAP_WIDTH = 64;
-        int MAP_HEIGHT = 64;
+        //int MAP_WIDTH = 64;
+        //int MAP_HEIGHT = 64;
         int TILE_SIZE = 16;
         GridTile[,] GridMap;
         Texture2D Grid;
@@ -74,15 +74,13 @@ namespace tile_mapper
         int ScreenWidth;
         int ScreenHeight;
 
-        Vector2 ScreenCenter;
-
         int SheetWidth;
         int SheetHeight;
         int SheetMenuPages;
 
         int currentPage = 0;
 
-        Canvas CurrentMap;
+        Canvas CurrentMap = new Canvas();
         int CurrentLayer = 0;
 
         private float fps;
@@ -105,24 +103,6 @@ namespace tile_mapper
         protected override void Initialize()
         {
             // Initialize program.
-            GridMap = new GridTile[MAP_HEIGHT, MAP_WIDTH];
-            CurrentMap = new Canvas(MAP_HEIGHT, MAP_WIDTH);
-
-            for (int i = 0; i < MAP_HEIGHT; i++)
-            {
-                for (int j = 0; j < MAP_WIDTH; j++)
-                {
-                    GridMap[i, j] = new GridTile
-                    {
-                        GridRect = new Rectangle(j, i, TILE_SIZE, TILE_SIZE)
-                    };
-
-                    CurrentMap.layers[0].TileMap[i, j] = new Tile();
-                    CurrentMap.layers[1].TileMap[i, j] = new Tile();
-                    CurrentMap.layers[2].TileMap[i, j] = new Tile();
-                }
-            }
-
 
             PreviousMouseState = new MouseState();
             PreviousKeybordState = new KeyboardState();
@@ -130,8 +110,6 @@ namespace tile_mapper
 
             ScreenWidth = 1920;
             ScreenHeight = 1080;
-
-            ScreenCenter = new Vector2(ScreenWidth, ScreenHeight);
 
             _graphics.PreferredBackBufferWidth = ScreenWidth;
             _graphics.PreferredBackBufferHeight = ScreenHeight;
@@ -157,12 +135,12 @@ namespace tile_mapper
             OpenPalette.SourceRect = new Rectangle(0, 624, 32, 96);
 
 
-            Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
+            Offset = new Vector2(ScreenWidth/2, ScreenHeight/2);
 
             TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
             GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, ScreenWidth, ScreenHeight));
-            Properties = new UI_Menu(true, new Rectangle(1760, 32, 160, 1048), new Rectangle(1760, 32, 0, 0));
+            Properties = new UI_Menu(true, new Rectangle(1760, 32, 160, 1048), new Rectangle(1760, 32, 160, 0));
 
             TopBar.buttons.Add(NewMap);
             TopBar.buttons.Add(SaveMap);
@@ -173,9 +151,9 @@ namespace tile_mapper
             TopBar.buttons.Add(DrawTool);
             TopBar.buttons.Add(FillTool);
             TopBar.buttons.Add(EraserTool);
-
             GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
+
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
             UI_Elements.Add(GeneralOverlay);
@@ -251,13 +229,13 @@ namespace tile_mapper
             // User is scrolling (zooming on map)
             if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
             {
-                Vector2 Center = new Vector2(Offset.X + TILE_SIZE * Scale * MAP_WIDTH , Offset.Y + TILE_SIZE * Scale * MAP_HEIGHT);
+                Vector2 Center = new Vector2(Offset.X, Offset.Y);
                 float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
                 // Adjust the scaling factor based on the scroll wheel delta
                 Scale += adjustment;
                 Scale = MathHelper.Clamp(Scale, 0.5f, 5f);
 
-                Vector2 CenterNew = new Vector2(Offset.X + TILE_SIZE * Scale * MAP_WIDTH, Offset.Y + TILE_SIZE * Scale * MAP_HEIGHT);
+                Vector2 CenterNew = new Vector2(Offset.X, Offset.Y );
                 Offset += ((Center - CenterNew) / 2);
             }
 
@@ -271,16 +249,20 @@ namespace tile_mapper
             // Only update the selected square if user is not using scroll wheel.
             if(mouseState.ScrollWheelValue == OriginalScrollWheelValue)
             {
-                SelectedX = Math.Max((int)MousePosInt.X, 0);
-                SelectedY = Math.Max((int)MousePosInt.Y, 0);
-                SelectedX = Math.Min(SelectedX, CurrentMap.width-1);
-                SelectedY = Math.Min(SelectedY, CurrentMap.height-1);
+                SelectedX = (int)MousePosInt.X;
+                SelectedY = (int)MousePosInt.Y;
+                //SelectedX = Math.Max((int)MousePosInt.X, 0);
+                //SelectedY = Math.Max((int)MousePosInt.Y, 0);
+                //SelectedX = Math.Min(SelectedX, CurrentMap.width-1);
+                //SelectedY = Math.Min(SelectedY, CurrentMap.height-1);
 
             }
 
             if(keyboardState.IsKeyDown(Keys.Enter) && !PreviousKeybordState.IsKeyDown(Keys.Enter) && Selection.Width >= 4 && Selection.Height >= 4)
             {
-                CurrentMap.CreateArea(Selection, "BLAH");
+                string name = "Area: " + (CurrentMap.areas.Count() + 1).ToString();
+                CurrentMap.CreateArea(Selection, name);
+                Properties.buttons.Add(new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + CurrentMap.areas.Count() * 32 - 32, 96, 32), 96, 0, ButtonAction.SelectArea, true));
 
             }
 
@@ -288,15 +270,15 @@ namespace tile_mapper
             if(keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !PreviousKeybordState.IsKeyDown(Keys.Z))
             {
 
-                if(Actions.Count > 0)
-                {
-                    UserAction UndoAction = Actions.Peek();
+                //if(Actions.Count > 0)
+                //{
+                //    UserAction UndoAction = Actions.Peek();
 
-                    if(UndoAction.Action == UserAction.ActionType.Draw)
-                        CurrentMap.layers[UndoAction.Layer].TileMap[UndoAction.y, UndoAction.x] = new Tile();
+                //    if(UndoAction.Action == UserAction.ActionType.Draw)
+                //        CurrentMap.layers[UndoAction.Layer].TileMap[UndoAction.y, UndoAction.x] = new Tile();
 
-                    Actions.Pop();
-                }
+                //    Actions.Pop();
+                //}
             }
                
 
@@ -315,10 +297,10 @@ namespace tile_mapper
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             // Draw map (all layers)
-            Renderer.RenderMap(MAP_HEIGHT, MAP_WIDTH, CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
+            Renderer.RenderMap(CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
 
             // Grid 
-            Renderer.RenderGrid(_spriteBatch, MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection);
+            Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection);
 
             // UI elements
             foreach (var menu in UI_Elements)
@@ -408,47 +390,66 @@ namespace tile_mapper
         {
             if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
             {
-                foreach (var UI in UI_Elements)
-                {
-                    if (UI.IsVisible)
-                    {
-                        switch (UI.HandleClicks(MousePos))
-                        {
-                            case ButtonAction.Import:
-                                OpenFile(TileSheetPath);
-                                UI.buttons.FirstOrDefault(element => element.Text == "Import").IsVisible = false;
-                                break;
-                            case ButtonAction.Layer:
-                                string ToFind = "Layer: " + CurrentLayer.ToString();
-                                CurrentLayer++;
-                                CurrentLayer = CurrentLayer % 3;
-
-                                UI.buttons.FirstOrDefault(element => element.Text == ToFind).Text = "Layer: " + CurrentLayer.ToString();
-                                break;
-                            case ButtonAction.Save:
-                                WriteFile();
-                                break;
-                            case ButtonAction.OpenPalette:
-                                TileMenu.IsVisible = true;
-                                GeneralOverlay.buttons[0].IsVisible = false;
-                                break;
-                            case ButtonAction.DrawTool:
-                                Tool = SelectedTool.Draw;
-                                break;
-                            case ButtonAction.FillTool:
-                                Tool = SelectedTool.Fill;
-                                break;
-                            case ButtonAction.EraserTool:
-                                Tool = SelectedTool.Eraser;
-                                break;
-                        }
-                    }
-                }
                 ClickPoint = new Point(SelectedX, SelectedY);
                 SelectionStart = ClickPoint;
                 SelectionEnd = SelectionStart;
                 Selection.Width = 0;
                 Selection.Height = 0;
+                Button buttonClicked = null;
+
+                foreach (var UI in UI_Elements)
+                {
+                    
+                    if (UI.IsVisible)
+                    {
+                        buttonClicked = UI.HandleClicks(MousePos);
+                        if (buttonClicked != null)
+                            break;
+                    }
+                }
+                if (buttonClicked == null)
+                {
+                    return;
+                }
+                else
+                    switch (buttonClicked.Action)
+                    {
+                        case ButtonAction.Import:
+                            OpenFile(TileSheetPath);
+                            buttonClicked.IsVisible = false;
+                            break;
+                        case ButtonAction.Layer:
+                            string ToFind = "Layer: " + CurrentLayer.ToString();
+                            CurrentLayer++;
+                            CurrentLayer = CurrentLayer % 3;
+                            buttonClicked.Text = "Layer: " + CurrentLayer.ToString();
+                            break;
+                        case ButtonAction.Save:
+                            WriteFile();
+                            break;
+                        case ButtonAction.OpenPalette:
+                            TileMenu.IsVisible = true;
+                            GeneralOverlay.buttons[0].IsVisible = false;
+                            break;
+                        case ButtonAction.DrawTool:
+                            Tool = SelectedTool.Draw;
+                            break;
+                        case ButtonAction.FillTool:
+                            Tool = SelectedTool.Fill;
+                            break;
+                        case ButtonAction.EraserTool:
+                            Tool = SelectedTool.Eraser;
+                            break;
+                        case ButtonAction.SelectArea:
+                            foreach (var area in CurrentMap.areas)
+                            {
+                                if (area.AreaName == buttonClicked.Text)
+                                {
+                                    Selection = area.AreaCords;
+                                }
+                            }
+                            break;
+                    }
             }
         }
 
@@ -464,13 +465,13 @@ namespace tile_mapper
                         switch (Tool)
                         {
                             case SelectedTool.Draw:
-                                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
-                                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
+                                area.layers[CurrentLayer].TileMap[SelectedY-area.AreaCords.Y, SelectedX-area.AreaCords.X].ID = selected.ID;
+                                area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = selected.Source;
                                 Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
                                 break;
                             case SelectedTool.Eraser:
-                                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = "0";
-                                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = new Rectangle();
+                                area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = "0";
+                                area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = new Rectangle();
                                 break;
                             case SelectedTool.Fill:
                                 // TODO fill
@@ -480,18 +481,14 @@ namespace tile_mapper
                     }
                 }
             }
-            if (mouseState.LeftButton == ButtonState.Pressed && keyboardState.IsKeyDown(Keys.LeftShift) && SelectionStart.X >= 0 && SelectionStart.Y >= 0 && SelectionStart.X <= MAP_WIDTH && SelectionStart.Y <= MAP_HEIGHT && (SelectedX != ClickPoint.X || SelectedY != ClickPoint.Y))
+            if (mouseState.LeftButton == ButtonState.Pressed && keyboardState.IsKeyDown(Keys.LeftShift) && SelectionStart.X >= 0 && SelectionStart.Y >= 0 && (SelectedX != ClickPoint.X || SelectedY != ClickPoint.Y))
             {
                 SelectionEnd = new Point(SelectedX, SelectedY);
                 // Create a square of the selection
                 Point TopLeft = new Point(Math.Min(SelectionStart.X, SelectionEnd.X), Math.Min(SelectionStart.Y, SelectionEnd.Y));
                 Point BottomRight = new Point(Math.Max(SelectionStart.X, SelectionEnd.X), Math.Max(SelectionStart.Y, SelectionEnd.Y));
-                BottomRight.X = Math.Min(BottomRight.X, MAP_WIDTH);
-                BottomRight.Y = Math.Min(BottomRight.Y, MAP_HEIGHT);
                 Selection = new Rectangle(TopLeft.X, TopLeft.Y, BottomRight.X - TopLeft.X + 1, BottomRight.Y - TopLeft.Y + 1);
-                
             }
-                
         }
 
         internal void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime)

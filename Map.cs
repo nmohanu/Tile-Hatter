@@ -50,16 +50,16 @@ namespace tile_mapper
             }
         }
 
-        public ButtonAction HandleClicks(Vector2 MousePos)
+        public Button HandleClicks(Vector2 MousePos)
         {
             foreach (var button in buttons)
             {
                 if (button != null && button.IsVisible && button.ButtonRect.Contains(MousePos))
                 {
-                    return button.Action;
+                    return button;
                 }
             }
-            return ButtonAction.None;
+            return null;
         }
     }
 
@@ -100,7 +100,8 @@ namespace tile_mapper
         OpenPalette,
         DrawTool,
         FillTool,
-        EraserTool
+        EraserTool,
+        SelectArea
     }
     internal class Button
     {
@@ -168,36 +169,46 @@ namespace tile_mapper
     {
         public Rectangle AreaCords;
         public string AreaName;
+        public Layer[] layers = new Layer[3];
+        Layer Terrain;
+        Layer Objects;
+        Layer Foreground;
 
         public Area(Rectangle areaCords, string areaName)
         {
             this.AreaCords = areaCords;
             this.AreaName = areaName;
+            Layer Terrain = new Layer(0, areaCords);
+            Layer Objects = new Layer(1, areaCords);
+            Layer Foreground = new Layer(2, areaCords);
+
+            layers[0] = Terrain;
+            layers[1] = Objects;
+            layers[2] = Foreground;
+
+            foreach (var layer in layers)
+            {
+                for(int i = 0; i < this.AreaCords.Height; i++)
+                {
+                    for(int j = 0; j < this.AreaCords.Width; j++)
+                    {
+                        layer.TileMap[i, j] = new Tile();
+                 
+                    }
+                }
+            }
         }
     }
 
     internal class Canvas
     {
-        public int height;
-        public int width;
         public int LayerAmount = 2;
-
-        public Layer[] layers = new Layer[3];
 
         public List<Area> areas = new List<Area>();
 
-        public Canvas(int height, int width)
+        public Canvas()
         {
-            this.height = height;
-            this.width = width;
-
-            Layer Terrain = new Layer(0, width, height);
-            Layer Objects = new Layer(1, width, height);
-            Layer Foreground = new Layer(2, width, height);
-
-            layers[0] = Terrain;
-            layers[1] = Objects;
-            layers[2] = Foreground;
+            
         }
 
         public void CreateArea(Rectangle Selection, string AreaName)
@@ -208,20 +219,16 @@ namespace tile_mapper
 
     internal class Layer
     {
-        int Depth;
-        int Width;
-        int Height;
+        public int Depth;
 
         public Tile[,] TileMap;
 
 
-        public Layer(int depth, int width, int height)
+        public Layer(int depth, Rectangle rectangle)
         {
             this.Depth = depth;
-            this.Width = width;
-            this.Height = height;
 
-            TileMap = new Tile[height, width];
+            TileMap = new Tile[rectangle.Height, rectangle.Width];
         }
     }
 }
