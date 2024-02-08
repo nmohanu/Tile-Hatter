@@ -231,4 +231,6 @@ namespace tile_mapper
             TileMap = new Tile[rectangle.Height, rectangle.Width];
         }
     }
+
+
 }

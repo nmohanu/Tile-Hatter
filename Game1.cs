@@ -139,7 +139,7 @@ namespace tile_mapper
 
             TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
-            GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, ScreenWidth, ScreenHeight));
+            GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
             Properties = new UI_Menu(true, new Rectangle(1760, 32, 160, 1048), new Rectangle(1760, 32, 160, 0));
 
             TopBar.buttons.Add(NewMap);
@@ -390,11 +390,23 @@ namespace tile_mapper
         {
             if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
             {
-                ClickPoint = new Point(SelectedX, SelectedY);
-                SelectionStart = ClickPoint;
-                SelectionEnd = SelectionStart;
-                Selection.Width = 0;
-                Selection.Height = 0;
+                bool resetSelection = true;
+                foreach(var UI in UI_Elements)
+                {
+                    if(UI.Destination.Contains(MousePos))
+                    {
+                        resetSelection = false;
+                    }
+                }
+
+                if(resetSelection)
+                {
+                    ClickPoint = new Point(SelectedX, SelectedY);
+                    SelectionStart = ClickPoint;
+                    SelectionEnd = SelectionStart;
+                    Selection.Width = 0;
+                    Selection.Height = 0;
+                }
                 Button buttonClicked = null;
 
                 foreach (var UI in UI_Elements)
@@ -436,6 +448,7 @@ namespace tile_mapper
                             break;
                         case ButtonAction.FillTool:
                             Tool = SelectedTool.Fill;
+                            FillSelection();
                             break;
                         case ButtonAction.EraserTool:
                             Tool = SelectedTool.Eraser;
@@ -474,10 +487,10 @@ namespace tile_mapper
                                 area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = new Rectangle();
                                 break;
                             case SelectedTool.Fill:
-                                // TODO fill
+                                if(PreviousMouseState.LeftButton != ButtonState.Pressed) // Exception
+                                FillClicked();
                                 break;
                         }
-                        
                     }
                 }
             }
@@ -501,6 +514,79 @@ namespace tile_mapper
                 Velocity.X -= (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
             if (keyboardState.IsKeyDown(Keys.W))
                 Velocity.Y += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+        }
+
+        internal void FillSelection()
+        {
+            if(selected == null)
+            {
+                return;
+            }
+
+           
+
+            Area ClickedArea = null;
+
+            bool FillSelection = false;
+
+            if(Selection.Width > 0 || Selection.Height > 0)
+            {
+                FillSelection = true;
+            }
+
+            
+            foreach(var area in CurrentMap.areas)
+            {
+                for (int i = Selection.Y; i < Selection.Y + Selection.Height; i++)
+                {
+                    for (int j = Selection.X; j < Selection.X + Selection.Width; j++)
+                    {
+                        if (area.AreaCords.Contains(j, i))
+                        {
+                            area.layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID = selected.ID;
+                        }
+                    }
+                }
+            } 
+        }
+
+        internal void FillClicked()
+        {
+            Area areaClicked = null;
+            foreach (var area in CurrentMap.areas)
+            {
+                if (area.AreaCords.Contains(SelectedX, SelectedY))
+                {
+                    areaClicked = area;
+                }
+            }
+            if(areaClicked == null)
+            {
+                return;
+            }
+
+            string IDToFill = areaClicked.layers[CurrentLayer].TileMap[SelectedY - areaClicked.AreaCords.Y, SelectedX - areaClicked.AreaCords.X].ID;
+
+            FillNeighbours(IDToFill, SelectedX, SelectedY, areaClicked);
+            
+        }
+
+        internal void FillNeighbours(string IDToFill, int x, int y, Area areaClicked)
+        {
+            if (!areaClicked.AreaCords.Contains(x, y) || 
+               areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID != IDToFill ||
+               areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID == selected.ID)
+            {
+                return; // Finished
+            }
+            else
+            {
+                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
+                FillNeighbours(IDToFill, x + 1, y, areaClicked);
+                FillNeighbours(IDToFill, x - 1, y, areaClicked);
+                FillNeighbours(IDToFill, x, y + 1, areaClicked);
+                FillNeighbours(IDToFill, x, y - 1, areaClicked);
+            }
         }
     }
 }
