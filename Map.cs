@@ -101,7 +101,8 @@ namespace tile_mapper
         DrawTool,
         FillTool,
         EraserTool,
-        SelectArea
+        SelectArea,
+        SpecifyStartPoint
     }
     internal class Button
     {
@@ -202,6 +203,10 @@ namespace tile_mapper
 
         public List<Area> areas = new List<Area>();
 
+        public List<Teleportation> Teleportations = new List<Teleportation>();
+
+        public Point StartLocation;
+
         public Canvas()
         {
             
@@ -211,6 +216,12 @@ namespace tile_mapper
         {
             areas.Add(new Area(Selection, AreaName));
         }
+    }
+
+    internal class Teleportation
+    {
+        Point A;
+        Point B;
     }
 
     internal class Layer

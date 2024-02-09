@@ -65,6 +65,7 @@ namespace tile_mapper
         Button EraserTool;
         Button ClickedLayerButton;
         Button ClickedAreaButton;
+        Button SpecifyStartPoint;
         
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -126,7 +127,7 @@ namespace tile_mapper
             DrawTool = new Button("", new Rectangle(96 * 6, 0, 32, 32), 192, 192, ButtonAction.DrawTool, true);
             FillTool = new Button("", new Rectangle(96 * 6 + 32, 0, 32, 32), 192 + 32, 192 + 32, ButtonAction.FillTool, true);
             EraserTool = new Button("", new Rectangle(96 * 6 + 64, 0, 32, 32), 192 + 64, 192 + 64, ButtonAction.EraserTool, true);
-
+            SpecifyStartPoint = new Button("", new Rectangle(96 * 6 + 96, 0, 32, 32), 352, 352, ButtonAction.SpecifyStartPoint, true);
 
             DrawTool.SourceRect.Y = 48;
             OpenPalette.SourceRect = new Rectangle(0, 624, 32, 96);
@@ -154,6 +155,7 @@ namespace tile_mapper
             TopBar.buttons.Add(DrawTool);
             TopBar.buttons.Add(FillTool);
             TopBar.buttons.Add(EraserTool);
+            TopBar.buttons.Add(SpecifyStartPoint);
             GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
 
@@ -485,6 +487,9 @@ namespace tile_mapper
                                     ClickedAreaButton = buttonClicked;
                                 }
                             }
+                            break;
+                        case ButtonAction.SpecifyStartPoint:
+                            // TODO: Specify starting position
                             break;
                     }
             }
