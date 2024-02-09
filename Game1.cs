@@ -21,6 +21,12 @@ namespace tile_mapper
             Eraser
         }
 
+        public enum CursorState
+        {
+            SpecifyingStartPoint,
+            None
+        }
+
         int TILE_SIZE = 16;
         Texture2D Grid;
         SpriteSheet SpriteSheet;
@@ -55,6 +61,7 @@ namespace tile_mapper
         MouseState PreviousMouseState;
         KeyboardState PreviousKeybordState;
         Button OpenPalette;
+        Button ClosePalette;
         Point SelectionStart;
         Point SelectionEnd;
         Point ClickPoint;
@@ -66,6 +73,10 @@ namespace tile_mapper
         Button ClickedLayerButton;
         Button ClickedAreaButton;
         Button SpecifyStartPoint;
+        Rectangle MouseSource = new Rectangle(0, 720, 32, 32);
+        Rectangle MouseSourceSpecifyingPoint = new Rectangle(352, 48, 32, 32);
+        CursorState CursorActionState = Game1.CursorState.None;
+        bool TilePaletteVisible;
         
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -94,10 +105,8 @@ namespace tile_mapper
 
 
             Content.RootDirectory = "Content";
-            IsMouseVisible = true;
+            IsMouseVisible = false;
         }
-
-        
 
         protected override void Initialize()
         {
@@ -106,6 +115,8 @@ namespace tile_mapper
             PreviousMouseState = new MouseState();
             PreviousKeybordState = new KeyboardState();
             UI_Elements = new List<UI_Menu>();
+
+            Window.Title = "Tile-Hatter";
 
             ScreenWidth = 1920;
             ScreenHeight = 1080;
@@ -123,14 +134,16 @@ namespace tile_mapper
             SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save, true);
             Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import, true);
             Settings = new Button("Settings ", new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 96 / 2, 32, 96), 32, 0, ButtonAction.OpenPalette, true);
+            OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.OpenPalette, true);
+            ClosePalette = new Button("", new Rectangle(272, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.ClosePalette, true);
             DrawTool = new Button("", new Rectangle(96 * 6, 0, 32, 32), 192, 192, ButtonAction.DrawTool, true);
             FillTool = new Button("", new Rectangle(96 * 6 + 32, 0, 32, 32), 192 + 32, 192 + 32, ButtonAction.FillTool, true);
             EraserTool = new Button("", new Rectangle(96 * 6 + 64, 0, 32, 32), 192 + 64, 192 + 64, ButtonAction.EraserTool, true);
             SpecifyStartPoint = new Button("", new Rectangle(96 * 6 + 96, 0, 32, 32), 352, 352, ButtonAction.SpecifyStartPoint, true);
 
             DrawTool.SourceRect.Y = 48;
-            OpenPalette.SourceRect = new Rectangle(0, 624, 32, 96);
+            OpenPalette.SourceRect = new Rectangle(0, 656, 32, 32);
+            ClosePalette.SourceRect = new Rectangle(0, 688, 32, 32);
 
 
             Offset = new Vector2(ScreenWidth/2, ScreenHeight/2);
@@ -158,6 +171,7 @@ namespace tile_mapper
             TopBar.buttons.Add(SpecifyStartPoint);
             GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
+            TileMenu.buttons.Add(ClosePalette);
 
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
@@ -325,14 +339,23 @@ namespace tile_mapper
             // Grid 
             Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection, CurrentMap);
 
+            // Start point
+            if(CurrentMap.StartLocationSpecified)
+            {
+                Rectangle DestRect = new Rectangle((int)(CurrentMap.StartLocation.X * TILE_SIZE * Scale + Offset.X), (int)(CurrentMap.StartLocation.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+                _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), new Rectangle(352, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float) (32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+            }
+
             // UI elements
             foreach (var menu in UI_Elements)
             {
                 menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
             }
 
+
             // Sprite palette menu
-            Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
+            if(TilePaletteVisible)
+                Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
 
             // Draw cordinates
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
@@ -340,6 +363,11 @@ namespace tile_mapper
 
             // TEMP
             _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
+
+            if(CursorActionState == CursorState.SpecifyingStartPoint)
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingPoint, Color.White);
+            else
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSource, Color.White);
 
             _spriteBatch.End();
 
@@ -409,6 +437,20 @@ namespace tile_mapper
         {
             if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
             {
+                if(CursorActionState == CursorState.SpecifyingStartPoint)
+                {
+                    CursorActionState = CursorState.None;
+                    foreach(var area in CurrentMap.areas)
+                    {
+                        if(area.AreaCords.Contains(SelectedX, SelectedY))
+                        {
+                            CurrentMap.StartLocation = new Point(SelectedX, SelectedY);
+                            CurrentMap.StartLocationSpecified = true;
+                        }
+                    }
+                }
+                
+
                 bool resetSelection = true;
                 foreach(var UI in UI_Elements)
                 {
@@ -464,6 +506,7 @@ namespace tile_mapper
                         case ButtonAction.OpenPalette:
                             TileMenu.IsVisible = true;
                             GeneralOverlay.buttons[0].IsVisible = false;
+                            TilePaletteVisible = true;
                             break;
                         case ButtonAction.DrawTool:
                             Tool = SelectedTool.Draw;
@@ -489,7 +532,12 @@ namespace tile_mapper
                             }
                             break;
                         case ButtonAction.SpecifyStartPoint:
-                            // TODO: Specify starting position
+                            CursorActionState = CursorState.SpecifyingStartPoint;
+                            break;
+                        case ButtonAction.ClosePalette:
+                            TileMenu.IsVisible = false;
+                            GeneralOverlay.buttons[0].IsVisible = true;
+                            TilePaletteVisible = false;
                             break;
                     }
             }

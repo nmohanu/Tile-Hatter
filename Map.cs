@@ -102,7 +102,8 @@ namespace tile_mapper
         FillTool,
         EraserTool,
         SelectArea,
-        SpecifyStartPoint
+        SpecifyStartPoint,
+        ClosePalette
     }
     internal class Button
     {
@@ -206,6 +207,7 @@ namespace tile_mapper
         public List<Teleportation> Teleportations = new List<Teleportation>();
 
         public Point StartLocation;
+        public bool StartLocationSpecified;
 
         public Canvas()
         {

@@ -127,6 +127,8 @@ namespace tile_mapper
                     }
                 }
             }
+
+
         }
 
         public static void DrawPalette(bool HasTileSheet, List<List<SpriteTile>> TileSpriteList, SpriteBatch spriteBatch, SpriteTile selected, Texture2D Grid, Texture2D TileSheet)
