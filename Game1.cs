@@ -24,7 +24,14 @@ namespace tile_mapper
         public enum CursorState
         {
             SpecifyingStartPoint,
+            SpecifyDoor,
             None
+        }
+
+        public enum EditorState
+        {
+            Edit,
+            Test
         }
 
         int TILE_SIZE = 16;
@@ -73,11 +80,21 @@ namespace tile_mapper
         Button ClickedLayerButton;
         Button ClickedAreaButton;
         Button SpecifyStartPoint;
+        Button SpecifyDoor;
+        Button TestMap;
+        Button StopTest;
         Rectangle MouseSource = new Rectangle(0, 720, 32, 32);
         Rectangle MouseSourceSpecifyingPoint = new Rectangle(352, 48, 32, 32);
+        Rectangle MouseSourceSpecifyingDoor = new Rectangle(352 - 32, 48, 32, 32);
         CursorState CursorActionState = Game1.CursorState.None;
         bool TilePaletteVisible;
-        
+        Point? A = null;
+        Point? B = null;
+        EditorState state = EditorState.Edit;
+        Area CurrentArea;
+        float TestingScale = 4f;
+        float TestingSpeed = 516f;
+
         Stack<UserAction> Actions = new Stack<UserAction>();
 
         int ScreenWidth;
@@ -140,6 +157,10 @@ namespace tile_mapper
             FillTool = new Button("", new Rectangle(96 * 6 + 32, 0, 32, 32), 192 + 32, 192 + 32, ButtonAction.FillTool, true);
             EraserTool = new Button("", new Rectangle(96 * 6 + 64, 0, 32, 32), 192 + 64, 192 + 64, ButtonAction.EraserTool, true);
             SpecifyStartPoint = new Button("", new Rectangle(96 * 6 + 96, 0, 32, 32), 352, 352, ButtonAction.SpecifyStartPoint, true);
+            SpecifyDoor = new Button("", new Rectangle(96 * 6 + 128, 0, 32, 32), 352 - 32, 352 - 32, ButtonAction.SpecifyDoor, true);
+            TestMap = new Button("", new Rectangle(96 * 6 + 128 + 32, 0, 32, 32), 352 + 32, 352 + 32, ButtonAction.TestState, true);
+            StopTest = new Button("", new Rectangle(96 * 6 + 128 + 64, 0, 32, 32), 352 + 64, 352 + 64, ButtonAction.EditState, true);
+
 
             DrawTool.SourceRect.Y = 48;
             OpenPalette.SourceRect = new Rectangle(0, 656, 32, 32);
@@ -169,6 +190,9 @@ namespace tile_mapper
             TopBar.buttons.Add(FillTool);
             TopBar.buttons.Add(EraserTool);
             TopBar.buttons.Add(SpecifyStartPoint);
+            TopBar.buttons.Add(SpecifyDoor);
+            TopBar.buttons.Add(TestMap);
+            TopBar.buttons.Add(StopTest);
             GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
             TileMenu.buttons.Add(ClosePalette);
@@ -254,7 +278,7 @@ namespace tile_mapper
                 }
             }
             // User is scrolling (zooming on map)
-            if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
+            if (mouseState.ScrollWheelValue != OriginalScrollWheelValue && state == EditorState.Edit)
             {
                 Vector2 Center = new Vector2(Offset.X, Offset.Y);
                 Vector2 MouseBefore = (MousePos - Offset)/Scale;
@@ -279,7 +303,16 @@ namespace tile_mapper
             // Only update the selected square if user is not using scroll wheel.
             if (mouseState.ScrollWheelValue == OriginalScrollWheelValue)
             {
-                Vector2 mousePosInt = MousePosRelative / Scale / TILE_SIZE;
+                Vector2 mousePosInt;
+                if (state == EditorState.Test)
+                {
+                     mousePosInt = MousePosRelative / TestingScale / TILE_SIZE;
+                }
+                else
+                {
+                     mousePosInt = MousePosRelative / Scale / TILE_SIZE;
+
+                }
                 SelectedX = (int)Math.Floor(mousePosInt.X);
                 SelectedY = (int)Math.Floor(mousePosInt.Y);
             }
@@ -333,18 +366,44 @@ namespace tile_mapper
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-            // Draw map (all layers)
-            Renderer.RenderMap(CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
+           
 
-            // Grid 
-            Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection, CurrentMap);
-
-            // Start point
-            if(CurrentMap.StartLocationSpecified)
+            // Grid
+            if(state == EditorState.Edit)
             {
-                Rectangle DestRect = new Rectangle((int)(CurrentMap.StartLocation.X * TILE_SIZE * Scale + Offset.X), (int)(CurrentMap.StartLocation.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
-                _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), new Rectangle(352, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float) (32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                // Draw map (all layers)
+                Renderer.RenderMap(CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
+                Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection, CurrentMap);
+                // Start point
+                if (CurrentMap.StartLocationSpecified)
+                {
+                    Rectangle DestRect = new Rectangle((int)(CurrentMap.StartLocation.X * TILE_SIZE * Scale + Offset.X), (int)(CurrentMap.StartLocation.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), new Rectangle(352, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                }
+                if (A.HasValue)
+                {
+                    Rectangle DestRect = new Rectangle((int)(A.Value.X * TILE_SIZE * Scale + Offset.X), (int)(A.Value.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+
+                    _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), new Rectangle(352 - 32, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                }
+
+                foreach (var tp in CurrentMap.Teleportations)
+                {
+                    Rectangle DestA = new Rectangle((int)(tp.A.X * TILE_SIZE * Scale + Offset.X), (int)(tp.A.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+                    Rectangle DestB = new Rectangle((int)(tp.B.X * TILE_SIZE * Scale + Offset.X), (int)(tp.B.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestA.X, DestA.Y), new Rectangle(352 - 32, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestB.X, DestB.Y), new Rectangle(352 - 32, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+
+                }
             }
+
+            
+            if(state == EditorState.Test)
+            {
+                Renderer.DrawArea(CurrentArea, Offset, TILE_SIZE, TestingScale, ScreenWidth, ScreenHeight, CurrentMap, _spriteBatch, TileSheet);
+                _spriteBatch.Draw(UI, new Vector2(ScreenWidth/2 - 16, ScreenHeight/2 - 16), new Rectangle(0, 768, 32, 32), Color.White, 0f, Vector2.Zero, TestingScale/2, SpriteEffects.None, 0f);
+            }
+
 
             // UI elements
             foreach (var menu in UI_Elements)
@@ -366,6 +425,8 @@ namespace tile_mapper
 
             if(CursorActionState == CursorState.SpecifyingStartPoint)
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingPoint, Color.White);
+            else if(CursorActionState == CursorState.SpecifyDoor)
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingDoor, Color.White);
             else
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSource, Color.White);
 
@@ -437,19 +498,54 @@ namespace tile_mapper
         {
             if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
             {
+                bool resetCursorState = true;
                 if(CursorActionState == CursorState.SpecifyingStartPoint)
                 {
-                    CursorActionState = CursorState.None;
                     foreach(var area in CurrentMap.areas)
                     {
                         if(area.AreaCords.Contains(SelectedX, SelectedY))
                         {
                             CurrentMap.StartLocation = new Point(SelectedX, SelectedY);
                             CurrentMap.StartLocationSpecified = true;
+                            CurrentArea = area;
+                        }
+                    }
+
+                }
+                else if(CursorActionState == CursorState.SpecifyDoor)
+                {
+                    
+                    foreach (var area in CurrentMap.areas)
+                    {
+                        if (area.AreaCords.Contains(SelectedX, SelectedY))
+                        {
+                            if(A.HasValue)
+                            {
+                                Teleportation tp = new Teleportation();
+                                tp.A = A.Value;
+                                tp.B = new Point(SelectedX, SelectedY);
+                                CurrentMap.Teleportations.Add(tp);
+
+                                A = null;
+                                B = null;
+
+                            }
+                            else
+                            {
+                                A = new Point(SelectedX, SelectedY);
+                                resetCursorState = false;
+                            }
                         }
                     }
                 }
-                
+                else
+                {
+                    A = null;
+                    B = null;
+                }
+                if(resetCursorState)
+                    CursorActionState = CursorState.None;
+
 
                 bool resetSelection = true;
                 foreach(var UI in UI_Elements)
@@ -528,16 +624,28 @@ namespace tile_mapper
                                     if(ClickedAreaButton != null)
                                         ClickedAreaButton.IsPressed = false;
                                     ClickedAreaButton = buttonClicked;
+                                    
                                 }
                             }
                             break;
                         case ButtonAction.SpecifyStartPoint:
                             CursorActionState = CursorState.SpecifyingStartPoint;
                             break;
+                        case ButtonAction.SpecifyDoor:
+                            CursorActionState = CursorState.SpecifyDoor;
+                            break;
                         case ButtonAction.ClosePalette:
                             TileMenu.IsVisible = false;
                             GeneralOverlay.buttons[0].IsVisible = true;
                             TilePaletteVisible = false;
+                            break;
+                        case ButtonAction.TestState:
+                            if(CurrentMap.StartLocationSpecified)
+                                state = EditorState.Test;
+                            Offset = new Vector2(ScreenWidth/2 - CurrentMap.StartLocation.X * TILE_SIZE * TestingScale, ScreenHeight/2 - CurrentMap.StartLocation.Y * TILE_SIZE * TestingScale);
+                            break;
+                        case ButtonAction.EditState:
+                            state = EditorState.Edit;
                             break;
                     }
             }
@@ -592,14 +700,15 @@ namespace tile_mapper
 
         internal void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime)
         {
+            float Speed = (state == EditorState.Test) ? TestingSpeed : MoveSpeed;
             if (keyboardState.IsKeyDown(Keys.A))
-                Velocity.X += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+                Velocity.X += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
             if (keyboardState.IsKeyDown(Keys.S))
-                Velocity.Y -= (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+                Velocity.Y -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
             if (keyboardState.IsKeyDown(Keys.D))
-                Velocity.X -= (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+                Velocity.X -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
             if (keyboardState.IsKeyDown(Keys.W))
-                Velocity.Y += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+                Velocity.Y += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
         }
 
         internal void FillSelection()

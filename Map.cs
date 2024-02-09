@@ -103,7 +103,10 @@ namespace tile_mapper
         EraserTool,
         SelectArea,
         SpecifyStartPoint,
-        ClosePalette
+        ClosePalette,
+        SpecifyDoor,
+        EditState,
+        TestState
     }
     internal class Button
     {
@@ -222,8 +225,8 @@ namespace tile_mapper
 
     internal class Teleportation
     {
-        Point A;
-        Point B;
+        public Point A;
+        public Point B;
     }
 
     internal class Layer
