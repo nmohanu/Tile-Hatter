@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -83,6 +84,25 @@ namespace tile_mapper
         Button SpecifyDoor;
         Button TestMap;
         Button StopTest;
+        Button CollisionCheckBox;
+        Button MoveLeftArea;
+        Button MoveRightArea;
+        Button MoveLeftLayer;
+        Button MoveRightLayer;
+        Button AddArea;
+        Button RemoveArea;
+        Button AddLayer;
+        Button RemoveLayer;
+        Area StartArea;
+        
+
+        Rectangle CharacterRect;
+        Vector2 OriginalOffset;
+        
+        Label CurrentTileID;
+        Label Collision;
+        Label LayerName;
+
         Rectangle MouseSource = new Rectangle(0, 720, 32, 32);
         Rectangle MouseSourceSpecifyingPoint = new Rectangle(352, 48, 32, 32);
         Rectangle MouseSourceSpecifyingDoor = new Rectangle(352 - 32, 48, 32, 32);
@@ -94,6 +114,8 @@ namespace tile_mapper
         Area CurrentArea;
         float TestingScale = 4f;
         float TestingSpeed = 516f;
+        UI_Menu TileProperties;
+        
 
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -160,7 +182,30 @@ namespace tile_mapper
             SpecifyDoor = new Button("", new Rectangle(96 * 6 + 128, 0, 32, 32), 352 - 32, 352 - 32, ButtonAction.SpecifyDoor, true);
             TestMap = new Button("", new Rectangle(96 * 6 + 128 + 32, 0, 32, 32), 352 + 32, 352 + 32, ButtonAction.TestState, true);
             StopTest = new Button("", new Rectangle(96 * 6 + 128 + 64, 0, 32, 32), 352 + 64, 352 + 64, ButtonAction.EditState, true);
+            CollisionCheckBox = new Button("", new Rectangle(1767, 832, 32, 32), 288, 288, ButtonAction.MakeCollision, false);
+            CollisionCheckBox.SourceRect.Y = 80;
+            CollisionCheckBox.PressedSourceX = 320;
 
+            MoveLeftLayer = new Button("", new Rectangle(1776, 512, 32, 32), 32, 32, ButtonAction.MoveLeftLayer, true);
+            MoveLeftLayer.SourceRect.Y = 752;
+            AddLayer = new Button("", new Rectangle(1776 + 32, 512, 32, 32), 96, 96, ButtonAction.AddLayer, true);
+            AddLayer.SourceRect.Y = 752;
+            RemoveLayer = new Button("", new Rectangle(1776 + 64, 512, 32, 32), 128, 128, ButtonAction.RemoveLayer, true);
+            RemoveLayer.SourceRect.Y = 752;
+            MoveRightLayer = new Button("", new Rectangle(1776 + 96, 512, 32, 32), 64, 64, ButtonAction.MoveRightLayer, true);
+            MoveRightLayer.SourceRect.Y = 752;
+
+            MoveLeftArea= new Button("", new Rectangle(1776, 256, 32, 32), 32, 32, ButtonAction.MoveRightArea, true);
+            MoveLeftArea.SourceRect.Y = 752;
+            AddArea = new Button("", new Rectangle(1776 + 32, 256, 32, 32), 96, 96, ButtonAction.AddArea, true);
+            AddArea.SourceRect.Y = 752;
+            RemoveArea = new Button("", new Rectangle(1776 + 64, 256, 32, 32), 128, 128, ButtonAction.RemoveArea, true);
+            RemoveArea.SourceRect.Y = 752;
+            MoveRightArea = new Button("", new Rectangle(1776 + 96, 256, 32, 32), 64, 64, ButtonAction.MoveRightArea, true);
+            MoveRightArea.SourceRect.Y = 752;
+
+            CurrentTileID = new Label();
+            Collision = new Label();
 
             DrawTool.SourceRect.Y = 48;
             OpenPalette.SourceRect = new Rectangle(0, 656, 32, 32);
@@ -173,13 +218,48 @@ namespace tile_mapper
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
             GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
             Properties = new UI_Menu(true, new Rectangle(1760, 32, 160, 1048), new Rectangle(1760, 32, 160, 0));
+            TileProperties = new UI_Menu(true, new Rectangle(1768, 802, 148, 256), new Rectangle(1768, 802, 0, 0));
 
-            for(int i = 0; i <= CurrentMap.LayerAmount; i++)
+            LayerName = new Label();
+            LayerName.LabelRect = new Rectangle(1766, 542, 150, 32);
+            LayerName.SourceRect.Width = 0;
+            LayerName.SourceRect.Height = 0;
+            LayerName.IsVisible = true;
+
+            CurrentTileID.LabelRect = new Rectangle(1766, 800, 150, 32);
+            CurrentTileID.SourceRect.Width = 0;
+            CurrentTileID.SourceRect.Height = 0;
+
+            Collision.LabelRect = new Rectangle(1766, 800 + 32, 150, 32);
+            Collision.Text = "Collision";
+            Collision.SourceRect.Width = 0;
+            Collision.SourceRect.Height = 0;
+
+            for (int i = 0; i <= CurrentMap.LayerAmount; i++)
             {
                 Button button = new Button("Layer: " + (i + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + 16 + 32 * i + 8 * i + 256, 96, 32), 96, 0, ButtonAction.Layer, true);
+                if(i == 0)
+                {
+                    button.IsPressed = true;
+                    ClickedLayerButton = button;
+                }
                 button.HelperInt = i;
+                button.PressedSourceX = 96;
                 Properties.buttons.Add(button);
+
             }
+
+            LayerName.Text = "ID: " + ClickedLayerButton.Text;
+
+
+            Properties.buttons.Add(MoveLeftLayer);
+            Properties.buttons.Add(AddLayer);
+            Properties.buttons.Add(RemoveLayer);
+            Properties.buttons.Add(MoveRightLayer);
+            Properties.buttons.Add(MoveLeftArea);
+            Properties.buttons.Add(AddArea);
+            Properties.buttons.Add(RemoveArea);
+            Properties.buttons.Add(MoveRightArea);
 
             TopBar.buttons.Add(NewMap);
             TopBar.buttons.Add(SaveMap);
@@ -196,11 +276,18 @@ namespace tile_mapper
             GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
             TileMenu.buttons.Add(ClosePalette);
+            TileProperties.labels.Add(CurrentTileID);
+            TileProperties.labels.Add(Collision);
+            TileProperties.buttons.Add(CollisionCheckBox);
+            Properties.labels.Add(LayerName);
 
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
             UI_Elements.Add(GeneralOverlay);
             UI_Elements.Add(Properties);
+            UI_Elements.Add(TileProperties);
+
+            CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int) (32 * 2f), (int)(32 * 2f));
 
             base.Initialize();
         }
@@ -244,12 +331,13 @@ namespace tile_mapper
                 foreach (var button in UI.buttons)
                     if(button != null && !button.IsPressed)
                         button.ChangeSourceX(MousePos);
-                    else if(button.IsPressed)
+                    else if(!button.IsPressed)
                     {
                         button.SourceRect.X = button.SelectionX;
                     }
             }
 
+            
             // Tile sheet is imported.
             if(HasTileSheet)
             {
@@ -265,6 +353,11 @@ namespace tile_mapper
                             selected.ID = rect.ID;
                             selected.Source = rect.Source;
                             Tool = SelectedTool.Draw;
+                            CurrentTileID.IsVisible = true;
+                            CurrentTileID.Text = "ID: " + selected.ID;
+                            Collision.IsVisible = true;
+                            CollisionCheckBox.IsVisible = true;
+                            CollisionCheckBox.IsPressed = selected.Collision;
                         }
                         else
                         {
@@ -331,8 +424,10 @@ namespace tile_mapper
                 {
                     string name = "Area: " + (CurrentMap.areas.Count() + 1).ToString();
                     CurrentMap.CreateArea(Selection, name);
-                    Properties.buttons.Add(new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + CurrentMap.areas.Count() * 32 - 32 + 16 + 8* CurrentMap.areas.Count() - 8, 96, 32), 96, 0, ButtonAction.SelectArea, true));
+                    Button btn = new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + CurrentMap.areas.Count() * 32 - 32 + 16 + 8 * CurrentMap.areas.Count() - 8, 96, 32), 96, 0, ButtonAction.SelectArea, true);
+                    btn.PressedSourceX = 96;
 
+                    Properties.buttons.Add(btn);
                 }
             }
 
@@ -351,8 +446,9 @@ namespace tile_mapper
                 //}
             }
                
+            if(state == EditorState.Edit || !CheckCollision())
+                Offset += Velocity;
 
-            Offset += Velocity;
             OriginalScrollWheelValue = mouseState.ScrollWheelValue;
             PreviousMouseState = mouseState;
             PreviousKeybordState = keyboardState;
@@ -401,7 +497,7 @@ namespace tile_mapper
             if(state == EditorState.Test)
             {
                 Renderer.DrawArea(CurrentArea, Offset, TILE_SIZE, TestingScale, ScreenWidth, ScreenHeight, CurrentMap, _spriteBatch, TileSheet);
-                _spriteBatch.Draw(UI, new Vector2(ScreenWidth/2 - 16, ScreenHeight/2 - 16), new Rectangle(0, 768, 32, 32), Color.White, 0f, Vector2.Zero, TestingScale/2, SpriteEffects.None, 0f);
+                _spriteBatch.Draw(UI, CharacterRect, new Rectangle(0, 768, 32, 32), Color.White);
             }
 
 
@@ -508,6 +604,7 @@ namespace tile_mapper
                             CurrentMap.StartLocation = new Point(SelectedX, SelectedY);
                             CurrentMap.StartLocationSpecified = true;
                             CurrentArea = area;
+                            StartArea = CurrentArea;
                         }
                     }
 
@@ -595,6 +692,9 @@ namespace tile_mapper
                                 ClickedLayerButton.IsPressed = false;
                             buttonClicked.IsPressed = true;
                             ClickedLayerButton = buttonClicked;
+                            ClickedAreaButton = buttonClicked;
+                            LayerName.Text = "ID: " + ClickedAreaButton.Text;
+                            // Properties.labels.FirstOrDefault(obj => obj.Text == LayerName.Text).Text = ClickedLayerButton.Text;
                             break;
                         case ButtonAction.Save:
                             WriteFile();
@@ -623,7 +723,6 @@ namespace tile_mapper
                                     buttonClicked.IsPressed = true;
                                     if(ClickedAreaButton != null)
                                         ClickedAreaButton.IsPressed = false;
-                                    ClickedAreaButton = buttonClicked;
                                     
                                 }
                             }
@@ -642,10 +741,26 @@ namespace tile_mapper
                         case ButtonAction.TestState:
                             if(CurrentMap.StartLocationSpecified)
                                 state = EditorState.Test;
+                            CurrentArea = StartArea;
+                            OriginalOffset = Offset;
                             Offset = new Vector2(ScreenWidth/2 - CurrentMap.StartLocation.X * TILE_SIZE * TestingScale, ScreenHeight/2 - CurrentMap.StartLocation.Y * TILE_SIZE * TestingScale);
                             break;
                         case ButtonAction.EditState:
                             state = EditorState.Edit;
+                            Offset = OriginalOffset;
+                            break;
+                        case ButtonAction.MakeCollision:
+                            buttonClicked.IsPressed = !buttonClicked.IsPressed;
+                            selected.Collision = buttonClicked.IsPressed;
+                            TileSpriteList[currentPage].FirstOrDefault(obj => obj.ID == selected.ID).Collision = selected.Collision;
+
+                            CurrentMap.CollisionTiles.Clear();
+                            foreach(var tile in TileSpriteList[currentPage])
+                            {
+                                if (tile.Collision)
+                                    CurrentMap.CollisionTiles.Add(tile);
+                            }
+
                             break;
                     }
             }
@@ -709,6 +824,68 @@ namespace tile_mapper
                 Velocity.X -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
             if (keyboardState.IsKeyDown(Keys.W))
                 Velocity.Y += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+        }
+
+        internal bool CheckCollision()
+        {
+            Area areaToSearch = null;
+
+            int CharacterX = (int)((CharacterRect.X - (Offset.X + Velocity.X)) / TILE_SIZE / TestingScale);
+            int CharacterY = (int)((CharacterRect.Y - (Offset.Y + Velocity.Y)) / TILE_SIZE / TestingScale);
+
+            foreach (var area in CurrentMap.areas)
+            {
+                if(area.AreaCords.Contains(CharacterX, CharacterY))
+                {
+                    areaToSearch = area;
+                }
+            }
+
+            if(areaToSearch != null)
+            {
+                for (int k = 0; k < CurrentMap.LayerAmount; k++)
+                {
+                    for (int i = Math.Max(CharacterY - 3, areaToSearch.AreaCords.Y); i < Math.Min(areaToSearch.AreaCords.Y + areaToSearch.AreaCords.Height, CharacterY + 3); i++)
+                    {
+                        for (int j = Math.Max(CharacterX - 3, areaToSearch.AreaCords.X); j < Math.Min(areaToSearch.AreaCords.X + areaToSearch.AreaCords.Width, CharacterX + 3); j++)
+                        {
+                            if (areaToSearch.layers[k].TileMap[i - areaToSearch.AreaCords.Y, j - areaToSearch.AreaCords.X].ID != "0")
+                            {
+                                var collisionTile = CurrentMap.CollisionTiles.FirstOrDefault(obj => obj.ID == areaToSearch.layers[k].TileMap[i - areaToSearch.AreaCords.Y, j - areaToSearch.AreaCords.X].ID);
+                                if (collisionTile?.Collision == true)
+                                {
+                                    Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * TestingScale + (Offset.X + Velocity.X)), (int)(i * TILE_SIZE * TestingScale + (Offset.Y + Velocity.Y)), (int)(TILE_SIZE * TestingScale + 1), (int)(TILE_SIZE * TestingScale + 1));
+                                    if (DestRect.Intersects(CharacterRect))
+                                        return true;
+                                }
+                            }
+                            if (CurrentMap.Teleportations.Count > 0)
+                            {
+                                foreach (var tp in CurrentMap.Teleportations)
+                                {
+                                    if (i == tp.A.Y && j == tp.A.X)
+                                    {
+                                        Rectangle TPRect = new Rectangle((int)(tp.A.X * TILE_SIZE * TestingScale + (Offset.X + Velocity.X)), (int)(tp.A.Y * TILE_SIZE * TestingScale + (Offset.Y + Velocity.Y)), (int)(TILE_SIZE * TestingScale + 1), (int)(TILE_SIZE * TestingScale + 1));
+                                        if (TPRect.Intersects(CharacterRect))
+                                            Offset = new Vector2(ScreenWidth / 2 - tp.B.X * TILE_SIZE * TestingScale, ScreenHeight / 2 - tp.B.Y * TILE_SIZE * TestingScale);
+
+                                        foreach (var area in CurrentMap.areas)
+                                        {
+                                            if (area.AreaCords.Contains(tp.B.X, tp.B.Y))
+                                            {
+                                                CurrentArea = area;
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         internal void FillSelection()

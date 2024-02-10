@@ -6,8 +6,19 @@ using Microsoft.Xna.Framework.Input;
 
 namespace tile_mapper
 {
+
+    internal class Label
+    {
+        public string Text;
+        public int ID;
+        public Rectangle LabelRect;
+        public Rectangle SourceRect = new Rectangle(320, 112, 160, 32); // Standard button
+        public bool IsVisible;
+
+    }
     internal class UI_Menu
     {
+        public List<Label> labels;
         public bool IsVisible;
         public Rectangle Source;
         public Rectangle Destination;
@@ -15,11 +26,13 @@ namespace tile_mapper
 
         public UI_Menu(bool IsVisible, Rectangle Source, Rectangle Destination)
         {
+            labels = new List<Label>();
             buttons = new List<Button>();
             this.IsVisible = IsVisible;
             this.Source = Source;
             this.Destination = Destination;
         }
+
 
         public void Draw(SpriteBatch spriteBatch, Texture2D UI, int ScreenHeight, int ScreenWidth, float ScaleX, float ScaleY, SpriteFont font, float TextScale)
         {
@@ -30,7 +43,12 @@ namespace tile_mapper
                 {
                     if(button != null && button.IsVisible)
                     {
-                        spriteBatch.Draw(UI, button.ButtonRect, button.SourceRect, Color.White);
+                        Rectangle source = button.SourceRect;
+                        if (button.IsPressed)
+                        {
+                            source.X = button.PressedSourceX;
+                        }
+                        spriteBatch.Draw(UI, button.ButtonRect, source, Color.White);
                         spriteBatch.DrawString(
                         font,
                         button.Text,
@@ -46,7 +64,29 @@ namespace tile_mapper
                             0f // Depth, set to 0 for the default depth
                         );
                     }
-                }  
+                }
+                foreach (var label in labels)
+                {
+                    if(label.IsVisible)
+                    {
+                        spriteBatch.Draw(UI, label.LabelRect, label.SourceRect, Color.White);
+                        spriteBatch.DrawString(
+                        font,
+                        label.Text,
+                        new Vector2(
+                                label.LabelRect.X + label.LabelRect.Width / 2 - font.MeasureString(label.Text).X * TextScale / 2,
+                                label.LabelRect.Y + label.LabelRect.Height / 2 - font.MeasureString(label.Text).Y * TextScale / 2
+                            ),
+                            Color.White,
+                            0f, // Rotation angle, set to 0 for no rotation
+                            Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
+                            TextScale, // Scale factor
+                            SpriteEffects.None, // Sprite effects, set to None for no effects
+                            0f // Depth, set to 0 for the default depth
+                        );
+                    }
+                    
+                }    
             }
         }
 
@@ -85,6 +125,7 @@ namespace tile_mapper
     {
         public Rectangle Destination;
         public Rectangle Source;
+        public bool Collision;
 
         public string ID;
 
@@ -106,7 +147,16 @@ namespace tile_mapper
         ClosePalette,
         SpecifyDoor,
         EditState,
-        TestState
+        TestState,
+        MakeCollision,
+        RemoveLayer,
+        AddLayer,
+        RemoveArea,
+        AddArea,
+        MoveLeftArea,
+        MoveRightArea,
+        MoveLeftLayer,
+        MoveRightLayer
     }
     internal class Button
     {
@@ -119,6 +169,7 @@ namespace tile_mapper
         public bool IsVisible = true;
         public int HelperInt;
         public bool IsPressed = false;
+        public int PressedSourceX;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible) 
         {
             this.Text = text;
@@ -208,6 +259,8 @@ namespace tile_mapper
         public List<Area> areas = new List<Area>();
 
         public List<Teleportation> Teleportations = new List<Teleportation>();
+
+        public List<SpriteTile> CollisionTiles = new List<SpriteTile>();
 
         public Point StartLocation;
         public bool StartLocationSpecified;

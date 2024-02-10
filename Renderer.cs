@@ -153,7 +153,6 @@ namespace tile_mapper
 
                         if (area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID != "0")
                         {
-
                             spriteBatch.Draw(TileSheet, DestRect, area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White);
                         }
                     }
