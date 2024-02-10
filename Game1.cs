@@ -94,6 +94,7 @@ namespace tile_mapper
         Button AddLayer;
         Button RemoveLayer;
         Area StartArea;
+        Rectangle CharacterSource = new Rectangle(0, 800, 32, 32);
         
 
         Rectangle CharacterRect;
@@ -497,7 +498,7 @@ namespace tile_mapper
             if(state == EditorState.Test)
             {
                 Renderer.DrawArea(CurrentArea, Offset, TILE_SIZE, TestingScale, ScreenWidth, ScreenHeight, CurrentMap, _spriteBatch, TileSheet);
-                _spriteBatch.Draw(UI, CharacterRect, new Rectangle(0, 768, 32, 32), Color.White);
+                _spriteBatch.Draw(UI, CharacterRect, CharacterSource, Color.White);
             }
 
 
@@ -744,6 +745,7 @@ namespace tile_mapper
                             CurrentArea = StartArea;
                             OriginalOffset = Offset;
                             Offset = new Vector2(ScreenWidth/2 - CurrentMap.StartLocation.X * TILE_SIZE * TestingScale, ScreenHeight/2 - CurrentMap.StartLocation.Y * TILE_SIZE * TestingScale);
+                            CharacterSource.X = 0;
                             break;
                         case ButtonAction.EditState:
                             state = EditorState.Edit;
@@ -817,13 +819,25 @@ namespace tile_mapper
         {
             float Speed = (state == EditorState.Test) ? TestingSpeed : MoveSpeed;
             if (keyboardState.IsKeyDown(Keys.A))
+            {
                 Velocity.X += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                CharacterSource.X = 96;
+            }
             if (keyboardState.IsKeyDown(Keys.S))
+            {
                 Velocity.Y -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                CharacterSource.X = 0;
+            }
             if (keyboardState.IsKeyDown(Keys.D))
+            {
                 Velocity.X -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                CharacterSource.X = 64;
+            }
             if (keyboardState.IsKeyDown(Keys.W))
+            {
                 Velocity.Y += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                CharacterSource.X = 32;
+            }
         }
 
         internal bool CheckCollision()
