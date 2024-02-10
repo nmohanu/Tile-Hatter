@@ -867,16 +867,17 @@ namespace tile_mapper
                                     {
                                         Rectangle TPRect = new Rectangle((int)(tp.A.X * TILE_SIZE * TestingScale + (Offset.X + Velocity.X)), (int)(tp.A.Y * TILE_SIZE * TestingScale + (Offset.Y + Velocity.Y)), (int)(TILE_SIZE * TestingScale + 1), (int)(TILE_SIZE * TestingScale + 1));
                                         if (TPRect.Intersects(CharacterRect))
+                                        {
                                             Offset = new Vector2(ScreenWidth / 2 - tp.B.X * TILE_SIZE * TestingScale, ScreenHeight / 2 - tp.B.Y * TILE_SIZE * TestingScale);
 
-                                        foreach (var area in CurrentMap.areas)
-                                        {
-                                            if (area.AreaCords.Contains(tp.B.X, tp.B.Y))
+                                            foreach (var area in CurrentMap.areas)
                                             {
-                                                CurrentArea = area;
+                                                if (area.AreaCords.Contains(tp.B.X, tp.B.Y))
+                                                {
+                                                    CurrentArea = area;
+                                                }
                                             }
                                         }
-
                                     }
                                 }
                             }
