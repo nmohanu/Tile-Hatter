@@ -12,7 +12,7 @@ namespace tile_mapper
 {
     internal static class Renderer
     {
-        public static void RenderGrid(SpriteBatch spriteBatch, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection, Canvas CurrentMap)
+        public static void RenderGrid(SpriteBatch spriteBatch, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection, Canvas CurrentMap, Game1.CursorState CursorActionState)
         {
 
             Vector2 Difference = new Vector2(- Offset.X, - Offset.Y);
@@ -58,7 +58,7 @@ namespace tile_mapper
 
                     if (j == SelectedY && i == SelectedX)
                     {
-                        if (selected != null)
+                        if (selected != null && CursorActionState == Game1.CursorState.Draw)
                             spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
                         else
                             spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);

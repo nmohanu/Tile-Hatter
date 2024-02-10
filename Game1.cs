@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,18 +13,13 @@ namespace tile_mapper
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        public enum SelectedTool
-        {
-            None,
-            Draw,
-            Fill,
-            Eraser
-        }
-
         public enum CursorState
         {
             SpecifyingStartPoint,
             SpecifyDoor,
+            Draw,
+            Eraser,
+            Fill,
             None
         }
 
@@ -74,7 +68,6 @@ namespace tile_mapper
         Point SelectionEnd;
         Point ClickPoint;
         Rectangle Selection;
-        SelectedTool Tool = SelectedTool.None;
         Button DrawTool;
         Button FillTool;
         Button EraserTool;
@@ -181,8 +174,8 @@ namespace tile_mapper
             EraserTool = new Button("", new Rectangle(96 * 6 + 64, 0, 32, 32), 192 + 64, 192 + 64, ButtonAction.EraserTool, true);
             SpecifyStartPoint = new Button("", new Rectangle(96 * 6 + 96, 0, 32, 32), 352, 352, ButtonAction.SpecifyStartPoint, true);
             SpecifyDoor = new Button("", new Rectangle(96 * 6 + 128, 0, 32, 32), 352 - 32, 352 - 32, ButtonAction.SpecifyDoor, true);
-            TestMap = new Button("", new Rectangle(96 * 6 + 128 + 32, 0, 32, 32), 352 + 32, 352 + 32, ButtonAction.TestState, true);
-            StopTest = new Button("", new Rectangle(96 * 6 + 128 + 64, 0, 32, 32), 352 + 64, 352 + 64, ButtonAction.EditState, true);
+            TestMap = new Button("", new Rectangle(ScreenWidth/2 -32, 0, 32, 32), 352 + 32, 352 + 96, ButtonAction.TestState, true);
+            StopTest = new Button("", new Rectangle(ScreenWidth/2, 0, 32, 32), 352 + 64, 352 + 128, ButtonAction.EditState, true);
             CollisionCheckBox = new Button("", new Rectangle(1767, 832, 32, 32), 288, 288, ButtonAction.MakeCollision, false);
             CollisionCheckBox.SourceRect.Y = 80;
             CollisionCheckBox.PressedSourceX = 320;
@@ -353,7 +346,7 @@ namespace tile_mapper
                             selected = rect;
                             selected.ID = rect.ID;
                             selected.Source = rect.Source;
-                            Tool = SelectedTool.Draw;
+                            CursorActionState = CursorState.Draw;
                             CurrentTileID.IsVisible = true;
                             CurrentTileID.Text = "ID: " + selected.ID;
                             Collision.IsVisible = true;
@@ -477,7 +470,7 @@ namespace tile_mapper
             {
                 // Draw map (all layers)
                 Renderer.RenderMap(CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
-                Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection, CurrentMap);
+                Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection, CurrentMap, CursorActionState);
                 // Start point
                 if (CurrentMap.StartLocationSpecified)
                 {
@@ -531,6 +524,10 @@ namespace tile_mapper
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingPoint, Color.White);
             else if(CursorActionState == CursorState.SpecifyDoor)
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingDoor, Color.White);
+            else if(CursorActionState == CursorState.Fill)
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), FillTool.SourceRect, Color.White);
+            else if(CursorActionState == CursorState.Eraser)
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), EraserTool.SourceRect, Color.White);
             else
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSource, Color.White);
 
@@ -648,7 +645,8 @@ namespace tile_mapper
                     A = null;
                     B = null;
                 }
-                if(resetCursorState)
+
+                if(resetCursorState && CursorActionState != CursorState.Eraser)
                     CursorActionState = CursorState.None;
 
 
@@ -713,14 +711,14 @@ namespace tile_mapper
                             TilePaletteVisible = true;
                             break;
                         case ButtonAction.DrawTool:
-                            Tool = SelectedTool.Draw;
+                            CursorActionState = CursorState.Draw;
                             break;
                         case ButtonAction.FillTool:
-                            Tool = SelectedTool.Fill;
+                            CursorActionState = CursorState.Fill;
                             FillSelection();
                             break;
                         case ButtonAction.EraserTool:
-                            Tool = SelectedTool.Eraser;
+                            CursorActionState = CursorState.Eraser;
                             break;
                         case ButtonAction.SelectArea:
                             foreach (var area in CurrentMap.areas)
@@ -784,9 +782,9 @@ namespace tile_mapper
                 {
                     if(area.AreaCords.Contains(SelectedX, SelectedY))
                     {
-                        switch (Tool)
+                        switch (CursorActionState)
                         {
-                            case SelectedTool.Draw:
+                            case CursorState.Draw:
                                 if(area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID != selected.ID)
                                 {
                                     area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = selected.ID;
@@ -794,11 +792,11 @@ namespace tile_mapper
                                     Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
                                 }
                                 break;
-                            case SelectedTool.Eraser:
+                            case CursorState.Eraser:
                                 area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = "0";
                                 area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = new Rectangle();
                                 break;
-                            case SelectedTool.Fill:
+                            case CursorState.Fill:
                                 if(PreviousMouseState.LeftButton != ButtonState.Pressed) // Exception
                                 {
                                     bool allowed = true;
