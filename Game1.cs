@@ -436,15 +436,22 @@ namespace tile_mapper
             if(keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !PreviousKeybordState.IsKeyDown(Keys.Z))
             {
 
-                //if(Actions.Count > 0)
-                //{
-                //    UserAction UndoAction = Actions.Peek();
+                if (Actions.Count > 0)
+                {
+                    UserAction UndoAction = Actions.Peek();
 
-                //    if(UndoAction.Action == UserAction.ActionType.Draw)
-                //        CurrentMap.layers[UndoAction.Layer].TileMap[UndoAction.y, UndoAction.x] = new Tile();
-
-                //    Actions.Pop();
-                //}
+                    if (UndoAction.Action == UserAction.ActionType.Draw)
+                    {
+                        foreach (var area in CurrentMap.areas)
+                        {
+                            if (area.AreaCords.Contains(UndoAction.x, UndoAction.y))
+                            {
+                                area.layers[UndoAction.Layer].TileMap[UndoAction.y - area.AreaCords.Y, UndoAction.x - area.AreaCords.X] = new Tile();
+                            }
+                        }
+                    }
+                    Actions.Pop();
+                }
             }
                
             if(state == EditorState.Edit || !CheckCollision())
@@ -780,9 +787,12 @@ namespace tile_mapper
                         switch (Tool)
                         {
                             case SelectedTool.Draw:
-                                area.layers[CurrentLayer].TileMap[SelectedY-area.AreaCords.Y, SelectedX-area.AreaCords.X].ID = selected.ID;
-                                area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = selected.Source;
-                                Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+                                if(area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID != selected.ID)
+                                {
+                                    area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = selected.ID;
+                                    area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = selected.Source;
+                                    Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+                                }
                                 break;
                             case SelectedTool.Eraser:
                                 area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = "0";

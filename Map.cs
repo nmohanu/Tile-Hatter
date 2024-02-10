@@ -107,6 +107,8 @@ namespace tile_mapper
     {
         public ActionType Action;
         public int x, y, Layer;
+        public Rectangle Rect;
+        Area Area;
        
         public UserAction(ActionType action, int layer, int x, int y) 
         {
@@ -114,11 +116,22 @@ namespace tile_mapper
             this.Layer = layer;
             this.x = x;
             this.y = y;
+
         }
+        public UserAction(ActionType action, int layer, Rectangle rect, Area area)
+        {
+            this.Action = action;
+            this.Layer = layer;
+            this.Rect = rect;
+            this.Area = area;
+        }
+
         public enum ActionType
         {
             Draw,
-            Remove
+            Remove,
+            DrawMuliple,
+            RemoveMultiple,
         }
     }
     internal class SpriteTile
