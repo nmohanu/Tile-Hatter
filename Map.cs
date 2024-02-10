@@ -12,7 +12,7 @@ namespace tile_mapper
         public string Text;
         public int ID;
         public Rectangle LabelRect;
-        public Rectangle SourceRect = new Rectangle(320, 112, 160, 32); // Standard button
+        public Rectangle SourceRect = new Rectangle(320, 112, 0, 0); // Standard button
         public bool IsVisible;
 
     }
@@ -56,7 +56,7 @@ namespace tile_mapper
                                 button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
                                 button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
                             ),
-                            Color.White,
+                            button.color,
                             0f, // Rotation angle, set to 0 for no rotation
                             Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
                             TextScale, // Scale factor
@@ -67,7 +67,7 @@ namespace tile_mapper
                 }
                 foreach (var label in labels)
                 {
-                    if(label.IsVisible)
+                    if(label.IsVisible && label.Text != null)
                     {
                         spriteBatch.Draw(UI, label.LabelRect, label.SourceRect, Color.White);
                         spriteBatch.DrawString(
@@ -169,7 +169,8 @@ namespace tile_mapper
         MoveLeftArea,
         MoveRightArea,
         MoveLeftLayer,
-        MoveRightLayer
+        MoveRightLayer,
+        OpenObjectMenu
     }
     internal class Button
     {
@@ -183,6 +184,7 @@ namespace tile_mapper
         public int HelperInt;
         public bool IsPressed = false;
         public int PressedSourceX;
+        public Color color = Color.White;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible) 
         {
             this.Text = text;

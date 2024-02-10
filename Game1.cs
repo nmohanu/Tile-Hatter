@@ -29,6 +29,14 @@ namespace tile_mapper
             Test
         }
 
+        public enum MenuState
+        {
+            LayerMenu,
+            AreaMenu,
+            DoorMenu,
+            ObjectMenu
+        }
+
         int TILE_SIZE = 16;
         Texture2D Grid;
         SpriteSheet SpriteSheet;
@@ -53,10 +61,17 @@ namespace tile_mapper
         int SelectedY;
         string TileSheetPath = "../../../Content/Temp/tile_sheet.png";
         Texture2D TileSheet;
+
         UI_Menu TileMenu;
         UI_Menu TopBar;
         UI_Menu GeneralOverlay;
         UI_Menu Properties;
+
+        UI_Menu LayerMenu;
+        UI_Menu AreaMenu;
+        UI_Menu DoorMenu;
+        UI_Menu ObjectMenu;
+
         List<UI_Menu> UI_Elements;
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
@@ -86,7 +101,13 @@ namespace tile_mapper
         Button RemoveArea;
         Button AddLayer;
         Button RemoveLayer;
+        Button ObjectButton;
         Area StartArea;
+        Area SelectedArea;
+
+        List<UI_Menu> PropertyMenu1 = new List<UI_Menu>();
+
+
         Rectangle CharacterSource = new Rectangle(0, 800, 32, 32);
         
 
@@ -96,6 +117,11 @@ namespace tile_mapper
         Label CurrentTileID;
         Label Collision;
         Label LayerName;
+        Label AreaName;
+        Label AreaWidth;
+        Label AreaHeight;
+        Label AreaX;
+        Label AreaY;
 
         Rectangle MouseSource = new Rectangle(0, 720, 32, 32);
         Rectangle MouseSourceSpecifyingPoint = new Rectangle(352, 48, 32, 32);
@@ -103,13 +129,13 @@ namespace tile_mapper
         CursorState CursorActionState = Game1.CursorState.None;
         bool TilePaletteVisible;
         Point? A = null;
-        Point? B = null;
         EditorState state = EditorState.Edit;
         Area CurrentArea;
         float TestingScale = 4f;
         float TestingSpeed = 516f;
         UI_Menu TileProperties;
-        
+
+        MenuState menuState;
 
         Stack<UserAction> Actions = new Stack<UserAction>();
 
@@ -161,12 +187,22 @@ namespace tile_mapper
             ScaleX = 1f;
             ScaleY = 1f;
 
-            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            NewMap = new Button("New", new Rectangle(0, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save, true);
+            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 320 + 96, 320, ButtonAction.None, true);
+            LoadMap.SourceRect.Y = 160;
+            LoadMap.color = new Color(0x42, 0x52, 0x53); 
+            NewMap = new Button("New", new Rectangle(0, 0, 96, 32), 320 + 96, 320, ButtonAction.None, true);
+            NewMap.SourceRect.Y = 160;
+            NewMap.color = new Color(0x42, 0x52, 0x53);
+            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 320 + 96, 320, ButtonAction.None, true);
+            EditMap.SourceRect.Y = 160;
+            EditMap.color = new Color(0x42, 0x52, 0x53);
+            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 320 + 96, 320, ButtonAction.Save, true);
+            SaveMap.SourceRect.Y = 160;
+            SaveMap.color = new Color(0x42, 0x52, 0x53);
             Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import, true);
-            Settings = new Button("Settings ", new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.None, true);
+            Settings = new Button("Settings ", new Rectangle(96 * 4, 0, 96, 32), 320 + 96, 320, ButtonAction.None, true);
+            Settings.SourceRect.Y = 160;
+            Settings.color = new Color(0x42, 0x52, 0x53);
             OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.OpenPalette, true);
             ClosePalette = new Button("", new Rectangle(272, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.ClosePalette, true);
             DrawTool = new Button("", new Rectangle(96 * 6, 0, 32, 32), 192, 192, ButtonAction.DrawTool, true);
@@ -174,28 +210,30 @@ namespace tile_mapper
             EraserTool = new Button("", new Rectangle(96 * 6 + 64, 0, 32, 32), 192 + 64, 192 + 64, ButtonAction.EraserTool, true);
             SpecifyStartPoint = new Button("", new Rectangle(96 * 6 + 96, 0, 32, 32), 352, 352, ButtonAction.SpecifyStartPoint, true);
             SpecifyDoor = new Button("", new Rectangle(96 * 6 + 128, 0, 32, 32), 352 - 32, 352 - 32, ButtonAction.SpecifyDoor, true);
-            TestMap = new Button("", new Rectangle(ScreenWidth/2 -32, 0, 32, 32), 352 + 32, 352 + 96, ButtonAction.TestState, true);
-            StopTest = new Button("", new Rectangle(ScreenWidth/2, 0, 32, 32), 352 + 64, 352 + 128, ButtonAction.EditState, true);
+            ObjectButton = new Button("", new Rectangle(96 * 6 + 160, 0, 32, 32), 368, 368, ButtonAction.OpenObjectMenu, true);
+            ObjectButton.SourceRect.Y = 80;
+            TestMap = new Button("", new Rectangle(ScreenWidth/2 -32, 0, 32, 32), 352 + 96, 352 + 32, ButtonAction.TestState, true);
+            StopTest = new Button("", new Rectangle(ScreenWidth/2, 0, 32, 32), 352 + 128, 352 + 64, ButtonAction.EditState, true);
             CollisionCheckBox = new Button("", new Rectangle(1767, 832, 32, 32), 288, 288, ButtonAction.MakeCollision, false);
             CollisionCheckBox.SourceRect.Y = 80;
             CollisionCheckBox.PressedSourceX = 320;
 
-            MoveLeftLayer = new Button("", new Rectangle(1776, 512, 32, 32), 32, 32, ButtonAction.MoveLeftLayer, true);
+            MoveLeftLayer = new Button("", new Rectangle(1776, 512, 32, 32), 32 + 128, 32, ButtonAction.MoveLeftLayer, true);
             MoveLeftLayer.SourceRect.Y = 752;
-            AddLayer = new Button("", new Rectangle(1776 + 32, 512, 32, 32), 96, 96, ButtonAction.AddLayer, true);
+            AddLayer = new Button("", new Rectangle(1776 + 32, 512, 32, 32), 96 + 128, 96, ButtonAction.AddLayer, true);
             AddLayer.SourceRect.Y = 752;
-            RemoveLayer = new Button("", new Rectangle(1776 + 64, 512, 32, 32), 128, 128, ButtonAction.RemoveLayer, true);
+            RemoveLayer = new Button("", new Rectangle(1776 + 64, 512, 32, 32), 128 + 128, 128, ButtonAction.RemoveLayer, true);
             RemoveLayer.SourceRect.Y = 752;
-            MoveRightLayer = new Button("", new Rectangle(1776 + 96, 512, 32, 32), 64, 64, ButtonAction.MoveRightLayer, true);
+            MoveRightLayer = new Button("", new Rectangle(1776 + 96, 512, 32, 32), 64 + 128, 64, ButtonAction.MoveRightLayer, true);
             MoveRightLayer.SourceRect.Y = 752;
 
-            MoveLeftArea= new Button("", new Rectangle(1776, 256, 32, 32), 32, 32, ButtonAction.MoveRightArea, true);
+            MoveLeftArea= new Button("", new Rectangle(1776, 256, 32, 32), 32 + 128, 32, ButtonAction.MoveRightArea, true);
             MoveLeftArea.SourceRect.Y = 752;
-            AddArea = new Button("", new Rectangle(1776 + 32, 256, 32, 32), 96, 96, ButtonAction.AddArea, true);
+            AddArea = new Button("", new Rectangle(1776 + 32, 256, 32, 32), 96 + 128, 96, ButtonAction.AddArea, true);
             AddArea.SourceRect.Y = 752;
-            RemoveArea = new Button("", new Rectangle(1776 + 64, 256, 32, 32), 128, 128, ButtonAction.RemoveArea, true);
+            RemoveArea = new Button("", new Rectangle(1776 + 64, 256, 32, 32), 128 + 128, 128, ButtonAction.RemoveArea, true);
             RemoveArea.SourceRect.Y = 752;
-            MoveRightArea = new Button("", new Rectangle(1776 + 96, 256, 32, 32), 64, 64, ButtonAction.MoveRightArea, true);
+            MoveRightArea = new Button("", new Rectangle(1776 + 96, 256, 32, 32), 64 + 128, 64, ButtonAction.MoveRightArea, true);
             MoveRightArea.SourceRect.Y = 752;
 
             CurrentTileID = new Label();
@@ -212,13 +250,37 @@ namespace tile_mapper
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
             GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
             Properties = new UI_Menu(true, new Rectangle(1760, 32, 160, 1048), new Rectangle(1760, 32, 160, 0));
+            LayerMenu = new UI_Menu(true, new Rectangle(1760, 32, 160, 0), new Rectangle(1760, 32, 160, 0));
+            AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 160, 0), new Rectangle(1760, 32, 160, 0));
+            DoorMenu = new UI_Menu(false, new Rectangle(1760, 32, 160, 0), new Rectangle(1760, 32, 160, 0));
+            ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 160, 0), new Rectangle(1760, 32, 160, 0));
+
             TileProperties = new UI_Menu(true, new Rectangle(1768, 802, 148, 256), new Rectangle(1768, 802, 0, 0));
 
             LayerName = new Label();
             LayerName.LabelRect = new Rectangle(1766, 542, 150, 32);
-            LayerName.SourceRect.Width = 0;
-            LayerName.SourceRect.Height = 0;
             LayerName.IsVisible = true;
+
+            AreaName = new Label();
+            AreaName.LabelRect = new Rectangle(1766, 542, 150, 32);
+            AreaName.IsVisible = true;
+
+            AreaWidth = new Label();
+            AreaWidth.LabelRect = new Rectangle(1766, 542 + 32, 150, 32);
+            AreaWidth.IsVisible = true;
+
+            AreaHeight = new Label();
+            AreaHeight.LabelRect = new Rectangle(1766, 542 + 64, 150, 32);
+            AreaHeight.IsVisible = true;
+
+            AreaX = new Label();
+            AreaX.LabelRect = new Rectangle(1766, 542 + 96, 150, 32);
+            AreaX.IsVisible = true;
+
+            AreaY = new Label();
+            AreaY.LabelRect = new Rectangle(1766, 542 + 128, 150, 32);
+            AreaY.IsVisible = true;
+
 
             CurrentTileID.LabelRect = new Rectangle(1766, 800, 150, 32);
             CurrentTileID.SourceRect.Width = 0;
@@ -267,19 +329,37 @@ namespace tile_mapper
             TopBar.buttons.Add(SpecifyDoor);
             TopBar.buttons.Add(TestMap);
             TopBar.buttons.Add(StopTest);
+            TopBar.buttons.Add(ObjectButton);
             GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
             TileMenu.buttons.Add(ClosePalette);
+
             TileProperties.labels.Add(CurrentTileID);
             TileProperties.labels.Add(Collision);
             TileProperties.buttons.Add(CollisionCheckBox);
-            Properties.labels.Add(LayerName);
+
+            LayerMenu.labels.Add(LayerName);
+
+            AreaMenu.labels.Add(AreaName);
+            AreaMenu.labels.Add(AreaWidth);
+            AreaMenu.labels.Add(AreaHeight);
+            AreaMenu.labels.Add(AreaX);
+            AreaMenu.labels.Add(AreaY);
 
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
             UI_Elements.Add(GeneralOverlay);
             UI_Elements.Add(Properties);
             UI_Elements.Add(TileProperties);
+            UI_Elements.Add(LayerMenu);
+            UI_Elements.Add(DoorMenu);
+            UI_Elements.Add(AreaMenu);
+            UI_Elements.Add(ObjectMenu);
+
+            PropertyMenu1.Add(LayerMenu);
+            PropertyMenu1.Add(AreaMenu);
+            PropertyMenu1.Add(DoorMenu);
+            PropertyMenu1.Add(ObjectMenu);
 
             CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int) (32 * 2f), (int)(32 * 2f));
 
@@ -386,6 +466,12 @@ namespace tile_mapper
                 Offset -= mousePositionDifference * Scale;
             }
 
+            if(keyboardState.IsKeyDown(Keys.Escape))
+            {
+                CursorActionState = CursorState.None;
+                Selection.Width = 0;
+                Selection.Height = 0;
+            }
 
             // Only update the selected square if user is not using scroll wheel.
             if (mouseState.ScrollWheelValue == OriginalScrollWheelValue)
@@ -515,10 +601,10 @@ namespace tile_mapper
 
             // Draw cordinates
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
-            _spriteBatch.DrawString(font, Cords, new Vector2(96 - font.MeasureString(Cords).X/2, 32  + font.MeasureString(Cords).Y / 2), Color.White);
+            _spriteBatch.DrawString(font, Cords, new Vector2(96 - font.MeasureString(Cords).X/2, 32  + font.MeasureString(Cords).Y / 2), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
 
             // TEMP
-            _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
+            _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
 
             if(CursorActionState == CursorState.SpecifyingStartPoint)
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingPoint, Color.White);
@@ -629,7 +715,6 @@ namespace tile_mapper
                                 CurrentMap.Teleportations.Add(tp);
 
                                 A = null;
-                                B = null;
 
                             }
                             else
@@ -643,10 +728,9 @@ namespace tile_mapper
                 else
                 {
                     A = null;
-                    B = null;
                 }
 
-                if(resetCursorState && CursorActionState != CursorState.Eraser)
+                if(resetCursorState && CursorActionState != CursorState.Eraser && CursorActionState != CursorState.Draw && CursorActionState != CursorState.Fill)
                     CursorActionState = CursorState.None;
 
 
@@ -701,6 +785,9 @@ namespace tile_mapper
                             ClickedAreaButton = buttonClicked;
                             LayerName.Text = "ID: " + ClickedAreaButton.Text;
                             // Properties.labels.FirstOrDefault(obj => obj.Text == LayerName.Text).Text = ClickedLayerButton.Text;
+                            menuState = MenuState.LayerMenu;
+                            UpdateMenuState();
+
                             break;
                         case ButtonAction.Save:
                             WriteFile();
@@ -729,8 +816,35 @@ namespace tile_mapper
                                     buttonClicked.IsPressed = true;
                                     if(ClickedAreaButton != null)
                                         ClickedAreaButton.IsPressed = false;
-                                    
+                                    ClickedAreaButton = buttonClicked;
+                                    SelectedArea = area;
                                 }
+                            }
+
+                            AreaName.Text = SelectedArea.AreaName;
+                            AreaHeight.Text = "Width: " + SelectedArea.AreaCords.Height.ToString();
+                            AreaWidth.Text = "Height: " + SelectedArea.AreaCords.Width.ToString();
+                            AreaX.Text = "Left: " + SelectedArea.AreaCords.X.ToString();
+                            AreaY.Text = "Top: " + SelectedArea.AreaCords.Y.ToString();
+
+                            menuState = MenuState.AreaMenu;
+                            UpdateMenuState();
+
+                            break;
+                        case ButtonAction.RemoveArea:
+                            if(ClickedAreaButton != null)
+                            {
+                                for(int i = 0; i < CurrentMap.areas.Count; i++)
+                                {
+                                    if (CurrentMap.areas[i].AreaName == ClickedAreaButton.Text)
+                                    {
+                                        CurrentMap.areas.Remove(CurrentMap.areas[i]);
+                                    }
+                                }
+
+                                Properties.buttons.Remove(Properties.buttons.LastOrDefault(obj => obj.Text == ClickedAreaButton.Text));
+
+                                ClickedAreaButton = null;
                             }
                             break;
                         case ButtonAction.SpecifyStartPoint:
@@ -935,51 +1049,76 @@ namespace tile_mapper
         }
 
         internal void FillClicked()
+        {
+            Area areaClicked = null;
+            foreach (var area in CurrentMap.areas)
             {
-                Area areaClicked = null;
-                foreach (var area in CurrentMap.areas)
+                if (area.AreaCords.Contains(SelectedX, SelectedY))
                 {
-                    if (area.AreaCords.Contains(SelectedX, SelectedY))
-                    {
-                        areaClicked = area;
-                        break;
-                    }
-                }
-                if (areaClicked == null)
-                {
-                    return;
-                }
-
-                string IDToFill = areaClicked.layers[CurrentLayer].TileMap[SelectedY - areaClicked.AreaCords.Y, SelectedX - areaClicked.AreaCords.X].ID;
-
-                HashSet<(int, int)> visited = new HashSet<(int, int)>();
-                Queue<(int, int)> queue = new Queue<(int, int)>();
-                queue.Enqueue((SelectedX, SelectedY));
-
-                while (queue.Count > 0)
-                {
-                    var (x, y) = queue.Dequeue();
-
-                    if (!areaClicked.AreaCords.Contains(x, y) || areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID != IDToFill || visited.Contains((x, y)))
-                    {
-                        continue;
-                    }
-
-                    visited.Add((x, y));
-
-                    // Fill the current tile
-                    areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
-                    areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].Source = selected.Source;
-
-                    // Enqueue neighboring tiles
-                    queue.Enqueue((x + 1, y));
-                    queue.Enqueue((x - 1, y));
-                    queue.Enqueue((x, y + 1));
-                    queue.Enqueue((x, y - 1));
+                    areaClicked = area;
+                    break;
                 }
             }
+            if (areaClicked == null)
+            {
+                return;
+            }
 
+            string IDToFill = areaClicked.layers[CurrentLayer].TileMap[SelectedY - areaClicked.AreaCords.Y, SelectedX - areaClicked.AreaCords.X].ID;
+
+            HashSet<(int, int)> visited = new HashSet<(int, int)>();
+            Queue<(int, int)> queue = new Queue<(int, int)>();
+            queue.Enqueue((SelectedX, SelectedY));
+
+            while (queue.Count > 0)
+            {
+                var (x, y) = queue.Dequeue();
+
+                if (!areaClicked.AreaCords.Contains(x, y) || areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID != IDToFill || visited.Contains((x, y)))
+                {
+                    continue;
+                }
+
+                visited.Add((x, y));
+
+                // Fill the current tile
+                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
+                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].Source = selected.Source;
+
+                // Enqueue neighboring tiles
+                queue.Enqueue((x + 1, y));
+                queue.Enqueue((x - 1, y));
+                queue.Enqueue((x, y + 1));
+                queue.Enqueue((x, y - 1));
+            }
         }
+
+        internal void UpdateMenuState()
+        {
+            foreach (var menu in PropertyMenu1)
+            {
+                menu.IsVisible = false;
+            }
+
+            switch (menuState)
+            {
+                case MenuState.LayerMenu:
+                    LayerMenu.IsVisible = true;
+                    break;
+                case MenuState.AreaMenu:
+                    AreaMenu.IsVisible = true;
+                    break;
+                case MenuState.DoorMenu:
+                    DoorMenu.IsVisible = true;
+                    break;
+                case MenuState.ObjectMenu:
+                    ObjectMenu.IsVisible = true;
+                    break;
+            }
+        }
+
+    }
+
 }
 
 

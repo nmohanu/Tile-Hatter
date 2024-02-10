@@ -27,7 +27,7 @@ namespace tile_mapper
             EndX++;
             EndY++;
 
-            Color color = Color.Gray * 0.2f;
+            Color color = Color.Gray * 0.5f;
 
             for (int i = StartX; i < EndX; i++)
             {
@@ -61,13 +61,13 @@ namespace tile_mapper
                         if (selected != null && CursorActionState == Game1.CursorState.Draw)
                             spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
                         else
-                            spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
+                            spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White * 0.3f);
                     }
 
 
                     if (Selection.Contains(new Point(i, j)))
                     {
-                        spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White);
+                        spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White * 0.5f);
                     }
 
                     foreach (var area in CurrentMap.areas)
