@@ -170,7 +170,9 @@ namespace tile_mapper
         MoveRightArea,
         MoveLeftLayer,
         MoveRightLayer,
-        OpenObjectMenu
+        OpenObjectMenu,
+        EditorScreen,
+        SheetScreen
     }
     internal class Button
     {

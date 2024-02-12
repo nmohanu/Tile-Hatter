@@ -34,6 +34,7 @@ namespace tile_mapper
             LayerMenu,
             AreaMenu,
             DoorMenu,
+            SpriteTileMenu,
             ObjectMenu
         }
 
@@ -46,12 +47,7 @@ namespace tile_mapper
         float MoveSpeed = 1024;
         Vector2 Velocity = Vector2.Zero;
         Vector2 Offset = Vector2.Zero;
-        Button NewMap;
-        Button LoadMap;
-        Button EditMap;
-        Button SaveMap;
         Button Import;
-        Button Settings;
         SpriteFont font;
         float TextScale = 0.6f;
         float ScaleX;
@@ -93,15 +89,10 @@ namespace tile_mapper
         Button TestMap;
         Button StopTest;
         Button CollisionCheckBox;
-        Button MoveLeftArea;
-        Button MoveRightArea;
-        Button MoveLeftLayer;
-        Button MoveRightLayer;
-        Button AddArea;
-        Button RemoveArea;
-        Button AddLayer;
-        Button RemoveLayer;
         Button ObjectButton;
+        Button WorldScreen;
+        Button SheetScreen;
+        Button RuleSetScreen;
         Area StartArea;
         Area SelectedArea;
 
@@ -123,7 +114,7 @@ namespace tile_mapper
         Label AreaX;
         Label AreaY;
 
-        Rectangle MouseSource = new Rectangle(0, 720, 32, 32);
+        Rectangle MouseSource = new Rectangle(0, 784, 32, 32);
         Rectangle MouseSourceSpecifyingPoint = new Rectangle(352, 48, 32, 32);
         Rectangle MouseSourceSpecifyingDoor = new Rectangle(352 - 32, 48, 32, 32);
         CursorState CursorActionState = Game1.CursorState.None;
@@ -187,98 +178,94 @@ namespace tile_mapper
             ScaleX = 1f;
             ScaleY = 1f;
 
-            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 320 + 96, 320, ButtonAction.None, true);
-            LoadMap.SourceRect.Y = 160;
-            LoadMap.color = new Color(0x42, 0x52, 0x53); 
-            NewMap = new Button("New", new Rectangle(0, 0, 96, 32), 320 + 96, 320, ButtonAction.None, true);
-            NewMap.SourceRect.Y = 160;
-            NewMap.color = new Color(0x42, 0x52, 0x53);
-            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 320 + 96, 320, ButtonAction.None, true);
-            EditMap.SourceRect.Y = 160;
-            EditMap.color = new Color(0x42, 0x52, 0x53);
-            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 320 + 96, 320, ButtonAction.Save, true);
-            SaveMap.SourceRect.Y = 160;
-            SaveMap.color = new Color(0x42, 0x52, 0x53);
-            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import, true);
-            Settings = new Button("Settings ", new Rectangle(96 * 4, 0, 96, 32), 320 + 96, 320, ButtonAction.None, true);
-            Settings.SourceRect.Y = 160;
-            Settings.color = new Color(0x42, 0x52, 0x53);
+            Import = new Button("Import", new Rectangle(144 - 128/2, ScreenHeight / 2 - 24, 128, 48), 288, 64, ButtonAction.Import, true);
+            Import.SourceRect.Y = 128;
             OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.OpenPalette, true);
             ClosePalette = new Button("", new Rectangle(272, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.ClosePalette, true);
-            DrawTool = new Button("", new Rectangle(96 * 6, 0, 32, 32), 192, 192, ButtonAction.DrawTool, true);
-            FillTool = new Button("", new Rectangle(96 * 6 + 32, 0, 32, 32), 192 + 32, 192 + 32, ButtonAction.FillTool, true);
-            EraserTool = new Button("", new Rectangle(96 * 6 + 64, 0, 32, 32), 192 + 64, 192 + 64, ButtonAction.EraserTool, true);
-            SpecifyStartPoint = new Button("", new Rectangle(96 * 6 + 96, 0, 32, 32), 352, 352, ButtonAction.SpecifyStartPoint, true);
-            SpecifyDoor = new Button("", new Rectangle(96 * 6 + 128, 0, 32, 32), 352 - 32, 352 - 32, ButtonAction.SpecifyDoor, true);
-            ObjectButton = new Button("", new Rectangle(96 * 6 + 160, 0, 32, 32), 368, 368, ButtonAction.OpenObjectMenu, true);
+
+            DrawTool = new Button("", new Rectangle(0, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
+            DrawTool.SourceRect.Y = 96;
+
+            FillTool = new Button("", new Rectangle(32, 32, 32, 32), 160 + 32, 160 + 32, ButtonAction.FillTool, true);
+            FillTool.SourceRect.Y = 96;
+
+            EraserTool = new Button("", new Rectangle(64, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
+            EraserTool.SourceRect.Y = 96;
+
+            SpecifyStartPoint = new Button("", new Rectangle(96, 32, 32, 32), 160 + 128 + 32, 160 + 128 + 32, ButtonAction.SpecifyStartPoint, true);
+            SpecifyStartPoint.SourceRect.Y = 96;
+
+            SpecifyDoor = new Button("", new Rectangle(128, 32, 32, 32), 128 + 128, 128 + 128, ButtonAction.SpecifyDoor, true);
+            SpecifyDoor.SourceRect.Y = 96;
+
+            ObjectButton = new Button("", new Rectangle(160, 0, 32, 32), 368, 368, ButtonAction.OpenObjectMenu, true);
             ObjectButton.SourceRect.Y = 80;
-            TestMap = new Button("", new Rectangle(ScreenWidth/2 -32, 0, 32, 32), 352 + 96, 352 + 32, ButtonAction.TestState, true);
-            StopTest = new Button("", new Rectangle(ScreenWidth/2, 0, 32, 32), 352 + 128, 352 + 64, ButtonAction.EditState, true);
+
+            TestMap = new Button("", new Rectangle(ScreenWidth/2 -32, 0, 32, 32), 0, 0, ButtonAction.TestState, true);
+            TestMap.SourceRect.Y = 128;
+            StopTest = new Button("", new Rectangle(ScreenWidth/2, 0, 32, 32), 32,32, ButtonAction.EditState, true);
+            StopTest.SourceRect.Y = 128;
             CollisionCheckBox = new Button("", new Rectangle(1767, 832, 32, 32), 288, 288, ButtonAction.MakeCollision, false);
             CollisionCheckBox.SourceRect.Y = 80;
             CollisionCheckBox.PressedSourceX = 320;
 
-            MoveLeftLayer = new Button("", new Rectangle(1776, 512, 32, 32), 32 + 128, 32, ButtonAction.MoveLeftLayer, true);
-            MoveLeftLayer.SourceRect.Y = 752;
-            AddLayer = new Button("", new Rectangle(1776 + 32, 512, 32, 32), 96 + 128, 96, ButtonAction.AddLayer, true);
-            AddLayer.SourceRect.Y = 752;
-            RemoveLayer = new Button("", new Rectangle(1776 + 64, 512, 32, 32), 128 + 128, 128, ButtonAction.RemoveLayer, true);
-            RemoveLayer.SourceRect.Y = 752;
-            MoveRightLayer = new Button("", new Rectangle(1776 + 96, 512, 32, 32), 64 + 128, 64, ButtonAction.MoveRightLayer, true);
-            MoveRightLayer.SourceRect.Y = 752;
+            WorldScreen = new Button("Editor", new Rectangle(0, 0, 144, 32), 304, 304, ButtonAction.EditorScreen, true);
+            WorldScreen.IsPressed = true;
+            WorldScreen.PressedSourceX = 448;
+            WorldScreen.SourceRect.Y = 192;
 
-            MoveLeftArea= new Button("", new Rectangle(1776, 256, 32, 32), 32 + 128, 32, ButtonAction.MoveRightArea, true);
-            MoveLeftArea.SourceRect.Y = 752;
-            AddArea = new Button("", new Rectangle(1776 + 32, 256, 32, 32), 96 + 128, 96, ButtonAction.AddArea, true);
-            AddArea.SourceRect.Y = 752;
-            RemoveArea = new Button("", new Rectangle(1776 + 64, 256, 32, 32), 128 + 128, 128, ButtonAction.RemoveArea, true);
-            RemoveArea.SourceRect.Y = 752;
-            MoveRightArea = new Button("", new Rectangle(1776 + 96, 256, 32, 32), 64 + 128, 64, ButtonAction.MoveRightArea, true);
-            MoveRightArea.SourceRect.Y = 752;
+            SheetScreen = new Button("Sprite Sheet", new Rectangle(144, 0, 144, 32), 304, 304, ButtonAction.SheetScreen, true);
+            SheetScreen.IsPressed = false;
+            SheetScreen.PressedSourceX = 448;
+            SheetScreen.SourceRect.Y = 192;
+
+            RuleSetScreen = new Button("Rule sets", new Rectangle(288, 0, 144, 32), 304, 304, ButtonAction.SheetScreen, true);
+            RuleSetScreen.IsPressed = false;
+            RuleSetScreen.PressedSourceX = 448;
+            RuleSetScreen.SourceRect.Y = 192;
 
             CurrentTileID = new Label();
             Collision = new Label();
 
-            DrawTool.SourceRect.Y = 48;
-            OpenPalette.SourceRect = new Rectangle(0, 656, 32, 32);
-            ClosePalette.SourceRect = new Rectangle(0, 688, 32, 32);
+            OpenPalette.SourceRect = new Rectangle(0, 720, 32, 32);
+            ClosePalette.SourceRect = new Rectangle(0, 752, 32, 32);
 
 
             Offset = new Vector2(ScreenWidth/2, ScreenHeight/2);
 
-            TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
-            TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
+            TileMenu = new UI_Menu(false, new Rectangle(0, 192, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
+            TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 80), new Rectangle(0, 0, 1920, 67));
             GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
-            Properties = new UI_Menu(true, new Rectangle(1760, 32, 160, 1048), new Rectangle(1760, 32, 160, 0));
-            LayerMenu = new UI_Menu(true, new Rectangle(1760, 32, 160, 0), new Rectangle(1760, 32, 160, 0));
-            AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 160, 0), new Rectangle(1760, 32, 160, 0));
-            DoorMenu = new UI_Menu(false, new Rectangle(1760, 32, 160, 0), new Rectangle(1760, 32, 160, 0));
-            ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 160, 0), new Rectangle(1760, 32, 160, 0));
+            Properties = new UI_Menu(true, new Rectangle(1655, 64, 266, 1080), new Rectangle(1655, 0, 266, 1080));
+            LayerMenu = new UI_Menu(true, new Rectangle(1655, 0, 0, 0), new Rectangle(1655, 0, 0, 0));
+            AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1760, 32, 0, 0));
+            DoorMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1760, 32, 0, 0));
+            ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1760, 32, 0, 0));
 
-            TileProperties = new UI_Menu(true, new Rectangle(1768, 802, 148, 256), new Rectangle(1768, 802, 0, 0));
+            TileProperties = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), new Rectangle(1768, 802, 0, 0));
 
             LayerName = new Label();
-            LayerName.LabelRect = new Rectangle(1766, 542, 150, 32);
+            LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
             LayerName.IsVisible = true;
 
             AreaName = new Label();
-            AreaName.LabelRect = new Rectangle(1766, 542, 150, 32);
+            AreaName.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
             AreaName.IsVisible = true;
 
             AreaWidth = new Label();
-            AreaWidth.LabelRect = new Rectangle(1766, 542 + 32, 150, 32);
+            AreaWidth.LabelRect = new Rectangle(1660, 624, 256, 32);
             AreaWidth.IsVisible = true;
 
             AreaHeight = new Label();
-            AreaHeight.LabelRect = new Rectangle(1766, 542 + 64, 150, 32);
+            AreaHeight.LabelRect = new Rectangle(1660, 624 + 32, 256, 32);
             AreaHeight.IsVisible = true;
 
             AreaX = new Label();
-            AreaX.LabelRect = new Rectangle(1766, 542 + 96, 150, 32);
+            AreaX.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
             AreaX.IsVisible = true;
 
             AreaY = new Label();
-            AreaY.LabelRect = new Rectangle(1766, 542 + 128, 150, 32);
+            AreaY.LabelRect = new Rectangle(1660, 624 + 96, 256, 32);
             AreaY.IsVisible = true;
 
 
@@ -293,35 +280,21 @@ namespace tile_mapper
 
             for (int i = 0; i <= CurrentMap.LayerAmount; i++)
             {
-                Button button = new Button("Layer: " + (i + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + 16 + 32 * i + 8 * i + 256, 96, 32), 96, 0, ButtonAction.Layer, true);
+                Button button = new Button("Layer: " + (i + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * i, 224, 48), 288, 64, ButtonAction.Layer, true);
+                button.SourceRect.Y = 128;
                 if(i == 0)
                 {
                     button.IsPressed = true;
                     ClickedLayerButton = button;
                 }
                 button.HelperInt = i;
-                button.PressedSourceX = 96;
+                button.PressedSourceX = 288;
                 Properties.buttons.Add(button);
 
             }
 
             LayerName.Text = "ID: " + ClickedLayerButton.Text;
 
-
-            Properties.buttons.Add(MoveLeftLayer);
-            Properties.buttons.Add(AddLayer);
-            Properties.buttons.Add(RemoveLayer);
-            Properties.buttons.Add(MoveRightLayer);
-            Properties.buttons.Add(MoveLeftArea);
-            Properties.buttons.Add(AddArea);
-            Properties.buttons.Add(RemoveArea);
-            Properties.buttons.Add(MoveRightArea);
-
-            TopBar.buttons.Add(NewMap);
-            TopBar.buttons.Add(SaveMap);
-            TopBar.buttons.Add(LoadMap);
-            TopBar.buttons.Add(EditMap);
-            TopBar.buttons.Add(Settings);
             TopBar.buttons.Add(DrawTool);
             TopBar.buttons.Add(FillTool);
             TopBar.buttons.Add(EraserTool);
@@ -330,6 +303,9 @@ namespace tile_mapper
             TopBar.buttons.Add(TestMap);
             TopBar.buttons.Add(StopTest);
             TopBar.buttons.Add(ObjectButton);
+            TopBar.buttons.Add(WorldScreen);
+            TopBar.buttons.Add(SheetScreen);
+            TopBar.buttons.Add(RuleSetScreen);
             GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
             TileMenu.buttons.Add(ClosePalette);
@@ -373,7 +349,7 @@ namespace tile_mapper
             SpriteSheet = new SpriteSheet(TILE_SIZE);
             SpriteSheet.Texture = Content.Load<Texture2D>("tile_sheet");
 
-            using (FileStream stream = new FileStream("../../../Content/UI.png", FileMode.Open))
+            using (FileStream stream = new FileStream("../../../Content/UI_new.png", FileMode.Open))
             {
                 UI = Texture2D.FromStream(GraphicsDevice, stream);
             }
@@ -545,7 +521,7 @@ namespace tile_mapper
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.DimGray);
+            GraphicsDevice.Clear(Color.Gray);
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
@@ -601,10 +577,10 @@ namespace tile_mapper
 
             // Draw cordinates
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
-            _spriteBatch.DrawString(font, Cords, new Vector2(96 - font.MeasureString(Cords).X/2, 32  + font.MeasureString(Cords).Y / 2), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
+            _spriteBatch.DrawString(font, Cords, new Vector2(96 - font.MeasureString(Cords).X/2, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
 
             // TEMP
-            _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
+            // _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
 
             if(CursorActionState == CursorState.SpecifyingStartPoint)
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingPoint, Color.White);
@@ -782,8 +758,7 @@ namespace tile_mapper
                                 ClickedLayerButton.IsPressed = false;
                             buttonClicked.IsPressed = true;
                             ClickedLayerButton = buttonClicked;
-                            ClickedAreaButton = buttonClicked;
-                            LayerName.Text = "ID: " + ClickedAreaButton.Text;
+                            LayerName.Text = "ID: " + ClickedLayerButton.Text;
                             // Properties.labels.FirstOrDefault(obj => obj.Text == LayerName.Text).Text = ClickedLayerButton.Text;
                             menuState = MenuState.LayerMenu;
                             UpdateMenuState();

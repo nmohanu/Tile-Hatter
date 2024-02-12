@@ -27,7 +27,7 @@ namespace tile_mapper
             EndX++;
             EndY++;
 
-            Color color = Color.Gray * 0.5f;
+            Color color = Color.Gray * 0.2f;
 
             for (int i = StartX; i < EndX; i++)
             {
