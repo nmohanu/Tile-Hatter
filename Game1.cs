@@ -93,13 +93,18 @@ namespace tile_mapper
         Button WorldScreen;
         Button SheetScreen;
         Button RuleSetScreen;
+        Button AreaMenuButton;
+        Button LayerMenuButton;
+        Button ObjectMenuButton;
+        Button SpriteMenuButton;
+
         Area StartArea;
         Area SelectedArea;
 
         List<UI_Menu> PropertyMenu1 = new List<UI_Menu>();
 
 
-        Rectangle CharacterSource = new Rectangle(0, 800, 32, 32);
+        Rectangle CharacterSource = new Rectangle(0, 864, 32, 32);
         
 
         Rectangle CharacterRect;
@@ -192,10 +197,10 @@ namespace tile_mapper
             EraserTool = new Button("", new Rectangle(64, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
             EraserTool.SourceRect.Y = 96;
 
-            SpecifyStartPoint = new Button("", new Rectangle(96, 32, 32, 32), 160 + 128 + 32, 160 + 128 + 32, ButtonAction.SpecifyStartPoint, true);
+            SpecifyStartPoint = new Button("", new Rectangle(96, 32, 32, 32), 288 + 32, 288 + 32, ButtonAction.SpecifyStartPoint, true);
             SpecifyStartPoint.SourceRect.Y = 96;
 
-            SpecifyDoor = new Button("", new Rectangle(128, 32, 32, 32), 128 + 128, 128 + 128, ButtonAction.SpecifyDoor, true);
+            SpecifyDoor = new Button("", new Rectangle(128, 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
             SpecifyDoor.SourceRect.Y = 96;
 
             ObjectButton = new Button("", new Rectangle(160, 0, 32, 32), 368, 368, ButtonAction.OpenObjectMenu, true);
@@ -205,9 +210,9 @@ namespace tile_mapper
             TestMap.SourceRect.Y = 128;
             StopTest = new Button("", new Rectangle(ScreenWidth/2, 0, 32, 32), 32,32, ButtonAction.EditState, true);
             StopTest.SourceRect.Y = 128;
-            CollisionCheckBox = new Button("", new Rectangle(1767, 832, 32, 32), 288, 288, ButtonAction.MakeCollision, false);
-            CollisionCheckBox.SourceRect.Y = 80;
-            CollisionCheckBox.PressedSourceX = 320;
+            //CollisionCheckBox = new Button("", new Rectangle(1660, 656-64, 32, 32), 288, 288, ButtonAction.MakeCollision, false);
+            //CollisionCheckBox.SourceRect.Y = 80;
+            //CollisionCheckBox.PressedSourceX = 320;
 
             WorldScreen = new Button("Editor", new Rectangle(0, 0, 144, 32), 304, 304, ButtonAction.EditorScreen, true);
             WorldScreen.IsPressed = true;
@@ -223,6 +228,26 @@ namespace tile_mapper
             RuleSetScreen.IsPressed = false;
             RuleSetScreen.PressedSourceX = 448;
             RuleSetScreen.SourceRect.Y = 192;
+
+            LayerMenuButton = new Button("", new Rectangle(1660, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenLayerMenu, true);
+            LayerMenuButton.IsPressed = true;
+            LayerMenuButton.SourceRect.Y = 1184;
+            LayerMenuButton.PressedSourceX = 1648;
+
+            AreaMenuButton = new Button("", new Rectangle(1660 + 32, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenAreaMenu, true);
+            AreaMenuButton.IsPressed = false;
+            AreaMenuButton.SourceRect.Y = 1184 + 32;
+            AreaMenuButton.PressedSourceX = 1648;
+
+            ObjectMenuButton = new Button("", new Rectangle(1660 + 64, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenObjectMenu, true);
+            ObjectMenuButton.IsPressed = false;
+            ObjectMenuButton.SourceRect.Y = 1184 + 64;
+            ObjectMenuButton.PressedSourceX = 1648;
+
+            SpriteMenuButton = new Button("", new Rectangle(1660 + 96, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenObjectMenu, true);
+            SpriteMenuButton.IsPressed = false;
+            SpriteMenuButton.SourceRect.Y = 1184 + 96;
+            SpriteMenuButton.PressedSourceX = 1648;
 
             CurrentTileID = new Label();
             Collision = new Label();
@@ -273,10 +298,10 @@ namespace tile_mapper
             CurrentTileID.SourceRect.Width = 0;
             CurrentTileID.SourceRect.Height = 0;
 
-            Collision.LabelRect = new Rectangle(1766, 800 + 32, 150, 32);
-            Collision.Text = "Collision";
-            Collision.SourceRect.Width = 0;
-            Collision.SourceRect.Height = 0;
+            //Collision.LabelRect = new Rectangle(1660, 656 + 64, 256, 32);
+            //Collision.Text = "Collision";
+            //Collision.SourceRect.Width = 0;
+            //Collision.SourceRect.Height = 0;
 
             for (int i = 0; i <= CurrentMap.LayerAmount; i++)
             {
@@ -289,7 +314,7 @@ namespace tile_mapper
                 }
                 button.HelperInt = i;
                 button.PressedSourceX = 288;
-                Properties.buttons.Add(button);
+                LayerMenu.buttons.Add(button);
 
             }
 
@@ -310,9 +335,15 @@ namespace tile_mapper
             TileMenu.buttons.Add(Import);
             TileMenu.buttons.Add(ClosePalette);
 
-            TileProperties.labels.Add(CurrentTileID);
-            TileProperties.labels.Add(Collision);
-            TileProperties.buttons.Add(CollisionCheckBox);
+            Properties.buttons.Add(LayerMenuButton);
+            Properties.buttons.Add(ObjectMenuButton);
+            Properties.buttons.Add(AreaMenuButton);
+            Properties.buttons.Add(SpriteMenuButton);
+
+
+            //TileProperties.labels.Add(CurrentTileID);
+            //TileProperties.labels.Add(Collision);
+            //TileProperties.buttons.Add(CollisionCheckBox);
 
             LayerMenu.labels.Add(LayerName);
 
@@ -405,9 +436,9 @@ namespace tile_mapper
                             CursorActionState = CursorState.Draw;
                             CurrentTileID.IsVisible = true;
                             CurrentTileID.Text = "ID: " + selected.ID;
-                            Collision.IsVisible = true;
-                            CollisionCheckBox.IsVisible = true;
-                            CollisionCheckBox.IsPressed = selected.Collision;
+                           // Collision.IsVisible = true;
+                            //CollisionCheckBox.IsVisible = true;
+                            //CollisionCheckBox.IsPressed = selected.Collision;
                         }
                         else
                         {
@@ -480,8 +511,10 @@ namespace tile_mapper
                 {
                     string name = "Area: " + (CurrentMap.areas.Count() + 1).ToString();
                     CurrentMap.CreateArea(Selection, name);
-                    Button btn = new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 96 / 2, Properties.Destination.Y + CurrentMap.areas.Count() * 32 - 32 + 16 + 8 * CurrentMap.areas.Count() - 8, 96, 32), 96, 0, ButtonAction.SelectArea, true);
-                    btn.PressedSourceX = 96;
+                    Button btn = new Button("Area " + (CurrentMap.areas.Count() + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y+ 48 * CurrentMap.areas.Count(), 224, 48), 288, 64, ButtonAction.Layer, true);
+                    btn.PressedSourceX = 288;
+                    btn.SourceRect.Y = 128;
+
 
                     Properties.buttons.Add(btn);
                 }
@@ -759,10 +792,10 @@ namespace tile_mapper
                             buttonClicked.IsPressed = true;
                             ClickedLayerButton = buttonClicked;
                             LayerName.Text = "ID: " + ClickedLayerButton.Text;
-                            // Properties.labels.FirstOrDefault(obj => obj.Text == LayerName.Text).Text = ClickedLayerButton.Text;
+                            break;
+                        case ButtonAction.OpenLayerMenu:
                             menuState = MenuState.LayerMenu;
                             UpdateMenuState();
-
                             break;
                         case ButtonAction.Save:
                             WriteFile();
@@ -801,10 +834,10 @@ namespace tile_mapper
                             AreaWidth.Text = "Height: " + SelectedArea.AreaCords.Width.ToString();
                             AreaX.Text = "Left: " + SelectedArea.AreaCords.X.ToString();
                             AreaY.Text = "Top: " + SelectedArea.AreaCords.Y.ToString();
-
+                            break;
+                        case ButtonAction.OpenAreaMenu:
                             menuState = MenuState.AreaMenu;
                             UpdateMenuState();
-
                             break;
                         case ButtonAction.RemoveArea:
                             if(ClickedAreaButton != null)
@@ -1090,10 +1123,13 @@ namespace tile_mapper
                     ObjectMenu.IsVisible = true;
                     break;
             }
+
+            foreach (var btn in Properties.buttons)
+            {
+
+            }
         }
-
     }
-
 }
 
 

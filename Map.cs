@@ -171,6 +171,9 @@ namespace tile_mapper
         MoveLeftLayer,
         MoveRightLayer,
         OpenObjectMenu,
+        OpenLayerMenu,
+        OpenAreaMenu,
+        OpenSpriteMenu,
         EditorScreen,
         SheetScreen
     }
