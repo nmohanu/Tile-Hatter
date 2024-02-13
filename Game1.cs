@@ -570,21 +570,21 @@ namespace tile_mapper
                 if (CurrentMap.StartLocationSpecified)
                 {
                     Rectangle DestRect = new Rectangle((int)(CurrentMap.StartLocation.X * TILE_SIZE * Scale + Offset.X), (int)(CurrentMap.StartLocation.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
-                    _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), new Rectangle(352, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), SpecifyStartPoint.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
                 }
                 if (A.HasValue)
                 {
                     Rectangle DestRect = new Rectangle((int)(A.Value.X * TILE_SIZE * Scale + Offset.X), (int)(A.Value.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
 
-                    _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), new Rectangle(352 - 32, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), SpecifyDoor.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
                 }
 
                 foreach (var tp in CurrentMap.Teleportations)
                 {
                     Rectangle DestA = new Rectangle((int)(tp.A.X * TILE_SIZE * Scale + Offset.X), (int)(tp.A.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
                     Rectangle DestB = new Rectangle((int)(tp.B.X * TILE_SIZE * Scale + Offset.X), (int)(tp.B.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
-                    _spriteBatch.Draw(UI, new Vector2(DestA.X, DestA.Y), new Rectangle(352 - 32, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
-                    _spriteBatch.Draw(UI, new Vector2(DestB.X, DestB.Y), new Rectangle(352 - 32, 48, 32, 32), Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestA.X, DestA.Y), SpecifyDoor.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestB.X, DestB.Y), SpecifyDoor.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
 
                 }
             }
@@ -616,9 +616,9 @@ namespace tile_mapper
             // _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
 
             if(CursorActionState == CursorState.SpecifyingStartPoint)
-                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingPoint, Color.White);
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), SpecifyStartPoint.SourceRect, Color.White);
             else if(CursorActionState == CursorState.SpecifyDoor)
-                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSourceSpecifyingDoor, Color.White);
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), SpecifyDoor.SourceRect, Color.White);
             else if(CursorActionState == CursorState.Fill)
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), FillTool.SourceRect, Color.White);
             else if(CursorActionState == CursorState.Eraser)
