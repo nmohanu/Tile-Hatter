@@ -273,23 +273,23 @@ namespace tile_mapper
             LayerName.IsVisible = true;
 
             AreaName = new Label();
-            AreaName.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
+            AreaName.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
             AreaName.IsVisible = true;
 
             AreaWidth = new Label();
-            AreaWidth.LabelRect = new Rectangle(1660, 624, 256, 32);
+            AreaWidth.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
             AreaWidth.IsVisible = true;
 
             AreaHeight = new Label();
-            AreaHeight.LabelRect = new Rectangle(1660, 624 + 32, 256, 32);
+            AreaHeight.LabelRect = new Rectangle(1660, 624, 256, 32);
             AreaHeight.IsVisible = true;
 
             AreaX = new Label();
-            AreaX.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
+            AreaX.LabelRect = new Rectangle(1660, 624 + 32, 256, 32);
             AreaX.IsVisible = true;
 
             AreaY = new Label();
-            AreaY.LabelRect = new Rectangle(1660, 624 + 96, 256, 32);
+            AreaY.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
             AreaY.IsVisible = true;
 
 
