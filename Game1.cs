@@ -243,7 +243,7 @@ namespace tile_mapper
             ObjectMenuButton.SourceRect.Y = 1184 + 64;
             ObjectMenuButton.PressedSourceX = 1648;
 
-            SpriteMenuButton = new Button("", new Rectangle(1660 + 96, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenObjectMenu, true);
+            SpriteMenuButton = new Button("", new Rectangle(1660 + 96, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenSpriteMenu, true);
             SpriteMenuButton.IsPressed = false;
             SpriteMenuButton.SourceRect.Y = 1184 + 96;
             SpriteMenuButton.PressedSourceX = 1648;
@@ -795,6 +795,14 @@ namespace tile_mapper
                             break;
                         case ButtonAction.OpenLayerMenu:
                             menuState = MenuState.LayerMenu;
+                            UpdateMenuState();
+                            break;
+                        case ButtonAction.OpenSpriteMenu:
+                            menuState = MenuState.SpriteTileMenu;
+                            UpdateMenuState();
+                            break;
+                        case ButtonAction.OpenObjectMenu:
+                            menuState = MenuState.ObjectMenu;
                             UpdateMenuState();
                             break;
                         case ButtonAction.Save:
