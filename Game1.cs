@@ -13,6 +13,7 @@ namespace tile_mapper
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
+        // Cursor state
         public enum CursorState
         {
             SpecifyingStartPoint,
@@ -23,12 +24,14 @@ namespace tile_mapper
             None
         }
 
+        // Edit or testing state
         public enum EditorState
         {
             Edit,
             Test
         }
 
+        // Menu state, determines which menu is shown.
         public enum MenuState
         {
             LayerMenu,
@@ -37,7 +40,9 @@ namespace tile_mapper
             ObjectMenu
         }
 
+        // Temp
         int TILE_SIZE = 16;
+
         Texture2D Grid;
         SpriteSheet SpriteSheet;
         Texture2D UI;
@@ -57,6 +62,7 @@ namespace tile_mapper
         string TileSheetPath = "../../../Content/Temp/tile_sheet.png";
         Texture2D TileSheet;
 
+        // UI Elements
         UI_Menu TileMenu;
         UI_Menu TopBar;
         UI_Menu GeneralOverlay;
@@ -64,10 +70,10 @@ namespace tile_mapper
 
         UI_Menu LayerMenu;
         UI_Menu AreaMenu;
-        UI_Menu DoorMenu;
         UI_Menu ObjectMenu;
 
         List<UI_Menu> UI_Elements;
+
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
         MouseState PreviousMouseState;
@@ -209,9 +215,7 @@ namespace tile_mapper
             TestMap.SourceRect.Y = 128;
             StopTest = new Button("", new Rectangle(ScreenWidth/2, 0, 32, 32), 32,32, ButtonAction.EditState, true);
             StopTest.SourceRect.Y = 128;
-            //CollisionCheckBox = new Button("", new Rectangle(1660, 656-64, 32, 32), 288, 288, ButtonAction.MakeCollision, false);
-            //CollisionCheckBox.SourceRect.Y = 80;
-            //CollisionCheckBox.PressedSourceX = 320;
+
 
             WorldScreen = new Button("Editor", new Rectangle(0, 0, 144, 32), 304, 304, ButtonAction.EditorScreen, true);
             WorldScreen.IsPressed = true;
@@ -263,10 +267,8 @@ namespace tile_mapper
             Properties = new UI_Menu(true, new Rectangle(1655, 64, 266, 1080), new Rectangle(1655, 0, 266, 1080));
             LayerMenu = new UI_Menu(true, new Rectangle(1655, 0, 0, 0), new Rectangle(1655, 0, 0, 0));
             AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1760, 32, 0, 0));
-            DoorMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1760, 32, 0, 0));
             ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1760, 32, 0, 0));
-
-            TileProperties = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), new Rectangle(1768, 802, 0, 0));
+            TileProperties = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1768, 802, 0, 0));
 
             LayerName = new Label();
             LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
@@ -292,16 +294,22 @@ namespace tile_mapper
             AreaY.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
             AreaY.IsVisible = true;
 
-
-            CurrentTileID.LabelRect = new Rectangle(1766, 800, 150, 32);
+            // Sprite tile properties.
+            CurrentTileID.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
             CurrentTileID.SourceRect.Width = 0;
             CurrentTileID.SourceRect.Height = 0;
 
-            //Collision.LabelRect = new Rectangle(1660, 656 + 64, 256, 32);
-            //Collision.Text = "Collision";
-            //Collision.SourceRect.Width = 0;
-            //Collision.SourceRect.Height = 0;
+            Collision.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
+            Collision.Text = "Collision";
+            Collision.SourceRect.Width = 0;
+            Collision.SourceRect.Height = 0;
 
+            CollisionCheckBox = new Button("", new Rectangle(1660, 656 - 64, 32, 32), 32, 0, ButtonAction.MakeCollision, false);
+            CollisionCheckBox.SourceRect.Y = 80;
+            CollisionCheckBox.PressedSourceX = 64;
+
+
+            // Layer menu.
             for (int i = 0; i <= CurrentMap.LayerAmount; i++)
             {
                 Button button = new Button("Layer: " + (i + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * i, 224, 48), 288, 64, ButtonAction.Layer, true);
@@ -340,9 +348,9 @@ namespace tile_mapper
             Properties.buttons.Add(SpriteMenuButton);
 
 
-            //TileProperties.labels.Add(CurrentTileID);
-            //TileProperties.labels.Add(Collision);
-            //TileProperties.buttons.Add(CollisionCheckBox);
+            TileProperties.labels.Add(CurrentTileID);
+            TileProperties.labels.Add(Collision);
+            TileProperties.buttons.Add(CollisionCheckBox);
 
             LayerMenu.labels.Add(LayerName);
 
@@ -352,20 +360,21 @@ namespace tile_mapper
             AreaMenu.labels.Add(AreaX);
             AreaMenu.labels.Add(AreaY);
 
+            // Draw to screen.
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
             UI_Elements.Add(GeneralOverlay);
             UI_Elements.Add(Properties);
-            UI_Elements.Add(TileProperties);
             UI_Elements.Add(LayerMenu);
-            UI_Elements.Add(DoorMenu);
             UI_Elements.Add(AreaMenu);
             UI_Elements.Add(ObjectMenu);
+            UI_Elements.Add(TileProperties);
 
+            // Keep track of the menus in the right UI bar.
             PropertyMenu1.Add(LayerMenu);
             PropertyMenu1.Add(AreaMenu);
-            PropertyMenu1.Add(DoorMenu);
             PropertyMenu1.Add(ObjectMenu);
+            PropertyMenu1.Add(TileProperties);
 
             CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int) (32 * 2f), (int)(32 * 2f));
 
@@ -435,9 +444,9 @@ namespace tile_mapper
                             CursorActionState = CursorState.Draw;
                             CurrentTileID.IsVisible = true;
                             CurrentTileID.Text = "ID: " + selected.ID;
-                           // Collision.IsVisible = true;
-                            //CollisionCheckBox.IsVisible = true;
-                            //CollisionCheckBox.IsPressed = selected.Collision;
+                            Collision.IsVisible = true;
+                            CollisionCheckBox.IsVisible = true;
+                            CollisionCheckBox.IsPressed = selected.Collision;
                         }
                         else
                         {
@@ -558,8 +567,6 @@ namespace tile_mapper
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-           
-
             // Grid
             if(state == EditorState.Edit)
             {
@@ -589,20 +596,18 @@ namespace tile_mapper
                 }
             }
 
-            
+            // Test state
             if(state == EditorState.Test)
             {
                 Renderer.DrawArea(CurrentArea, Offset, TILE_SIZE, TestingScale, ScreenWidth, ScreenHeight, CurrentMap, _spriteBatch, TileSheet);
                 _spriteBatch.Draw(UI, CharacterRect, CharacterSource, Color.White);
             }
 
-
             // UI elements
             foreach (var menu in UI_Elements)
             {
                 menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
             }
-
 
             // Sprite palette menu
             if(TilePaletteVisible)
@@ -1137,7 +1142,7 @@ namespace tile_mapper
                     SpriteMenuButton.IsPressed = false;
                     break;
                 case MenuState.SpriteTileMenu:
-                    DoorMenu.IsVisible = true;
+                    TileProperties.IsVisible = true;
                     LayerMenuButton.IsPressed = false;
                     AreaMenuButton.IsPressed = false;
                     ObjectMenuButton.IsPressed = false;
