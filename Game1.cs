@@ -33,7 +33,6 @@ namespace tile_mapper
         {
             LayerMenu,
             AreaMenu,
-            DoorMenu,
             SpriteTileMenu,
             ObjectMenu
         }
@@ -509,14 +508,15 @@ namespace tile_mapper
                 }
                 if(allowed)
                 {
-                    string name = "Area: " + (CurrentMap.areas.Count() + 1).ToString();
+                    string name = "Area: " + (CurrentMap.areas.Count() +1).ToString();
+                    Button btn = new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y+ 48 + 48 * CurrentMap.areas.Count(), 224, 48), 288, 64, ButtonAction.SelectArea, true);
                     CurrentMap.CreateArea(Selection, name);
-                    Button btn = new Button("Area " + (CurrentMap.areas.Count() + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y+ 48 * CurrentMap.areas.Count(), 224, 48), 288, 64, ButtonAction.Layer, true);
+
                     btn.PressedSourceX = 288;
                     btn.SourceRect.Y = 128;
 
 
-                    Properties.buttons.Add(btn);
+                    AreaMenu.buttons.Add(btn);
                 }
             }
 
@@ -828,12 +828,16 @@ namespace tile_mapper
                                     SelectedArea = area;
                                 }
                             }
+                            if(SelectedArea != null)
+                            {
+                                AreaName.Text = SelectedArea.AreaName;
+                                AreaHeight.Text = "Width: " + SelectedArea.AreaCords.Height.ToString();
+                                AreaWidth.Text = "Height: " + SelectedArea.AreaCords.Width.ToString();
+                                AreaX.Text = "Left: " + SelectedArea.AreaCords.X.ToString();
+                                AreaY.Text = "Top: " + SelectedArea.AreaCords.Y.ToString();
+                            }
 
-                            AreaName.Text = SelectedArea.AreaName;
-                            AreaHeight.Text = "Width: " + SelectedArea.AreaCords.Height.ToString();
-                            AreaWidth.Text = "Height: " + SelectedArea.AreaCords.Width.ToString();
-                            AreaX.Text = "Left: " + SelectedArea.AreaCords.X.ToString();
-                            AreaY.Text = "Top: " + SelectedArea.AreaCords.Y.ToString();
+                            
                             break;
                         case ButtonAction.OpenAreaMenu:
                             menuState = MenuState.AreaMenu;
@@ -1112,21 +1116,32 @@ namespace tile_mapper
             {
                 case MenuState.LayerMenu:
                     LayerMenu.IsVisible = true;
+                    LayerMenuButton.IsPressed = true;
+                    AreaMenuButton.IsPressed = false;
+                    ObjectMenuButton.IsPressed = false;
+                    SpriteMenuButton.IsPressed = false;
                     break;
                 case MenuState.AreaMenu:
                     AreaMenu.IsVisible = true;
+                    LayerMenuButton.IsPressed = false;
+                    AreaMenuButton.IsPressed = true;
+                    ObjectMenuButton.IsPressed = false;
+                    SpriteMenuButton.IsPressed = false;
                     break;
-                case MenuState.DoorMenu:
+                case MenuState.SpriteTileMenu:
                     DoorMenu.IsVisible = true;
+                    LayerMenuButton.IsPressed = false;
+                    AreaMenuButton.IsPressed = false;
+                    ObjectMenuButton.IsPressed = false;
+                    SpriteMenuButton.IsPressed = true;
                     break;
                 case MenuState.ObjectMenu:
                     ObjectMenu.IsVisible = true;
+                    LayerMenuButton.IsPressed = false;
+                    AreaMenuButton.IsPressed = false;
+                    ObjectMenuButton.IsPressed = true;
+                    SpriteMenuButton.IsPressed = false;
                     break;
-            }
-
-            foreach (var btn in Properties.buttons)
-            {
-
             }
         }
     }
