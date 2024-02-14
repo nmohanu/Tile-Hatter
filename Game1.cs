@@ -133,8 +133,6 @@ namespace tile_mapper
         public Vector2 MenuScrollOffset = new Vector2(0, 0);
 
         Rectangle MouseSource = new Rectangle(0, 784, 32, 32);
-        Rectangle MouseSourceSpecifyingPoint = new Rectangle(352, 48, 32, 32);
-        Rectangle MouseSourceSpecifyingDoor = new Rectangle(352 - 32, 48, 32, 32);
         CursorState CursorActionState = Game1.CursorState.None;
         bool TilePaletteVisible;
         Point? A = null;
@@ -586,14 +584,22 @@ namespace tile_mapper
                 if(allowed)
                 {
                     string name = "Area: " + (CurrentMap.areas.Count() +1).ToString();
-                    Button btn = new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y+ 48 + 48 * CurrentMap.areas.Count() + (int)MenuScrollOffset.Y, 224, 48), 288, 64, ButtonAction.SelectArea, true);
+                    Button btn = new Button(name, new Rectangle(AreaMenu.Destination.X + AreaMenu.Destination.Width / 2 - 224 / 2, AreaMenu.Destination.Y + 16 + 48 * CurrentMap.areas.Count() + (int)MenuScrollOffset.Y, 224, 48), 288, 64, ButtonAction.SelectArea, true);
                     CurrentMap.CreateArea(Selection, name);
 
                     btn.PressedSourceX = 288;
                     btn.SourceRect.Y = 128;
 
-
                     AreaMenu.buttons.Add(btn);
+
+                    if(btn.ButtonRect.Bottom > AreaMenu.Destination.Bottom)
+                    {
+                        foreach (var button in AreaMenu.buttons)
+                        {
+                            button.ButtonRect = new Rectangle(button.ButtonRect.X, button.ButtonRect.Y - 48, 224, 48);
+                        }
+                        MenuScrollOffset.Y -= 48;
+                    }
                 }
             }
 
