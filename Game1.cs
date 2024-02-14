@@ -43,6 +43,11 @@ namespace tile_mapper
         // Temp
         int TILE_SIZE = 16;
 
+        GameTime DoubleClickTimer;
+        float TimeSinceLastClick;
+
+        RenderTarget2D ScrollMenuBounds;
+
         Texture2D Grid;
         SpriteSheet SpriteSheet;
         Texture2D UI;
@@ -73,6 +78,7 @@ namespace tile_mapper
         UI_Menu ObjectMenu;
 
         List<UI_Menu> UI_Elements;
+        List<UI_Menu> Scrollable_Menus = new List<UI_Menu>();
 
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
@@ -123,6 +129,8 @@ namespace tile_mapper
         Label AreaHeight;
         Label AreaX;
         Label AreaY;
+
+        public Vector2 MenuScrollOffset = new Vector2(0, 0);
 
         Rectangle MouseSource = new Rectangle(0, 784, 32, 32);
         Rectangle MouseSourceSpecifyingPoint = new Rectangle(352, 48, 32, 32);
@@ -265,10 +273,14 @@ namespace tile_mapper
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 80), new Rectangle(0, 0, 1920, 67));
             GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
             Properties = new UI_Menu(true, new Rectangle(1655, 64, 266, 1080), new Rectangle(1655, 0, 266, 1080));
-            LayerMenu = new UI_Menu(true, new Rectangle(1655, 0, 0, 0), new Rectangle(1655, 0, 0, 0));
-            AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1760, 32, 0, 0));
-            ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1760, 32, 0, 0));
-            TileProperties = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1768, 802, 0, 0));
+            LayerMenu = new UI_Menu(true, new Rectangle(1655, 0, 0, 0), new Rectangle(1660, 32, 256, 496));
+            LayerMenu.Scrollable = true;
+            AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
+            AreaMenu.Scrollable = true;
+            ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
+            ObjectMenu.Scrollable = true;
+            TileProperties = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+            TileProperties.Scrollable = true;
 
             LayerName = new Label();
             LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
@@ -354,21 +366,23 @@ namespace tile_mapper
 
             LayerMenu.labels.Add(LayerName);
 
+            // Labels for area menu
             AreaMenu.labels.Add(AreaName);
             AreaMenu.labels.Add(AreaWidth);
             AreaMenu.labels.Add(AreaHeight);
             AreaMenu.labels.Add(AreaX);
             AreaMenu.labels.Add(AreaY);
 
-            // Draw to screen.
+            // Draw these to screen.
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
             UI_Elements.Add(GeneralOverlay);
             UI_Elements.Add(Properties);
-            UI_Elements.Add(LayerMenu);
-            UI_Elements.Add(AreaMenu);
+
             UI_Elements.Add(ObjectMenu);
-            UI_Elements.Add(TileProperties);
+            UI_Elements.Add(AreaMenu);
+            UI_Elements.Add(LayerMenu);
+            UI_Elements.Add(TileMenu);
 
             // Keep track of the menus in the right UI bar.
             PropertyMenu1.Add(LayerMenu);
@@ -376,7 +390,14 @@ namespace tile_mapper
             PropertyMenu1.Add(ObjectMenu);
             PropertyMenu1.Add(TileProperties);
 
+            Scrollable_Menus.Add(LayerMenu);
+            Scrollable_Menus.Add(AreaMenu);
+            Scrollable_Menus.Add(ObjectMenu);
+            Scrollable_Menus.Add(TileProperties);
+
             CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int) (32 * 2f), (int)(32 * 2f));
+
+            ScrollMenuBounds = new RenderTarget2D(GraphicsDevice, LayerMenu.Destination.Width, LayerMenu.Destination.Height);
 
             base.Initialize();
         }
@@ -401,6 +422,7 @@ namespace tile_mapper
         {
             // Calculate fps
             fps = (float)(1.0f / gameTime.ElapsedGameTime.TotalSeconds);
+            bool DoubleClick;
 
             // Keyboard.
             KeyboardState keyboardState = Keyboard.GetState();
@@ -413,6 +435,13 @@ namespace tile_mapper
             Vector2 MousePosRelative = MousePos - Offset;
             HandleLeftClick(mouseState);
             HandleLeftHold(mouseState, keyboardState);
+
+            //if(mouseState.LeftButton == ButtonState.Pressed)
+            //{
+            //    TimeSinceLastClick = DoubleClickTimer.ElapsedGameTime.Milliseconds;
+            //    if (DoubleClickTimer.ElapsedGameTime.Milliseconds - TimeSinceLastClick > 300)
+            //        DoubleClick = true;
+            //}
 
             // Check if mouse is hoovering on button.
             foreach (var UI in UI_Elements)
@@ -459,26 +488,64 @@ namespace tile_mapper
                     }
                 }
             }
-            // User is scrolling (zooming on map)
+            // User is scrolling
             if (mouseState.ScrollWheelValue != OriginalScrollWheelValue && state == EditorState.Edit)
             {
-                Vector2 Center = new Vector2(Offset.X, Offset.Y);
-                Vector2 MouseBefore = (MousePos - Offset)/Scale;
+                bool MenuScroll = false;
 
-                float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
-                // Adjust the scaling factor based on the scroll wheel delta
-                Scale += adjustment;
-                Scale = MathHelper.Clamp(Scale, 0.5f, 5f);
-                // Vector2 MouseAfter = MouseBefore * Scale;
+                // Scroll is menu scroll.
+                foreach (var menu in UI_Elements)
+                    if (menu.Destination.Contains(MousePos) && menu.IsVisible)
+                    {
+                        if (menu.Scrollable && menu.buttons.Count() > 0)
+                        {
+                            int adjustment = (int) ((mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.04f);
+                            int ScrollYOrg = (int) MenuScrollOffset.Y;
+                            MenuScrollOffset.Y += adjustment;
+                            MenuScrollOffset.Y = Math.Min(MenuScrollOffset.Y, 0);
 
-                Vector2 CenterNew = new Vector2(Offset.X, Offset.Y );
+                            if(menu.buttons[menu.buttons.Count() - 1].ButtonRect.Y + (int)(MenuScrollOffset.Y - ScrollYOrg) < menu.Destination.Bottom - 64)
+                            {
+                                MenuScrollOffset.Y = ScrollYOrg;
+                            }
+                            else
+                            {
+                                foreach (var btn in menu.buttons)
+                                {
+                                    btn.ButtonRect = new Rectangle(btn.ButtonRect.X, btn.ButtonRect.Y + (int)(MenuScrollOffset.Y - ScrollYOrg), 224, 48);
+                                }
+                            }
+                        }
+                        MenuScroll = true;
+                    }
 
-                Offset += ((Center - CenterNew) / 2);
-                Vector2 mouseAfter = (new Vector2(mouseState.X, mouseState.Y) - Offset) / Scale;
 
-                Vector2 mousePositionDifference = MouseBefore - mouseAfter;
-                // Adjust the offset to keep the mouse position stationary
-                Offset -= mousePositionDifference * Scale;
+                // User is zooming on map
+                if (!MenuScroll)
+                {
+                    Vector2 Center = new Vector2(Offset.X, Offset.Y);
+                    Vector2 MouseBefore = (MousePos - Offset) / Scale;
+
+                    float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
+                    // Adjust the scaling factor based on the scroll wheel delta
+                    Scale += adjustment;
+                    Scale = MathHelper.Clamp(Scale, 0.5f, 5f);
+                    // Vector2 MouseAfter = MouseBefore * Scale;
+
+                    Vector2 CenterNew = new Vector2(Offset.X, Offset.Y);
+
+                    Offset += ((Center - CenterNew) / 2);
+                    Vector2 mouseAfter = (new Vector2(mouseState.X, mouseState.Y) - Offset) / Scale;
+
+                    Vector2 mousePositionDifference = MouseBefore - mouseAfter;
+                    // Adjust the offset to keep the mouse position stationary
+                    Offset -= mousePositionDifference * Scale;
+                }
+                else
+                {
+                    
+
+                }
             }
 
             if(keyboardState.IsKeyDown(Keys.Escape))
@@ -505,6 +572,7 @@ namespace tile_mapper
                 SelectedY = (int)Math.Floor(mousePosInt.Y);
             }
 
+            // Create area.
             if (keyboardState.IsKeyDown(Keys.Enter) && !PreviousKeybordState.IsKeyDown(Keys.Enter) && Selection.Width >= 4 && Selection.Height >= 4)
             {
                 bool allowed = true;
@@ -518,7 +586,7 @@ namespace tile_mapper
                 if(allowed)
                 {
                     string name = "Area: " + (CurrentMap.areas.Count() +1).ToString();
-                    Button btn = new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y+ 48 + 48 * CurrentMap.areas.Count(), 224, 48), 288, 64, ButtonAction.SelectArea, true);
+                    Button btn = new Button(name, new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y+ 48 + 48 * CurrentMap.areas.Count() + (int)MenuScrollOffset.Y, 224, 48), 288, 64, ButtonAction.SelectArea, true);
                     CurrentMap.CreateArea(Selection, name);
 
                     btn.PressedSourceX = 288;
@@ -550,10 +618,13 @@ namespace tile_mapper
                     Actions.Pop();
                 }
             }
-               
+
+            // Check collision.
             if(state == EditorState.Edit || !CheckCollision())
                 Offset += Velocity;
 
+
+            // Update helper variables.
             OriginalScrollWheelValue = mouseState.ScrollWheelValue;
             PreviousMouseState = mouseState;
             PreviousKeybordState = keyboardState;
@@ -573,6 +644,7 @@ namespace tile_mapper
                 // Draw map (all layers)
                 Renderer.RenderMap(CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
                 Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection, CurrentMap, CursorActionState);
+
                 // Start point
                 if (CurrentMap.StartLocationSpecified)
                 {
@@ -586,6 +658,7 @@ namespace tile_mapper
                     _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), SpecifyDoor.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
                 }
 
+                // Draw teleportation elements.
                 foreach (var tp in CurrentMap.Teleportations)
                 {
                     Rectangle DestA = new Rectangle((int)(tp.A.X * TILE_SIZE * Scale + Offset.X), (int)(tp.A.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
@@ -606,11 +679,30 @@ namespace tile_mapper
             // UI elements
             foreach (var menu in UI_Elements)
             {
-                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
+                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, false, MenuScrollOffset);
             }
 
+            _spriteBatch.End();
+
+            Rectangle orgScissorRec = _spriteBatch.GraphicsDevice.ScissorRectangle;
+            RasterizerState rasterizerState = new RasterizerState() { ScissorTestEnable = true };
+            _spriteBatch.GraphicsDevice.ScissorRectangle = LayerMenu.Destination;
+
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.Default, rasterizerState);
+
+            // Draw scrollable menus, elements need to be cut off when out of bounds.
+            foreach (var menu in Scrollable_Menus)
+            {
+                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, true, MenuScrollOffset);
+            }
+
+            _spriteBatch.End();
+
+            _spriteBatch.GraphicsDevice.ScissorRectangle = orgScissorRec;
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+
             // Sprite palette menu
-            if(TilePaletteVisible)
+            if (TilePaletteVisible)
                 Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
 
             // Draw cordinates
@@ -620,6 +712,7 @@ namespace tile_mapper
             // TEMP
             // _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
 
+            // Draw cursor based on cursor state.
             if(CursorActionState == CursorState.SpecifyingStartPoint)
                 _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), SpecifyStartPoint.SourceRect, Color.White);
             else if(CursorActionState == CursorState.SpecifyDoor)
@@ -642,7 +735,8 @@ namespace tile_mapper
             
         }
 
-        internal void OpenFile(string path)
+
+        internal void OpenSpriteSheetFile(string path)
         {
             using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open))
             {
@@ -787,7 +881,7 @@ namespace tile_mapper
                     switch (buttonClicked.Action)
                     {
                         case ButtonAction.Import:
-                            OpenFile(TileSheetPath);
+                            OpenSpriteSheetFile(TileSheetPath);
                             buttonClicked.IsVisible = false;
                             break;
                         case ButtonAction.Layer:
@@ -1156,6 +1250,16 @@ namespace tile_mapper
                     SpriteMenuButton.IsPressed = false;
                     break;
             }
+        }
+
+        internal void HandleLabelDoubleClick()
+        {
+
+        }
+
+        internal void ChangeAreaProperties()
+        {
+
         }
     }
 }

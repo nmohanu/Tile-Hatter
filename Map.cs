@@ -23,6 +23,7 @@ namespace tile_mapper
         public Rectangle Source;
         public Rectangle Destination;
         public List<Button> buttons;
+        public bool Scrollable;
 
         public UI_Menu(bool IsVisible, Rectangle Source, Rectangle Destination)
         {
@@ -34,9 +35,9 @@ namespace tile_mapper
         }
 
 
-        public void Draw(SpriteBatch spriteBatch, Texture2D UI, int ScreenHeight, int ScreenWidth, float ScaleX, float ScaleY, SpriteFont font, float TextScale)
+        public void Draw(SpriteBatch spriteBatch, Texture2D UI, int ScreenHeight, int ScreenWidth, float ScaleX, float ScaleY, SpriteFont font, float TextScale, bool RenderScrollableMenus, Vector2 ScrollMenuOffset)
         {
-            if(IsVisible)
+            if(IsVisible && (!Scrollable || RenderScrollableMenus))
             {
                 spriteBatch.Draw(UI, new Vector2(Destination.X, Destination.Y), Source, Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
                 foreach (var button in buttons)
@@ -48,13 +49,21 @@ namespace tile_mapper
                         {
                             source.X = button.PressedSourceX;
                         }
-                        spriteBatch.Draw(UI, button.ButtonRect, source, Color.White);
+
+                        Rectangle Destination = button.ButtonRect;
+
+                        //if(Scrollable)
+                        //{
+                        //    Destination.Y += (int)ScrollMenuOffset.Y;
+                        //}   
+
+                        spriteBatch.Draw(UI, Destination, source, Color.White);
                         spriteBatch.DrawString(
                         font,
                         button.Text,
                         new Vector2(
-                                button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
-                                button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
+                                Destination.X + Destination.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
+                                Destination.Y + Destination.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
                             ),
                             button.color,
                             0f, // Rotation angle, set to 0 for no rotation
@@ -62,6 +71,8 @@ namespace tile_mapper
                             TextScale, // Scale factor
                             SpriteEffects.None, // Sprite effects, set to None for no effects
                             0f // Depth, set to 0 for the default depth
+
+                            
                         );
                     }
                 }
