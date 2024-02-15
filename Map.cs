@@ -336,6 +336,11 @@ namespace tile_mapper
             }
             LayerAmount--;
         }
+
+        public void RemoveArea(int areaIndex)
+        {
+            areas.Remove(areas[areaIndex]);
+        }
     }
 
     internal class Teleportation
