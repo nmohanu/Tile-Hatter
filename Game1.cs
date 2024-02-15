@@ -1286,25 +1286,25 @@ namespace tile_mapper
 
         }
 
-        internal void UpdateLayerList()
+        internal void UpdateLayerList(UI_Menu menu)
         {
             // Make sure the create area button is placed last in list.
-            for (int i = 0; i < LayerMenu.buttons.Count; i++)
+            for (int i = 0; i < menu.buttons.Count; i++)
             {
-                var btn = LayerMenu.buttons[i];
+                var btn = menu.buttons[i];
                 if (btn.Action == ButtonAction.AddLayer)
                 {
-                    LayerMenu.buttons.Remove(btn);
-                    LayerMenu.buttons.Add(btn);
+                    menu.buttons.Remove(btn);
+                    menu.buttons.Add(btn);
                     break;
                 }
             }
 
             // Update button positions.
             int j = 0;
-            foreach (var btn in LayerMenu.buttons)
+            foreach (var btn in menu.buttons)
             {
-                btn.ButtonRect.Y = Properties.Destination.Y + 32 + 16 + 48 * j + (int)LayerMenu.ScrollMenuOffset.Y;
+                btn.ButtonRect.Y = Properties.Destination.Y + 32 + 16 + 48 * j + (int)menu.ScrollMenuOffset.Y;
                 btn.HelperInt = j;
 
                 if (btn.IsDeletable)
@@ -1318,25 +1318,32 @@ namespace tile_mapper
 
         internal void AddLayer()
         {
+
+            // Add button to the list.
+            LayerMenu.buttons.Add(CreateRemovableButton());
+
+            // Update the list
+            UpdateLayerList(LayerMenu);
+
+            // Update map data.
+            CurrentMap.LayerAmount++;
+            CurrentMap.AddLayerToAreas();
+        }
+
+        internal Button CreateRemovableButton()
+        {
             // Create button.
             Button button = new Button("Layer: " + (LayerMenu.buttons.Count()).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, 0, 224, 48), 288, 64, ButtonAction.Layer, true);
             button.SourceRect.Y = 128;
             button.PressedSourceX = 288;
             button.IsDeletable = true;
-            
+
             // Add delete button (X) to the button.
             button.DeleteButton = new Button("", new Rectangle(button.ButtonRect.X + 224 - 24, 0, 16, 16), 144, 128, ButtonAction.RemoveLayer, true);
             button.DeleteButton.SourceRect.Y = 96;
             button.DeleteButton.SourceRect.X = 128;
 
-            // Add button to the list.
-            LayerMenu.buttons.Add(button);
-
-            UpdateLayerList();
-
-            // Update map data.
-            CurrentMap.LayerAmount++;
-            CurrentMap.AddLayerToAreas();
+            return button;
         }
     }
 }
