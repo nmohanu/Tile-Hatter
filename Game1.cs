@@ -13,26 +13,50 @@ namespace tile_mapper
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        // Specify your map size.
-        int MAP_WIDTH = 256;
-        int MAP_HEIGHT = 256;
+        // Cursor state
+        public enum CursorState
+        {
+            SpecifyingStartPoint,
+            SpecifyDoor,
+            Draw,
+            Eraser,
+            Fill,
+            None
+        }
+
+        // Edit or testing state
+        public enum EditorState
+        {
+            Edit,
+            Test
+        }
+
+        // Menu state, determines which menu is shown.
+        public enum MenuState
+        {
+            LayerMenu,
+            AreaMenu,
+            SpriteTileMenu,
+            ObjectMenu
+        }
+
+        // Temp
         int TILE_SIZE = 16;
-        GridTile[,] GridMap;
+
+        GameTime DoubleClickTimer;
+        float TimeSinceLastClick;
+
+        RenderTarget2D ScrollMenuBounds;
+
         Texture2D Grid;
         SpriteSheet SpriteSheet;
         Texture2D UI;
         float Scale = 1f;
         float OriginalScrollWheelValue = 0f;
-        float MoveSpeed = 512;
+        float MoveSpeed = 1024;
         Vector2 Velocity = Vector2.Zero;
         Vector2 Offset = Vector2.Zero;
-        Button NewMap;
-        Button LoadMap;
-        Button EditMap;
-        Button SaveMap;
         Button Import;
-        Button Layer;
-        Button Settings;
         SpriteFont font;
         float TextScale = 0.6f;
         float ScaleX;
@@ -42,22 +66,88 @@ namespace tile_mapper
         int SelectedY;
         string TileSheetPath = "../../../Content/Temp/tile_sheet.png";
         Texture2D TileSheet;
+
+        // UI Elements
         UI_Menu TileMenu;
         UI_Menu TopBar;
+        UI_Menu GeneralOverlay;
+        UI_Menu Properties;
+
+        UI_Menu LayerMenu;
+        UI_Menu AreaMenu;
+        UI_Menu ObjectMenu;
+
         List<UI_Menu> UI_Elements;
+        List<UI_Menu> Scrollable_Menus = new List<UI_Menu>();
+
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
         MouseState PreviousMouseState;
         KeyboardState PreviousKeybordState;
-        List<Button> buttons;
         Button OpenPalette;
+        Button ClosePalette;
+        Point SelectionStart;
+        Point SelectionEnd;
+        Point ClickPoint;
+        Rectangle Selection;
+        Button DrawTool;
+        Button FillTool;
+        Button EraserTool;
+        Button ClickedLayerButton;
+        Button ClickedAreaButton;
+        Button SpecifyStartPoint;
+        Button SpecifyDoor;
+        Button TestMap;
+        Button StopTest;
+        Button CollisionCheckBox;
+        Button ObjectButton;
+        Button WorldScreen;
+        Button SheetScreen;
+        Button RuleSetScreen;
+        Button AreaMenuButton;
+        Button LayerMenuButton;
+        Button ObjectMenuButton;
+        Button SpriteMenuButton;
+
+        Area StartArea;
+        Area SelectedArea;
+
+        List<UI_Menu> PropertyMenu1 = new List<UI_Menu>();
+
+
+        Rectangle CharacterSource = new Rectangle(0, 864, 32, 32);
         
+
+        Rectangle CharacterRect;
+        Vector2 OriginalOffset;
+        
+        Label CurrentTileID;
+        Label Collision;
+        Label LayerName;
+        Label AreaName;
+        Label AreaWidth;
+        Label AreaHeight;
+        Label AreaX;
+        Label AreaY;
+
+        public Vector2 MenuScrollOffset = new Vector2(0, 0);
+
+        Rectangle MouseSource = new Rectangle(0, 784, 32, 32);
+        CursorState CursorActionState = Game1.CursorState.None;
+        bool TilePaletteVisible;
+        Point? A = null;
+        EditorState state = EditorState.Edit;
+        Area CurrentArea;
+        float TestingScale = 4f;
+        float TestingSpeed = 516f;
+        UI_Menu TileProperties;
+
+        MenuState menuState;
+
         Stack<UserAction> Actions = new Stack<UserAction>();
 
         int ScreenWidth;
         int ScreenHeight;
-
-        Vector2 ScreenCenter;
 
         int SheetWidth;
         int SheetHeight;
@@ -65,7 +155,7 @@ namespace tile_mapper
 
         int currentPage = 0;
 
-        Map CurrentMap;
+        Canvas CurrentMap = new Canvas();
         int CurrentLayer = 0;
 
         private float fps;
@@ -79,43 +169,23 @@ namespace tile_mapper
             _graphics.PreferredBackBufferHeight = ScreenHeight;
             IsFixedTimeStep = false;
 
-            Content.RootDirectory = "Content";
-            IsMouseVisible = true;
-        }
 
-        
+            Content.RootDirectory = "Content";
+            IsMouseVisible = false;
+        }
 
         protected override void Initialize()
         {
             // Initialize program.
-            GridMap = new GridTile[MAP_HEIGHT, MAP_WIDTH];
-            CurrentMap = new Map(MAP_HEIGHT, MAP_WIDTH);
-
-            for (int i = 0; i < MAP_HEIGHT; i++)
-            {
-                for (int j = 0; j < MAP_WIDTH; j++)
-                {
-                    GridMap[i, j] = new GridTile
-                    {
-                        GridRect = new Rectangle(j, i, TILE_SIZE, TILE_SIZE)
-                    };
-
-                    CurrentMap.layers[0].TileMap[i, j] = new Tile();
-                    CurrentMap.layers[1].TileMap[i, j] = new Tile();
-                    CurrentMap.layers[2].TileMap[i, j] = new Tile();
-                }
-            }
-
 
             PreviousMouseState = new MouseState();
             PreviousKeybordState = new KeyboardState();
             UI_Elements = new List<UI_Menu>();
-            buttons = new List<Button>();
 
-            ScreenWidth = 1280;
-            ScreenHeight = 720;
+            Window.Title = "Tile-Hatter";
 
-            ScreenCenter = new Vector2(ScreenWidth, ScreenHeight);
+            ScreenWidth = 1920;
+            ScreenHeight = 1080;
 
             _graphics.PreferredBackBufferWidth = ScreenWidth;
             _graphics.PreferredBackBufferHeight = ScreenHeight;
@@ -124,38 +194,208 @@ namespace tile_mapper
             ScaleX = 1f;
             ScaleY = 1f;
 
-            LoadMap = new Button("Load", new Rectangle(96, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            NewMap = new Button("New", new Rectangle(0, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            EditMap = new Button("Edit", new Rectangle(96 * 3, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            SaveMap = new Button("Save", new Rectangle(96 * 2, 0, 96, 32), 96, 0, ButtonAction.Save, true);
-            Import = new Button("Import", new Rectangle(96, ScreenHeight / 2 - 16, 96, 32), 96, 0, ButtonAction.Import, true);
-            Layer = new Button("Layer: " + CurrentLayer.ToString(), new Rectangle(96 * 4, 0, 96, 32), 96, 0, ButtonAction.Layer, true);
-            Settings = new Button("Settings ", new Rectangle(96 * 5, 0, 96, 32), 96, 0, ButtonAction.None, true);
-            OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 96 / 2, 32, 96), 0, 32, ButtonAction.OpenPalette, true)
+            Import = new Button("Import", new Rectangle(144 - 128/2, ScreenHeight / 2 - 24, 128, 48), 288, 64, ButtonAction.Import, true);
+            Import.SourceRect.Y = 128;
+            OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.OpenPalette, true);
+            ClosePalette = new Button("", new Rectangle(272, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.ClosePalette, true);
+
+            DrawTool = new Button("", new Rectangle(0, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
+            DrawTool.SourceRect.Y = 96;
+
+            FillTool = new Button("", new Rectangle(32, 32, 32, 32), 160 + 32, 160 + 32, ButtonAction.FillTool, true);
+            FillTool.SourceRect.Y = 96;
+
+            EraserTool = new Button("", new Rectangle(64, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
+            EraserTool.SourceRect.Y = 96;
+
+            SpecifyStartPoint = new Button("", new Rectangle(96, 32, 32, 32), 288 + 32, 288 + 32, ButtonAction.SpecifyStartPoint, true);
+            SpecifyStartPoint.SourceRect.Y = 96;
+
+            SpecifyDoor = new Button("", new Rectangle(128, 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
+            SpecifyDoor.SourceRect.Y = 96;
+
+            ObjectButton = new Button("", new Rectangle(160, 0, 32, 32), 368, 368, ButtonAction.OpenObjectMenu, true);
+            ObjectButton.SourceRect.Y = 80;
+
+            TestMap = new Button("", new Rectangle(ScreenWidth/2 -32, 0, 32, 32), 0, 0, ButtonAction.TestState, true);
+            TestMap.SourceRect.Y = 128;
+            StopTest = new Button("", new Rectangle(ScreenWidth/2, 0, 32, 32), 32,32, ButtonAction.EditState, true);
+            StopTest.SourceRect.Y = 128;
+
+
+            WorldScreen = new Button("Editor", new Rectangle(0, 0, 144, 32), 304, 304, ButtonAction.EditorScreen, true);
+            WorldScreen.IsPressed = true;
+            WorldScreen.PressedSourceX = 448;
+            WorldScreen.SourceRect.Y = 192;
+
+            SheetScreen = new Button("Sprite Sheet", new Rectangle(144, 0, 144, 32), 304, 304, ButtonAction.SheetScreen, true);
+            SheetScreen.IsPressed = false;
+            SheetScreen.PressedSourceX = 448;
+            SheetScreen.SourceRect.Y = 192;
+
+            RuleSetScreen = new Button("Rule sets", new Rectangle(288, 0, 144, 32), 304, 304, ButtonAction.SheetScreen, true);
+            RuleSetScreen.IsPressed = false;
+            RuleSetScreen.PressedSourceX = 448;
+            RuleSetScreen.SourceRect.Y = 192;
+
+            LayerMenuButton = new Button("", new Rectangle(1660, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenLayerMenu, true);
+            LayerMenuButton.IsPressed = true;
+            LayerMenuButton.SourceRect.Y = 1184;
+            LayerMenuButton.PressedSourceX = 1648;
+
+            AreaMenuButton = new Button("", new Rectangle(1660 + 32, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenAreaMenu, true);
+            AreaMenuButton.IsPressed = false;
+            AreaMenuButton.SourceRect.Y = 1184 + 32;
+            AreaMenuButton.PressedSourceX = 1648;
+
+            ObjectMenuButton = new Button("", new Rectangle(1660 + 64, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenObjectMenu, true);
+            ObjectMenuButton.IsPressed = false;
+            ObjectMenuButton.SourceRect.Y = 1184 + 64;
+            ObjectMenuButton.PressedSourceX = 1648;
+
+            SpriteMenuButton = new Button("", new Rectangle(1660 + 96, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenSpriteMenu, true);
+            SpriteMenuButton.IsPressed = false;
+            SpriteMenuButton.SourceRect.Y = 1184 + 96;
+            SpriteMenuButton.PressedSourceX = 1648;
+
+            CurrentTileID = new Label();
+            Collision = new Label();
+
+            OpenPalette.SourceRect = new Rectangle(0, 720, 32, 32);
+            ClosePalette.SourceRect = new Rectangle(0, 752, 32, 32);
+
+
+            Offset = new Vector2(ScreenWidth/2, ScreenHeight/2);
+
+            TileMenu = new UI_Menu(false, new Rectangle(0, 192, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
+            TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 80), new Rectangle(0, 0, 1920, 67));
+            GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
+            Properties = new UI_Menu(true, new Rectangle(1655, 64, 266, 1080), new Rectangle(1655, 0, 266, 1080));
+            LayerMenu = new UI_Menu(true, new Rectangle(1655, 0, 0, 0), new Rectangle(1660, 32, 256, 496));
+            LayerMenu.Scrollable = true;
+            AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
+            AreaMenu.Scrollable = true;
+            ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
+            ObjectMenu.Scrollable = true;
+            TileProperties = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+            TileProperties.Scrollable = true;
+
+            LayerName = new Label();
+            LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
+            LayerName.IsVisible = true;
+
+            AreaName = new Label();
+            AreaName.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
+            AreaName.IsVisible = true;
+
+            AreaWidth = new Label();
+            AreaWidth.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
+            AreaWidth.IsVisible = true;
+
+            AreaHeight = new Label();
+            AreaHeight.LabelRect = new Rectangle(1660, 624, 256, 32);
+            AreaHeight.IsVisible = true;
+
+            AreaX = new Label();
+            AreaX.LabelRect = new Rectangle(1660, 624 + 32, 256, 32);
+            AreaX.IsVisible = true;
+
+            AreaY = new Label();
+            AreaY.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
+            AreaY.IsVisible = true;
+
+            // Sprite tile properties.
+            CurrentTileID.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
+            CurrentTileID.SourceRect.Width = 0;
+            CurrentTileID.SourceRect.Height = 0;
+
+            Collision.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
+            Collision.Text = "Collision";
+            Collision.SourceRect.Width = 0;
+            Collision.SourceRect.Height = 0;
+
+            CollisionCheckBox = new Button("", new Rectangle(1660, 656 - 64, 32, 32), 32, 0, ButtonAction.MakeCollision, false);
+            CollisionCheckBox.SourceRect.Y = 80;
+            CollisionCheckBox.PressedSourceX = 64;
+
+
+            // Layer menu.
+            for (int i = 0; i <= CurrentMap.LayerAmount; i++)
             {
-                SourceRect = new Rectangle(0, 624, 32, 96)
-            };
+                Button button = new Button("Layer: " + (i + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * i, 224, 48), 288, 64, ButtonAction.Layer, true);
+                button.SourceRect.Y = 128;
+                if(i == 0)
+                {
+                    button.IsPressed = true;
+                    ClickedLayerButton = button;
+                }
+                button.HelperInt = i;
+                button.PressedSourceX = 288;
+                LayerMenu.buttons.Add(button);
 
-            Offset = new Vector2(ScreenWidth/2 - TILE_SIZE * MAP_WIDTH/2, ScreenHeight/2 - TILE_SIZE * MAP_HEIGHT / 2);
+            }
 
-            TileMenu = new UI_Menu(false, new Rectangle(0, 96, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
-            TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 48), new Rectangle(0, 0, 1920, 48));
+            LayerName.Text = "ID: " + ClickedLayerButton.Text;
 
-
-
+            TopBar.buttons.Add(DrawTool);
+            TopBar.buttons.Add(FillTool);
+            TopBar.buttons.Add(EraserTool);
+            TopBar.buttons.Add(SpecifyStartPoint);
+            TopBar.buttons.Add(SpecifyDoor);
+            TopBar.buttons.Add(TestMap);
+            TopBar.buttons.Add(StopTest);
+            TopBar.buttons.Add(ObjectButton);
+            TopBar.buttons.Add(WorldScreen);
+            TopBar.buttons.Add(SheetScreen);
+            TopBar.buttons.Add(RuleSetScreen);
+            GeneralOverlay.buttons.Add(OpenPalette);
             TileMenu.buttons.Add(Import);
+            TileMenu.buttons.Add(ClosePalette);
 
-            TopBar.buttons.Add(NewMap);
-            TopBar.buttons.Add(SaveMap);
-            TopBar.buttons.Add(LoadMap);
-            TopBar.buttons.Add(EditMap);
-            TopBar.buttons.Add(Layer);
-            TopBar.buttons.Add(Settings);
+            Properties.buttons.Add(LayerMenuButton);
+            Properties.buttons.Add(ObjectMenuButton);
+            Properties.buttons.Add(AreaMenuButton);
+            Properties.buttons.Add(SpriteMenuButton);
 
-            buttons.Add(OpenPalette);
 
+            TileProperties.labels.Add(CurrentTileID);
+            TileProperties.labels.Add(Collision);
+            TileProperties.buttons.Add(CollisionCheckBox);
+
+            LayerMenu.labels.Add(LayerName);
+
+            // Labels for area menu
+            AreaMenu.labels.Add(AreaName);
+            AreaMenu.labels.Add(AreaWidth);
+            AreaMenu.labels.Add(AreaHeight);
+            AreaMenu.labels.Add(AreaX);
+            AreaMenu.labels.Add(AreaY);
+
+            // Draw these to screen.
             UI_Elements.Add(TileMenu);
             UI_Elements.Add(TopBar);
+            UI_Elements.Add(GeneralOverlay);
+            UI_Elements.Add(Properties);
+
+            UI_Elements.Add(ObjectMenu);
+            UI_Elements.Add(AreaMenu);
+            UI_Elements.Add(LayerMenu);
+            UI_Elements.Add(TileMenu);
+
+            // Keep track of the menus in the right UI bar.
+            PropertyMenu1.Add(LayerMenu);
+            PropertyMenu1.Add(AreaMenu);
+            PropertyMenu1.Add(ObjectMenu);
+            PropertyMenu1.Add(TileProperties);
+
+            Scrollable_Menus.Add(LayerMenu);
+            Scrollable_Menus.Add(AreaMenu);
+            Scrollable_Menus.Add(ObjectMenu);
+            Scrollable_Menus.Add(TileProperties);
+
+            CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int) (32 * 2f), (int)(32 * 2f));
+
+            ScrollMenuBounds = new RenderTarget2D(GraphicsDevice, LayerMenu.Destination.Width, LayerMenu.Destination.Height);
 
             base.Initialize();
         }
@@ -166,7 +406,12 @@ namespace tile_mapper
 
             SpriteSheet = new SpriteSheet(TILE_SIZE);
             SpriteSheet.Texture = Content.Load<Texture2D>("tile_sheet");
-            UI = Content.Load<Texture2D>("UI");
+
+            using (FileStream stream = new FileStream("../../../Content/UI_new.png", FileMode.Open))
+            {
+                UI = Texture2D.FromStream(GraphicsDevice, stream);
+            }
+            //UI = Content.Load<Texture2D>("UI");
             Grid = Content.Load<Texture2D>("grid");
             font = Content.Load<SpriteFont>("font");
         }
@@ -175,26 +420,40 @@ namespace tile_mapper
         {
             // Calculate fps
             fps = (float)(1.0f / gameTime.ElapsedGameTime.TotalSeconds);
-
-            // Mouse
-            MouseState mouseState = Mouse.GetState();
-            MousePos = new Vector2(mouseState.X, mouseState.Y);
-            Vector2 MousePosRelative = MousePos - Offset;
-            HandleLeftClick(mouseState);
+            bool DoubleClick;
 
             // Keyboard.
             KeyboardState keyboardState = Keyboard.GetState();
             Velocity = Vector2.Zero;
             HandleKeyboard(keyboardState, gameTime);
 
+            // Mouse
+            MouseState mouseState = Mouse.GetState();
+            MousePos = new Vector2(mouseState.X, mouseState.Y);
+            Vector2 MousePosRelative = MousePos - Offset;
+            HandleLeftClick(mouseState);
+            HandleLeftHold(mouseState, keyboardState);
+
+            //if(mouseState.LeftButton == ButtonState.Pressed)
+            //{
+            //    TimeSinceLastClick = DoubleClickTimer.ElapsedGameTime.Milliseconds;
+            //    if (DoubleClickTimer.ElapsedGameTime.Milliseconds - TimeSinceLastClick > 300)
+            //        DoubleClick = true;
+            //}
+
             // Check if mouse is hoovering on button.
             foreach (var UI in UI_Elements)
             {
                 foreach (var button in UI.buttons)
-                    if(button != null)
+                    if(button != null && !button.IsPressed)
                         button.ChangeSourceX(MousePos);
+                    else if(!button.IsPressed)
+                    {
+                        button.SourceRect.X = button.SelectionX;
+                    }
             }
 
+            
             // Tile sheet is imported.
             if(HasTileSheet)
             {
@@ -209,6 +468,12 @@ namespace tile_mapper
                             selected = rect;
                             selected.ID = rect.ID;
                             selected.Source = rect.Source;
+                            CursorActionState = CursorState.Draw;
+                            CurrentTileID.IsVisible = true;
+                            CurrentTileID.Text = "ID: " + selected.ID;
+                            Collision.IsVisible = true;
+                            CollisionCheckBox.IsVisible = true;
+                            CollisionCheckBox.IsPressed = selected.Collision;
                         }
                         else
                         {
@@ -221,51 +486,151 @@ namespace tile_mapper
                     }
                 }
             }
-            
-            // User is scrolling (zooming on map)
-            if (mouseState.ScrollWheelValue != OriginalScrollWheelValue)
+            // User is scrolling
+            if (mouseState.ScrollWheelValue != OriginalScrollWheelValue && state == EditorState.Edit)
             {
-                Vector2 Center = new Vector2(Offset.X + TILE_SIZE * Scale * MAP_WIDTH , Offset.Y + TILE_SIZE * Scale * MAP_HEIGHT);
-                float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
-                // Adjust the scaling factor based on the scroll wheel delta
-                Scale += adjustment;
-                Scale = MathHelper.Clamp(Scale, 0.5f, 5f);
+                bool MenuScroll = false;
 
-                Vector2 CenterNew = new Vector2(Offset.X + TILE_SIZE * Scale * MAP_WIDTH, Offset.Y + TILE_SIZE * Scale * MAP_HEIGHT);
-                Offset += ((Center - CenterNew) / 2);
+                // Scroll is menu scroll.
+                foreach (var menu in UI_Elements)
+                    if (menu.Destination.Contains(MousePos) && menu.IsVisible)
+                    {
+                        if (menu.Scrollable && menu.buttons.Count() > 0)
+                        {
+                            int adjustment = (int) ((mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.04f);
+                            int ScrollYOrg = (int) MenuScrollOffset.Y;
+                            MenuScrollOffset.Y += adjustment;
+                            MenuScrollOffset.Y = Math.Min(MenuScrollOffset.Y, 0);
+
+                            if(menu.buttons[menu.buttons.Count() - 1].ButtonRect.Y + (int)(MenuScrollOffset.Y - ScrollYOrg) < menu.Destination.Bottom - 64)
+                            {
+                                MenuScrollOffset.Y = ScrollYOrg;
+                            }
+                            else
+                            {
+                                foreach (var btn in menu.buttons)
+                                {
+                                    btn.ButtonRect = new Rectangle(btn.ButtonRect.X, btn.ButtonRect.Y + (int)(MenuScrollOffset.Y - ScrollYOrg), 224, 48);
+                                }
+                            }
+                        }
+                        MenuScroll = true;
+                    }
+
+
+                // User is zooming on map
+                if (!MenuScroll)
+                {
+                    Vector2 Center = new Vector2(Offset.X, Offset.Y);
+                    Vector2 MouseBefore = (MousePos - Offset) / Scale;
+
+                    float adjustment = (mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.0004f;
+                    // Adjust the scaling factor based on the scroll wheel delta
+                    Scale += adjustment;
+                    Scale = MathHelper.Clamp(Scale, 0.5f, 5f);
+                    // Vector2 MouseAfter = MouseBefore * Scale;
+
+                    Vector2 CenterNew = new Vector2(Offset.X, Offset.Y);
+
+                    Offset += ((Center - CenterNew) / 2);
+                    Vector2 mouseAfter = (new Vector2(mouseState.X, mouseState.Y) - Offset) / Scale;
+
+                    Vector2 mousePositionDifference = MouseBefore - mouseAfter;
+                    // Adjust the offset to keep the mouse position stationary
+                    Offset -= mousePositionDifference * Scale;
+                }
+                else
+                {
+                    
+
+                }
             }
 
-            // Calculate mouse X and Y position on the grid.
-            Vector2 MousePosInt = MousePosRelative;
-            MousePosInt /= Scale;
-            MousePosInt /= TILE_SIZE;
-            MousePosInt.X = (int)MousePosInt.X;
-            MousePosInt.Y = (int)MousePosInt.Y;
+            if(keyboardState.IsKeyDown(Keys.Escape))
+            {
+                CursorActionState = CursorState.None;
+                Selection.Width = 0;
+                Selection.Height = 0;
+            }
 
             // Only update the selected square if user is not using scroll wheel.
-            if(mouseState.ScrollWheelValue == OriginalScrollWheelValue)
+            if (mouseState.ScrollWheelValue == OriginalScrollWheelValue)
             {
-                SelectedX = (int)MousePosInt.X;
-                SelectedY = (int)MousePosInt.Y;
+                Vector2 mousePosInt;
+                if (state == EditorState.Test)
+                {
+                     mousePosInt = MousePosRelative / TestingScale / TILE_SIZE;
+                }
+                else
+                {
+                     mousePosInt = MousePosRelative / Scale / TILE_SIZE;
+
+                }
+                SelectedX = (int)Math.Floor(mousePosInt.X);
+                SelectedY = (int)Math.Floor(mousePosInt.Y);
+            }
+
+            // Create area.
+            if (keyboardState.IsKeyDown(Keys.Enter) && !PreviousKeybordState.IsKeyDown(Keys.Enter) && Selection.Width >= 4 && Selection.Height >= 4)
+            {
+                bool allowed = true;
+                foreach(var area in CurrentMap.areas)
+                {
+                    if(area.AreaCords.Intersects(Selection))
+                    {
+                        allowed = false;
+                    }
+                }
+                if(allowed)
+                {
+                    string name = "Area: " + (CurrentMap.areas.Count() +1).ToString();
+                    Button btn = new Button(name, new Rectangle(AreaMenu.Destination.X + AreaMenu.Destination.Width / 2 - 224 / 2, AreaMenu.Destination.Y + 16 + 48 * CurrentMap.areas.Count() + (int)MenuScrollOffset.Y, 224, 48), 288, 64, ButtonAction.SelectArea, true);
+                    CurrentMap.CreateArea(Selection, name);
+
+                    btn.PressedSourceX = 288;
+                    btn.SourceRect.Y = 128;
+
+                    AreaMenu.buttons.Add(btn);
+
+                    if(btn.ButtonRect.Bottom > AreaMenu.Destination.Bottom)
+                    {
+                        foreach (var button in AreaMenu.buttons)
+                        {
+                            button.ButtonRect = new Rectangle(button.ButtonRect.X, button.ButtonRect.Y - 48, 224, 48);
+                        }
+                        MenuScrollOffset.Y -= 48;
+                    }
+                }
             }
 
             // Undo last action.
             if(keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !PreviousKeybordState.IsKeyDown(Keys.Z))
             {
 
-                if(Actions.Count > 0)
+                if (Actions.Count > 0)
                 {
                     UserAction UndoAction = Actions.Peek();
 
-                    if(UndoAction.Action == UserAction.ActionType.Draw)
-                        CurrentMap.layers[UndoAction.Layer].TileMap[UndoAction.y, UndoAction.x] = new Tile();
-
+                    if (UndoAction.Action == UserAction.ActionType.Draw)
+                    {
+                        foreach (var area in CurrentMap.areas)
+                        {
+                            if (area.AreaCords.Contains(UndoAction.x, UndoAction.y))
+                            {
+                                area.layers[UndoAction.Layer].TileMap[UndoAction.y - area.AreaCords.Y, UndoAction.x - area.AreaCords.X] = new Tile();
+                            }
+                        }
+                    }
                     Actions.Pop();
                 }
             }
-               
 
-            Offset += Velocity;
+            // Check collision.
+            if(state == EditorState.Edit || !CheckCollision())
+                Offset += Velocity;
+
+
+            // Update helper variables.
             OriginalScrollWheelValue = mouseState.ScrollWheelValue;
             PreviousMouseState = mouseState;
             PreviousKeybordState = keyboardState;
@@ -275,34 +640,95 @@ namespace tile_mapper
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.DimGray);
+            GraphicsDevice.Clear(Color.Gray);
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-            // Draw map (all layers)
-            Renderer.RenderMap(MAP_HEIGHT, MAP_WIDTH, CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset);
+            // Grid
+            if(state == EditorState.Edit)
+            {
+                // Draw map (all layers)
+                Renderer.RenderMap(CurrentMap, CurrentLayer, _spriteBatch, TileSheet, TILE_SIZE, Scale, Offset, ScreenWidth, ScreenHeight, Grid);
+                Renderer.RenderGrid(_spriteBatch, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY, ScreenWidth, ScreenHeight, Selection, CurrentMap, CursorActionState);
 
-            // Grid 
-            Renderer.RenderGrid(_spriteBatch, MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, TileSheet, Grid, Scale, Offset, selected, SelectedX, SelectedY);
+                // Start point
+                if (CurrentMap.StartLocationSpecified)
+                {
+                    Rectangle DestRect = new Rectangle((int)(CurrentMap.StartLocation.X * TILE_SIZE * Scale + Offset.X), (int)(CurrentMap.StartLocation.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), SpecifyStartPoint.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                }
+                if (A.HasValue)
+                {
+                    Rectangle DestRect = new Rectangle((int)(A.Value.X * TILE_SIZE * Scale + Offset.X), (int)(A.Value.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+
+                    _spriteBatch.Draw(UI, new Vector2(DestRect.X, DestRect.Y), SpecifyDoor.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                }
+
+                // Draw teleportation elements.
+                foreach (var tp in CurrentMap.Teleportations)
+                {
+                    Rectangle DestA = new Rectangle((int)(tp.A.X * TILE_SIZE * Scale + Offset.X), (int)(tp.A.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+                    Rectangle DestB = new Rectangle((int)(tp.B.X * TILE_SIZE * Scale + Offset.X), (int)(tp.B.Y * TILE_SIZE * Scale + Offset.Y), 0, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestA.X, DestA.Y), SpecifyDoor.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+                    _spriteBatch.Draw(UI, new Vector2(DestB.X, DestB.Y), SpecifyDoor.SourceRect, Color.White, 0f, Vector2.Zero, (float)(32 / TILE_SIZE * Scale / 4), SpriteEffects.None, 0);
+
+                }
+            }
+
+            // Test state
+            if(state == EditorState.Test)
+            {
+                Renderer.DrawArea(CurrentArea, Offset, TILE_SIZE, TestingScale, ScreenWidth, ScreenHeight, CurrentMap, _spriteBatch, TileSheet);
+                _spriteBatch.Draw(UI, CharacterRect, CharacterSource, Color.White);
+            }
 
             // UI elements
-            TopBar.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
-            TileMenu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale);
+            foreach (var menu in UI_Elements)
+            {
+                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, false, MenuScrollOffset);
+            }
 
-            // Buttons
-            Renderer.DrawButtons(buttons, _spriteBatch, font, TextScale, UI);
+            _spriteBatch.End();
+
+            Rectangle orgScissorRec = _spriteBatch.GraphicsDevice.ScissorRectangle;
+            RasterizerState rasterizerState = new RasterizerState() { ScissorTestEnable = true };
+            _spriteBatch.GraphicsDevice.ScissorRectangle = LayerMenu.Destination;
+
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.Default, rasterizerState);
+
+            // Draw scrollable menus, elements need to be cut off when out of bounds.
+            foreach (var menu in Scrollable_Menus)
+            {
+                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, true, MenuScrollOffset);
+            }
+
+            _spriteBatch.End();
+
+            _spriteBatch.GraphicsDevice.ScissorRectangle = orgScissorRec;
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             // Sprite palette menu
-            Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
+            if (TilePaletteVisible)
+                Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
 
             // Draw cordinates
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
-            _spriteBatch.DrawString(font, Cords, new Vector2(144 - font.MeasureString(Cords).X/2, ScreenHeight / 2 - (256 + 24)  - font.MeasureString(Cords).Y / 2), Color.White);
+            _spriteBatch.DrawString(font, Cords, new Vector2(96 - font.MeasureString(Cords).X/2, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
 
             // TEMP
-            _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White);
+            // _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
 
-            
+            // Draw cursor based on cursor state.
+            if(CursorActionState == CursorState.SpecifyingStartPoint)
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), SpecifyStartPoint.SourceRect, Color.White);
+            else if(CursorActionState == CursorState.SpecifyDoor)
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), SpecifyDoor.SourceRect, Color.White);
+            else if(CursorActionState == CursorState.Fill)
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), FillTool.SourceRect, Color.White);
+            else if(CursorActionState == CursorState.Eraser)
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), EraserTool.SourceRect, Color.White);
+            else
+                _spriteBatch.Draw(UI, new Vector2(MousePos.X - 16, MousePos.Y - 16), MouseSource, Color.White);
 
             _spriteBatch.End();
 
@@ -315,7 +741,8 @@ namespace tile_mapper
             
         }
 
-        internal void OpenFile(string path)
+
+        internal void OpenSpriteSheetFile(string path)
         {
             using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open))
             {
@@ -325,14 +752,10 @@ namespace tile_mapper
             SheetWidth = TileSheet.Width / TILE_SIZE;
             SheetHeight = TileSheet.Height / TILE_SIZE;
 
-            SheetMenuPages = (int)Math.Ceiling((float)(SheetWidth * SheetHeight / 55));
-
-            if (SheetMenuPages == 0)
-                SheetMenuPages++;
+            SheetMenuPages = (int)Math.Ceiling((float)(SheetWidth * SheetHeight / 120));
+            SheetMenuPages++;
 
             TileSpriteList = new List<List<SpriteTile>>();
-
-
 
             for (int i = 0; i < SheetMenuPages; i++)
             {
@@ -358,8 +781,8 @@ namespace tile_mapper
 
                 for (int j = 0; j < SheetHeight * SheetWidth; j++)
                 {
-                    int x = TileMenu.Destination.X + (j % 5) * TILE_SIZE * 2;
-                    int y = TileMenu.Destination.Y + (j / 5) * TILE_SIZE * 2;
+                    int x = TileMenu.Destination.X + 16 + (j % 8) * TILE_SIZE * 2;
+                    int y = TileMenu.Destination.Y + 16 + (j / 8) * TILE_SIZE * 2;
 
                     page[j].Destination = new Rectangle(x, y, TILE_SIZE * 2, TILE_SIZE * 2);
                 }
@@ -374,73 +797,475 @@ namespace tile_mapper
 
         internal void HandleLeftClick(MouseState mouseState)
         {
-            if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left).
+            if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
             {
+                bool resetCursorState = true;
+                if(CursorActionState == CursorState.SpecifyingStartPoint)
+                {
+                    foreach(var area in CurrentMap.areas)
+                    {
+                        if(area.AreaCords.Contains(SelectedX, SelectedY))
+                        {
+                            CurrentMap.StartLocation = new Point(SelectedX, SelectedY);
+                            CurrentMap.StartLocationSpecified = true;
+                            CurrentArea = area;
+                            StartArea = CurrentArea;
+                        }
+                    }
+
+                }
+                else if(CursorActionState == CursorState.SpecifyDoor)
+                {
+                    
+                    foreach (var area in CurrentMap.areas)
+                    {
+                        if (area.AreaCords.Contains(SelectedX, SelectedY))
+                        {
+                            if(A.HasValue)
+                            {
+                                Teleportation tp = new Teleportation();
+                                tp.A = A.Value;
+                                tp.B = new Point(SelectedX, SelectedY);
+                                CurrentMap.Teleportations.Add(tp);
+
+                                A = null;
+
+                            }
+                            else
+                            {
+                                A = new Point(SelectedX, SelectedY);
+                                resetCursorState = false;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    A = null;
+                }
+
+                if(resetCursorState && CursorActionState != CursorState.Eraser && CursorActionState != CursorState.Draw && CursorActionState != CursorState.Fill)
+                    CursorActionState = CursorState.None;
+
+
+                bool resetSelection = true;
+                foreach(var UI in UI_Elements)
+                {
+                    if(UI.Destination.Contains(MousePos))
+                    {
+                        resetSelection = false;
+                    }
+                }
+
+                if(resetSelection)
+                {
+                    ClickPoint = new Point(SelectedX, SelectedY);
+                    SelectionStart = ClickPoint;
+                    SelectionEnd = SelectionStart;
+                    Selection.Width = 0;
+                    Selection.Height = 0;
+                    if(ClickedAreaButton != null)
+                        ClickedAreaButton.IsPressed = false;
+                }
+                Button buttonClicked = null;
+
                 foreach (var UI in UI_Elements)
                 {
+                    
                     if (UI.IsVisible)
                     {
-                        switch (UI.HandleClicks(MousePos))
-                        {
-                            case ButtonAction.Import:
-                                OpenFile(TileSheetPath);
-                                UI.buttons.FirstOrDefault(element => element.Text == "Import").IsVisible = false;
-                                break;
-                            case ButtonAction.Layer:
-                                string ToFind = "Layer: " + CurrentLayer.ToString();
-                                CurrentLayer++;
-                                CurrentLayer = CurrentLayer % 3;
-
-                                UI.buttons.FirstOrDefault(element => element.Text == ToFind).Text = "Layer: " + CurrentLayer.ToString();
-                                break;
-                            case ButtonAction.Save:
-                                WriteFile();
-                                break;
-                        }
+                        buttonClicked = UI.HandleClicks(MousePos);
+                        if (buttonClicked != null)
+                            break;
                     }
                 }
-
-                foreach (var button in buttons)
+                if (buttonClicked == null)
                 {
-                    if (button.ButtonRect.Contains(MousePos))
-                    {
-                        switch (button.Action)
-                        {
-                            case ButtonAction.OpenPalette:
-                                TileMenu.IsVisible = true;
-                                button.IsVisible = false;
-                                break;
-                        }
-                    }
+                    return;
                 }
-            }
-            else if (mouseState.LeftButton == ButtonState.Pressed)
-            {
-                HandleLeftHold();
+                else
+                    switch (buttonClicked.Action)
+                    {
+                        case ButtonAction.Import:
+                            OpenSpriteSheetFile(TileSheetPath);
+                            buttonClicked.IsVisible = false;
+                            break;
+                        case ButtonAction.Layer:
+                            CurrentLayer = buttonClicked.HelperInt;
+                            if(ClickedLayerButton != null)
+                                ClickedLayerButton.IsPressed = false;
+                            buttonClicked.IsPressed = true;
+                            ClickedLayerButton = buttonClicked;
+                            LayerName.Text = "ID: " + ClickedLayerButton.Text;
+                            break;
+                        case ButtonAction.OpenLayerMenu:
+                            menuState = MenuState.LayerMenu;
+                            UpdateMenuState();
+                            break;
+                        case ButtonAction.OpenSpriteMenu:
+                            menuState = MenuState.SpriteTileMenu;
+                            UpdateMenuState();
+                            break;
+                        case ButtonAction.OpenObjectMenu:
+                            menuState = MenuState.ObjectMenu;
+                            UpdateMenuState();
+                            break;
+                        case ButtonAction.Save:
+                            WriteFile();
+                            break;
+                        case ButtonAction.OpenPalette:
+                            TileMenu.IsVisible = true;
+                            GeneralOverlay.buttons[0].IsVisible = false;
+                            TilePaletteVisible = true;
+                            break;
+                        case ButtonAction.DrawTool:
+                            CursorActionState = CursorState.Draw;
+                            break;
+                        case ButtonAction.FillTool:
+                            CursorActionState = CursorState.Fill;
+                            FillSelection();
+                            break;
+                        case ButtonAction.EraserTool:
+                            CursorActionState = CursorState.Eraser;
+                            break;
+                        case ButtonAction.SelectArea:
+                            foreach (var area in CurrentMap.areas)
+                            {
+                                if (area.AreaName == buttonClicked.Text)
+                                {
+                                    Selection = area.AreaCords;
+                                    buttonClicked.IsPressed = true;
+                                    if(ClickedAreaButton != null)
+                                        ClickedAreaButton.IsPressed = false;
+                                    ClickedAreaButton = buttonClicked;
+                                    SelectedArea = area;
+                                }
+                            }
+                            if(SelectedArea != null)
+                            {
+                                AreaName.Text = SelectedArea.AreaName;
+                                AreaHeight.Text = "Width: " + SelectedArea.AreaCords.Height.ToString();
+                                AreaWidth.Text = "Height: " + SelectedArea.AreaCords.Width.ToString();
+                                AreaX.Text = "Left: " + SelectedArea.AreaCords.X.ToString();
+                                AreaY.Text = "Top: " + SelectedArea.AreaCords.Y.ToString();
+                            }
+
+                            
+                            break;
+                        case ButtonAction.OpenAreaMenu:
+                            menuState = MenuState.AreaMenu;
+                            UpdateMenuState();
+                            break;
+                        case ButtonAction.RemoveArea:
+                            if(ClickedAreaButton != null)
+                            {
+                                for(int i = 0; i < CurrentMap.areas.Count; i++)
+                                {
+                                    if (CurrentMap.areas[i].AreaName == ClickedAreaButton.Text)
+                                    {
+                                        CurrentMap.areas.Remove(CurrentMap.areas[i]);
+                                    }
+                                }
+
+                                Properties.buttons.Remove(Properties.buttons.LastOrDefault(obj => obj.Text == ClickedAreaButton.Text));
+
+                                ClickedAreaButton = null;
+                            }
+                            break;
+                        case ButtonAction.SpecifyStartPoint:
+                            CursorActionState = CursorState.SpecifyingStartPoint;
+                            break;
+                        case ButtonAction.SpecifyDoor:
+                            CursorActionState = CursorState.SpecifyDoor;
+                            break;
+                        case ButtonAction.ClosePalette:
+                            TileMenu.IsVisible = false;
+                            GeneralOverlay.buttons[0].IsVisible = true;
+                            TilePaletteVisible = false;
+                            break;
+                        case ButtonAction.TestState:
+                            if(CurrentMap.StartLocationSpecified)
+                                state = EditorState.Test;
+                            CurrentArea = StartArea;
+                            OriginalOffset = Offset;
+                            Offset = new Vector2(ScreenWidth/2 - CurrentMap.StartLocation.X * TILE_SIZE * TestingScale, ScreenHeight/2 - CurrentMap.StartLocation.Y * TILE_SIZE * TestingScale);
+                            CharacterSource.X = 0;
+                            break;
+                        case ButtonAction.EditState:
+                            state = EditorState.Edit;
+                            Offset = OriginalOffset;
+                            break;
+                        case ButtonAction.MakeCollision:
+                            buttonClicked.IsPressed = !buttonClicked.IsPressed;
+                            selected.Collision = buttonClicked.IsPressed;
+                            TileSpriteList[currentPage].FirstOrDefault(obj => obj.ID == selected.ID).Collision = selected.Collision;
+
+                            CurrentMap.CollisionTiles.Clear();
+                            foreach(var tile in TileSpriteList[currentPage])
+                            {
+                                if (tile.Collision)
+                                    CurrentMap.CollisionTiles.Add(tile);
+                            }
+
+                            break;
+                    }
             }
         }
 
-        internal void HandleLeftHold()
+        internal void HandleLeftHold(MouseState mouseState, KeyboardState keyboardState)
         {
             // Execute each frame if mouse button is held.
-            if (selected != null && SelectedX >= 0 && SelectedY >= 0 && SelectedX <= MAP_WIDTH - 1 && SelectedY <= MAP_HEIGHT - 1)
+            if (mouseState.LeftButton == ButtonState.Pressed && selected != null)
             {
-                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].ID = selected.ID;
-                CurrentMap.layers[CurrentLayer].TileMap[SelectedY, SelectedX].Source = selected.Source;
-                Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+                foreach(var area in CurrentMap.areas)
+                {
+                    if(area.AreaCords.Contains(SelectedX, SelectedY))
+                    {
+                        switch (CursorActionState)
+                        {
+                            case CursorState.Draw:
+                                if(area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID != selected.ID)
+                                {
+                                    area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = selected.ID;
+                                    area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = selected.Source;
+                                    Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
+                                }
+                                break;
+                            case CursorState.Eraser:
+                                area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = "0";
+                                area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = new Rectangle();
+                                break;
+                            case CursorState.Fill:
+                                if(PreviousMouseState.LeftButton != ButtonState.Pressed) // Exception
+                                {
+                                    bool allowed = true;
+                                    foreach (var UI in UI_Elements)
+                                    {
+                                        if (UI.Destination.Contains(MousePos))
+                                            allowed = false;
+                                    }
+                                    if(allowed)
+                                        FillClicked();
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            if (mouseState.LeftButton == ButtonState.Pressed && keyboardState.IsKeyDown(Keys.LeftShift) && SelectionStart.X >= 0 && SelectionStart.Y >= 0 && (SelectedX != ClickPoint.X || SelectedY != ClickPoint.Y))
+            {
+                SelectionEnd = new Point(SelectedX, SelectedY);
+                // Create a square of the selection
+                Point TopLeft = new Point(Math.Min(SelectionStart.X, SelectionEnd.X), Math.Min(SelectionStart.Y, SelectionEnd.Y));
+                Point BottomRight = new Point(Math.Max(SelectionStart.X, SelectionEnd.X), Math.Max(SelectionStart.Y, SelectionEnd.Y));
+                Selection = new Rectangle(TopLeft.X, TopLeft.Y, BottomRight.X - TopLeft.X + 1, BottomRight.Y - TopLeft.Y + 1);
             }
         }
 
         internal void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime)
         {
+            float Speed = (state == EditorState.Test) ? TestingSpeed : MoveSpeed;
             if (keyboardState.IsKeyDown(Keys.A))
-                Velocity.X += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+            {
+                Velocity.X += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                CharacterSource.X = 96;
+            }
             if (keyboardState.IsKeyDown(Keys.S))
-                Velocity.Y -= (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+            {
+                Velocity.Y -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                CharacterSource.X = 0;
+            }
             if (keyboardState.IsKeyDown(Keys.D))
-                Velocity.X -= (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+            {
+                Velocity.X -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                CharacterSource.X = 64;
+            }
             if (keyboardState.IsKeyDown(Keys.W))
-                Velocity.Y += (float)(MoveSpeed * gameTime.ElapsedGameTime.TotalSeconds);
+            {
+                Velocity.Y += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                CharacterSource.X = 32;
+            }
+        }
+
+        internal bool CheckCollision()
+        {
+            Area areaToSearch = null;
+
+            int CharacterX = (int)((CharacterRect.X - (Offset.X + Velocity.X)) / TILE_SIZE / TestingScale);
+            int CharacterY = (int)((CharacterRect.Y - (Offset.Y + Velocity.Y)) / TILE_SIZE / TestingScale);
+
+            foreach (var area in CurrentMap.areas)
+            {
+                if(area.AreaCords.Contains(CharacterX, CharacterY))
+                {
+                    areaToSearch = area;
+                }
+            }
+
+            if(areaToSearch != null)
+            {
+                for (int k = 0; k < CurrentMap.LayerAmount; k++)
+                {
+                    for (int i = Math.Max(CharacterY - 3, areaToSearch.AreaCords.Y); i < Math.Min(areaToSearch.AreaCords.Y + areaToSearch.AreaCords.Height, CharacterY + 3); i++)
+                    {
+                        for (int j = Math.Max(CharacterX - 3, areaToSearch.AreaCords.X); j < Math.Min(areaToSearch.AreaCords.X + areaToSearch.AreaCords.Width, CharacterX + 3); j++)
+                        {
+                            if (areaToSearch.layers[k].TileMap[i - areaToSearch.AreaCords.Y, j - areaToSearch.AreaCords.X].ID != "0")
+                            {
+                                var collisionTile = CurrentMap.CollisionTiles.FirstOrDefault(obj => obj.ID == areaToSearch.layers[k].TileMap[i - areaToSearch.AreaCords.Y, j - areaToSearch.AreaCords.X].ID);
+                                if (collisionTile?.Collision == true)
+                                {
+                                    Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * TestingScale + (Offset.X + Velocity.X)), (int)(i * TILE_SIZE * TestingScale + (Offset.Y + Velocity.Y)), (int)(TILE_SIZE * TestingScale + 1), (int)(TILE_SIZE * TestingScale + 1));
+                                    if (DestRect.Intersects(CharacterRect))
+                                        return true;
+                                }
+                            }
+                            if (CurrentMap.Teleportations.Count > 0)
+                            {
+                                foreach (var tp in CurrentMap.Teleportations)
+                                {
+                                    if (i == tp.A.Y && j == tp.A.X)
+                                    {
+                                        Rectangle TPRect = new Rectangle((int)(tp.A.X * TILE_SIZE * TestingScale + (Offset.X + Velocity.X)), (int)(tp.A.Y * TILE_SIZE * TestingScale + (Offset.Y + Velocity.Y)), (int)(TILE_SIZE * TestingScale + 1), (int)(TILE_SIZE * TestingScale + 1));
+                                        if (TPRect.Intersects(CharacterRect))
+                                        {
+                                            Offset = new Vector2(ScreenWidth / 2 - tp.B.X * TILE_SIZE * TestingScale, ScreenHeight / 2 - tp.B.Y * TILE_SIZE * TestingScale);
+
+                                            foreach (var area in CurrentMap.areas)
+                                            {
+                                                if (area.AreaCords.Contains(tp.B.X, tp.B.Y))
+                                                {
+                                                    CurrentArea = area;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        internal void FillSelection()
+        {
+            if(selected == null)
+            {
+                return;
+            }
+        
+            foreach(var area in CurrentMap.areas)
+            {
+                for (int i = Selection.Y; i < Selection.Y + Selection.Height; i++)
+                {
+                    for (int j = Selection.X; j < Selection.X + Selection.Width; j++)
+                    {
+                        if (area.AreaCords.Contains(j, i))
+                        {
+                            area.layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID = selected.ID;
+                            area.layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source = selected.Source;
+                        }
+                    }
+                }
+            } 
+        }
+
+        internal void FillClicked()
+        {
+            Area areaClicked = null;
+            foreach (var area in CurrentMap.areas)
+            {
+                if (area.AreaCords.Contains(SelectedX, SelectedY))
+                {
+                    areaClicked = area;
+                    break;
+                }
+            }
+            if (areaClicked == null)
+            {
+                return;
+            }
+
+            string IDToFill = areaClicked.layers[CurrentLayer].TileMap[SelectedY - areaClicked.AreaCords.Y, SelectedX - areaClicked.AreaCords.X].ID;
+
+            HashSet<(int, int)> visited = new HashSet<(int, int)>();
+            Queue<(int, int)> queue = new Queue<(int, int)>();
+            queue.Enqueue((SelectedX, SelectedY));
+
+            while (queue.Count > 0)
+            {
+                var (x, y) = queue.Dequeue();
+
+                if (!areaClicked.AreaCords.Contains(x, y) || areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID != IDToFill || visited.Contains((x, y)))
+                {
+                    continue;
+                }
+
+                visited.Add((x, y));
+
+                // Fill the current tile
+                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
+                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].Source = selected.Source;
+
+                // Enqueue neighboring tiles
+                queue.Enqueue((x + 1, y));
+                queue.Enqueue((x - 1, y));
+                queue.Enqueue((x, y + 1));
+                queue.Enqueue((x, y - 1));
+            }
+        }
+
+        internal void UpdateMenuState()
+        {
+            foreach (var menu in PropertyMenu1)
+            {
+                menu.IsVisible = false;
+            }
+
+            switch (menuState)
+            {
+                case MenuState.LayerMenu:
+                    LayerMenu.IsVisible = true;
+                    LayerMenuButton.IsPressed = true;
+                    AreaMenuButton.IsPressed = false;
+                    ObjectMenuButton.IsPressed = false;
+                    SpriteMenuButton.IsPressed = false;
+                    break;
+                case MenuState.AreaMenu:
+                    AreaMenu.IsVisible = true;
+                    LayerMenuButton.IsPressed = false;
+                    AreaMenuButton.IsPressed = true;
+                    ObjectMenuButton.IsPressed = false;
+                    SpriteMenuButton.IsPressed = false;
+                    break;
+                case MenuState.SpriteTileMenu:
+                    TileProperties.IsVisible = true;
+                    LayerMenuButton.IsPressed = false;
+                    AreaMenuButton.IsPressed = false;
+                    ObjectMenuButton.IsPressed = false;
+                    SpriteMenuButton.IsPressed = true;
+                    break;
+                case MenuState.ObjectMenu:
+                    ObjectMenu.IsVisible = true;
+                    LayerMenuButton.IsPressed = false;
+                    AreaMenuButton.IsPressed = false;
+                    ObjectMenuButton.IsPressed = true;
+                    SpriteMenuButton.IsPressed = false;
+                    break;
+            }
+        }
+
+        internal void HandleLabelDoubleClick()
+        {
+
+        }
+
+        internal void ChangeAreaProperties()
+        {
+
         }
     }
 }

@@ -6,37 +6,87 @@ using Microsoft.Xna.Framework.Input;
 
 namespace tile_mapper
 {
+
+    internal class Label
+    {
+        public string Text;
+        public int ID;
+        public Rectangle LabelRect;
+        public Rectangle SourceRect = new Rectangle(320, 112, 0, 0); // Standard button
+        public bool IsVisible;
+
+    }
     internal class UI_Menu
     {
+        public List<Label> labels;
         public bool IsVisible;
         public Rectangle Source;
         public Rectangle Destination;
         public List<Button> buttons;
+        public bool Scrollable;
 
         public UI_Menu(bool IsVisible, Rectangle Source, Rectangle Destination)
         {
+            labels = new List<Label>();
             buttons = new List<Button>();
             this.IsVisible = IsVisible;
             this.Source = Source;
             this.Destination = Destination;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Texture2D UI, int ScreenHeight, int ScreenWidth, float ScaleX, float ScaleY, SpriteFont font, float TextScale)
+
+        public void Draw(SpriteBatch spriteBatch, Texture2D UI, int ScreenHeight, int ScreenWidth, float ScaleX, float ScaleY, SpriteFont font, float TextScale, bool RenderScrollableMenus, Vector2 ScrollMenuOffset)
         {
-            if(IsVisible)
+            if(IsVisible && (!Scrollable || RenderScrollableMenus))
             {
                 spriteBatch.Draw(UI, new Vector2(Destination.X, Destination.Y), Source, Color.White, 0f, Vector2.Zero, new Vector2(ScaleX, ScaleY), SpriteEffects.None, 0);
                 foreach (var button in buttons)
                 {
                     if(button != null && button.IsVisible)
                     {
-                        spriteBatch.Draw(UI, button.ButtonRect, button.SourceRect, Color.White);
+                        Rectangle source = button.SourceRect;
+                        if (button.IsPressed)
+                        {
+                            source.X = button.PressedSourceX;
+                        }
+
+                        Rectangle Destination = button.ButtonRect;
+
+                        //if(Scrollable)
+                        //{
+                        //    Destination.Y += (int)ScrollMenuOffset.Y;
+                        //}   
+
+                        spriteBatch.Draw(UI, Destination, source, Color.White);
                         spriteBatch.DrawString(
                         font,
                         button.Text,
                         new Vector2(
-                                button.ButtonRect.X + button.ButtonRect.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
-                                button.ButtonRect.Y + button.ButtonRect.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
+                                Destination.X + Destination.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
+                                Destination.Y + Destination.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
+                            ),
+                            button.color,
+                            0f, // Rotation angle, set to 0 for no rotation
+                            Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
+                            TextScale, // Scale factor
+                            SpriteEffects.None, // Sprite effects, set to None for no effects
+                            0f // Depth, set to 0 for the default depth
+
+                            
+                        );
+                    }
+                }
+                foreach (var label in labels)
+                {
+                    if(label.IsVisible && label.Text != null)
+                    {
+                        spriteBatch.Draw(UI, label.LabelRect, label.SourceRect, Color.White);
+                        spriteBatch.DrawString(
+                        font,
+                        label.Text,
+                        new Vector2(
+                                label.LabelRect.X + label.LabelRect.Width / 2 - font.MeasureString(label.Text).X * TextScale / 2,
+                                label.LabelRect.Y + label.LabelRect.Height / 2 - font.MeasureString(label.Text).Y * TextScale / 2
                             ),
                             Color.White,
                             0f, // Rotation angle, set to 0 for no rotation
@@ -46,20 +96,21 @@ namespace tile_mapper
                             0f // Depth, set to 0 for the default depth
                         );
                     }
-                }  
+                    
+                }    
             }
         }
 
-        public ButtonAction HandleClicks(Vector2 MousePos)
+        public Button HandleClicks(Vector2 MousePos)
         {
             foreach (var button in buttons)
             {
                 if (button != null && button.IsVisible && button.ButtonRect.Contains(MousePos))
                 {
-                    return button.Action;
+                    return button;
                 }
             }
-            return ButtonAction.None;
+            return null;
         }
     }
 
@@ -67,6 +118,8 @@ namespace tile_mapper
     {
         public ActionType Action;
         public int x, y, Layer;
+        public Rectangle Rect;
+        Area Area;
        
         public UserAction(ActionType action, int layer, int x, int y) 
         {
@@ -74,17 +127,29 @@ namespace tile_mapper
             this.Layer = layer;
             this.x = x;
             this.y = y;
+
         }
+        public UserAction(ActionType action, int layer, Rectangle rect, Area area)
+        {
+            this.Action = action;
+            this.Layer = layer;
+            this.Rect = rect;
+            this.Area = area;
+        }
+
         public enum ActionType
         {
             Draw,
-            Remove
+            Remove,
+            DrawMuliple,
+            RemoveMultiple,
         }
     }
     internal class SpriteTile
     {
         public Rectangle Destination;
         public Rectangle Source;
+        public bool Collision;
 
         public string ID;
 
@@ -97,17 +162,45 @@ namespace tile_mapper
         Import,
         Layer,
         Save,
-        OpenPalette
+        OpenPalette,
+        DrawTool,
+        FillTool,
+        EraserTool,
+        SelectArea,
+        SpecifyStartPoint,
+        ClosePalette,
+        SpecifyDoor,
+        EditState,
+        TestState,
+        MakeCollision,
+        RemoveLayer,
+        AddLayer,
+        RemoveArea,
+        AddArea,
+        MoveLeftArea,
+        MoveRightArea,
+        MoveLeftLayer,
+        MoveRightLayer,
+        OpenObjectMenu,
+        OpenLayerMenu,
+        OpenAreaMenu,
+        OpenSpriteMenu,
+        EditorScreen,
+        SheetScreen
     }
     internal class Button
     {
         public string Text;
         public ButtonAction Action;
         public Rectangle ButtonRect;
-        public Rectangle SourceRect = new Rectangle(0, 48, 96, 48);
+        public Rectangle SourceRect = new Rectangle(0, 48, 96, 48); // Standard button
         public int SelectionX;
         public int OriginalX;
         public bool IsVisible = true;
+        public int HelperInt;
+        public bool IsPressed = false;
+        public int PressedSourceX;
+        public Color color = Color.White;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible) 
         {
             this.Text = text;
@@ -133,13 +226,7 @@ namespace tile_mapper
         }
     }
 
-    internal class GridTile
-    {
-        int x;
-        int y;
 
-        public Rectangle GridRect;
-    }
     internal class SpriteSheet
     {
         public Texture2D Texture;
@@ -161,44 +248,85 @@ namespace tile_mapper
         public Rectangle Source;
     }
 
-    internal class Map
+    internal class Area
     {
-        int height;
-        int width;
-
+        public Rectangle AreaCords;
+        public string AreaName;
         public Layer[] layers = new Layer[3];
+        Layer Terrain;
+        Layer Objects;
+        Layer Foreground;
 
-        public Map(int height, int width)
+        public Area(Rectangle areaCords, string areaName)
         {
-            this.height = height;
-            this.width = width;
-
-            Layer Terrain = new Layer(0, width, height);
-            Layer Objects = new Layer(1, width, height);
-            Layer Foreground = new Layer(2, width, height);
+            this.AreaCords = areaCords;
+            this.AreaName = areaName;
+            Layer Terrain = new Layer(0, areaCords);
+            Layer Objects = new Layer(1, areaCords);
+            Layer Foreground = new Layer(2, areaCords);
 
             layers[0] = Terrain;
             layers[1] = Objects;
             layers[2] = Foreground;
+
+            foreach (var layer in layers)
+            {
+                for(int i = 0; i < this.AreaCords.Height; i++)
+                {
+                    for(int j = 0; j < this.AreaCords.Width; j++)
+                    {
+                        layer.TileMap[i, j] = new Tile();
+                 
+                    }
+                }
+            }
         }
+    }
+
+    internal class Canvas
+    {
+        public int LayerAmount = 2;
+
+        public List<Area> areas = new List<Area>();
+
+        public List<Teleportation> Teleportations = new List<Teleportation>();
+
+        public List<SpriteTile> CollisionTiles = new List<SpriteTile>();
+
+        public Point StartLocation;
+        public bool StartLocationSpecified;
+
+        public Canvas()
+        {
+            
+        }
+
+        public void CreateArea(Rectangle Selection, string AreaName)
+        {
+            areas.Add(new Area(Selection, AreaName));
+        }
+    }
+
+    internal class Teleportation
+    {
+        public Point A;
+        public Point B;
     }
 
     internal class Layer
     {
-        int Depth;
-        int Width;
-        int Height;
+        public int Depth;
 
         public Tile[,] TileMap;
 
 
-        public Layer(int depth, int width, int height)
+        public Layer(int depth, Rectangle rectangle)
         {
             this.Depth = depth;
-            this.Width = width;
-            this.Height = height;
 
-            TileMap = new Tile[height, width];
+            TileMap = new Tile[rectangle.Height, rectangle.Width];
         }
     }
+
+
 }
