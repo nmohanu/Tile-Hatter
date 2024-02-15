@@ -520,7 +520,7 @@ namespace tile_mapper
                     {
                         if (menu.Scrollable && menu.buttons.Count() > 0)
                         {
-                            int adjustment = (int) ((mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.04f);
+                            int adjustment = (int) ((mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.08f);
                             int ScrollYOrg = (int) menu.ScrollMenuOffset.Y;
                             menu.ScrollMenuOffset.Y += adjustment;
                             menu.ScrollMenuOffset.Y = Math.Min(menu.ScrollMenuOffset.Y, 0);
@@ -534,6 +534,8 @@ namespace tile_mapper
                                 foreach (var btn in menu.buttons)
                                 {
                                     btn.ButtonRect = new Rectangle(btn.ButtonRect.X, btn.ButtonRect.Y + (int)(menu.ScrollMenuOffset.Y - ScrollYOrg), 224, 48);
+                                    if(btn.IsDeletable)
+                                        btn.DeleteButton.ButtonRect.Y = btn.ButtonRect.Y + 16;
                                 }
                             }
                         }
@@ -998,7 +1000,7 @@ namespace tile_mapper
                             // Tile is added to list, create button for it.
                             if(buttonClicked.IsPressed)
                             {
-                                Button button = CreateRemovableButton(ButtonAction.SelectCollisionSprite, ButtonAction.RemoveCollisionSprite);
+                                Button button = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectCollisionSprite, ButtonAction.RemoveCollisionSprite, Properties);
                                 button.Text = selected.ID;
                                 CollisionSpriteList.buttons.Add(button);
                                 UpdateListOrder(CollisionSpriteList);
@@ -1337,7 +1339,7 @@ namespace tile_mapper
             if (allowed)
             {
                 string name = "Area: " + (CurrentMap.areas.Count() + 1).ToString();
-                Button btn = CreateRemovableButton(ButtonAction.SelectArea, ButtonAction.RemoveArea);
+                Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectArea, ButtonAction.RemoveArea, Properties);
                 btn.Text = name;
                 CurrentMap.CreateArea(Selection, name);
 
@@ -1419,9 +1421,11 @@ namespace tile_mapper
 
         internal void AddLayer()
         {
+            Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.Layer, ButtonAction.RemoveLayer, Properties);
+            btn.Text = "Layer: " + (CurrentMap.LayerAmount + 1).ToString();
 
             // Add button to the list.
-            LayerMenu.buttons.Add(CreateRemovableButton(ButtonAction.Layer, ButtonAction.RemoveLayer));
+            LayerMenu.buttons.Add(btn);
 
             // Update the list
             UpdateListOrder(LayerMenu);
@@ -1431,22 +1435,7 @@ namespace tile_mapper
             CurrentMap.AddLayerToAreas();
         }
 
-        internal Button CreateRemovableButton(ButtonAction action, ButtonAction RemoveButtonAction)
-        {
-            // Create button.
-            Button button = new Button("Layer: " + (LayerMenu.buttons.Count()).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, 0, 224, 48), 288, 64, action, true);
-            button.SourceRect.Y = 128;
-            button.PressedSourceX = 288;
-            button.SourceRect.X = button.OriginalX;
-            button.IsDeletable = true;
-
-            // Add delete button (X) to the button.
-            button.DeleteButton = new Button("", new Rectangle(button.ButtonRect.X + 224 - 24, 0, 16, 16), 144, 128, RemoveButtonAction, true);
-            button.DeleteButton.SourceRect.Y = 96;
-            button.DeleteButton.SourceRect.X = 128;
-
-            return button;
-        }
+        
 
         internal void SelectTile(SpriteTile rect)
         {
