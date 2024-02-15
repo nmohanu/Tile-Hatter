@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -52,14 +53,16 @@ namespace tile_mapper
                             source.X = button.PressedSourceX;
                         }
 
+                        // Draw button.
                         Rectangle Destination = button.ButtonRect;
-
-                        //if(Scrollable)
-                        //{
-                        //    Destination.Y += (int)ScrollMenuOffset.Y;
-                        //}   
-
                         spriteBatch.Draw(UI, Destination, source, Color.White);
+
+                        // Draw delete button if button is removable.
+                        if(button.IsDeletable)
+                        {
+                            spriteBatch.Draw(UI, button.DeleteButton.ButtonRect, button.DeleteButton.SourceRect, Color.White);
+                        }
+
                         spriteBatch.DrawString(
                         font,
                         button.Text,
@@ -203,6 +206,8 @@ namespace tile_mapper
         public bool IsPressed = false;
         public int PressedSourceX;
         public Color color = Color.White;
+        public bool IsDeletable;
+        public Button DeleteButton;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible) 
         {
             this.Text = text;
@@ -220,10 +225,13 @@ namespace tile_mapper
             if (this.ButtonRect.Contains(MousePos))
             {
                 this.SourceRect.X = this.SelectionX;
+                if (this.IsDeletable && this.DeleteButton.ButtonRect.Contains(MousePos)) { this.DeleteButton.SourceRect.X = this.DeleteButton.SelectionX; }
+                else if (this.IsDeletable) { this.DeleteButton.SourceRect.X = this.DeleteButton.OriginalX; }
             }
             else
             {
                 this.SourceRect.X = this.OriginalX;
+                if (this.IsDeletable) { this.DeleteButton.SourceRect.X = this.DeleteButton.OriginalX; }
             }
         }
     }
@@ -282,6 +290,11 @@ namespace tile_mapper
             }
             layers.Add(layer);
         }
+
+        public void RemoveLayer(int layerIndex)
+        {
+            layers.Remove(layers[layerIndex]);
+        }
     }
 
     internal class Canvas
@@ -313,6 +326,15 @@ namespace tile_mapper
         public void CreateArea(Rectangle Selection, string AreaName)
         {
             areas.Add(new Area(Selection, AreaName, this.LayerAmount));
+        }
+
+        public void RemoveLayer(int layerIndex)
+        {
+            foreach(var area in  areas)
+            {
+                area.RemoveLayer(layerIndex);
+            }
+            LayerAmount--;
         }
     }
 

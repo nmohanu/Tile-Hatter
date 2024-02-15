@@ -452,11 +452,13 @@ namespace tile_mapper
                     {
                         button.SourceRect.X = button.SelectionX;
                     }
+                    else
+                        button.ChangeSourceX(MousePos);
             }
 
-            
+
             // Tile sheet is imported.
-            if(HasTileSheet)
+            if (HasTileSheet)
             {
                 foreach (var rect in TileSpriteList[currentPage])
                 {
@@ -885,6 +887,7 @@ namespace tile_mapper
                     return;
                 }
                 else
+                {
                     switch (buttonClicked.Action)
                     {
                         case ButtonAction.Import:
@@ -893,7 +896,7 @@ namespace tile_mapper
                             break;
                         case ButtonAction.Layer:
                             CurrentLayer = buttonClicked.HelperInt;
-                            if(ClickedLayerButton != null)
+                            if (ClickedLayerButton != null)
                                 ClickedLayerButton.IsPressed = false;
                             buttonClicked.IsPressed = true;
                             ClickedLayerButton = buttonClicked;
@@ -936,13 +939,13 @@ namespace tile_mapper
                                 {
                                     Selection = area.AreaCords;
                                     buttonClicked.IsPressed = true;
-                                    if(ClickedAreaButton != null)
+                                    if (ClickedAreaButton != null)
                                         ClickedAreaButton.IsPressed = false;
                                     ClickedAreaButton = buttonClicked;
                                     SelectedArea = area;
                                 }
                             }
-                            if(SelectedArea != null)
+                            if (SelectedArea != null)
                             {
                                 AreaName.Text = SelectedArea.AreaName;
                                 AreaHeight.Text = "Width: " + SelectedArea.AreaCords.Height.ToString();
@@ -951,16 +954,16 @@ namespace tile_mapper
                                 AreaY.Text = "Top: " + SelectedArea.AreaCords.Y.ToString();
                             }
 
-                            
+
                             break;
                         case ButtonAction.OpenAreaMenu:
                             menuState = MenuState.AreaMenu;
                             UpdateMenuState();
                             break;
                         case ButtonAction.RemoveArea:
-                            if(ClickedAreaButton != null)
+                            if (ClickedAreaButton != null)
                             {
-                                for(int i = 0; i < CurrentMap.areas.Count; i++)
+                                for (int i = 0; i < CurrentMap.areas.Count; i++)
                                 {
                                     if (CurrentMap.areas[i].AreaName == ClickedAreaButton.Text)
                                     {
@@ -985,11 +988,11 @@ namespace tile_mapper
                             TilePaletteVisible = false;
                             break;
                         case ButtonAction.TestState:
-                            if(CurrentMap.StartLocationSpecified)
+                            if (CurrentMap.StartLocationSpecified)
                                 state = EditorState.Test;
                             CurrentArea = StartArea;
                             OriginalOffset = Offset;
-                            Offset = new Vector2(ScreenWidth/2 - CurrentMap.StartLocation.X * TILE_SIZE * TestingScale, ScreenHeight/2 - CurrentMap.StartLocation.Y * TILE_SIZE * TestingScale);
+                            Offset = new Vector2(ScreenWidth / 2 - CurrentMap.StartLocation.X * TILE_SIZE * TestingScale, ScreenHeight / 2 - CurrentMap.StartLocation.Y * TILE_SIZE * TestingScale);
                             CharacterSource.X = 0;
                             break;
                         case ButtonAction.EditState:
@@ -1002,7 +1005,7 @@ namespace tile_mapper
                             TileSpriteList[currentPage].FirstOrDefault(obj => obj.ID == selected.ID).Collision = selected.Collision;
 
                             CurrentMap.CollisionTiles.Clear();
-                            foreach(var tile in TileSpriteList[currentPage])
+                            foreach (var tile in TileSpriteList[currentPage])
                             {
                                 if (tile.Collision)
                                     CurrentMap.CollisionTiles.Add(tile);
@@ -1012,7 +1015,18 @@ namespace tile_mapper
                         case ButtonAction.AddLayer:
                             AddLayer();
                             break;
+                        case ButtonAction.RemoveLayer:
+                            CurrentMap.RemoveLayer(buttonClicked.HelperInt);
+                            UpdateLayerList();
+                            break;
                     }
+                    if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(MousePos))
+                            {
+                        CurrentMap.RemoveLayer(buttonClicked.HelperInt);
+                        LayerMenu.buttons.Remove(LayerMenu.buttons[buttonClicked.HelperInt]);
+                        UpdateLayerList();
+                    }
+                }
             }
         }
 
@@ -1272,14 +1286,8 @@ namespace tile_mapper
 
         }
 
-        internal void AddLayer()
+        internal void UpdateLayerList()
         {
-            Button button = new Button("Layer: " + (LayerMenu.buttons.Count()).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, 0, 224, 48), 288, 64, ButtonAction.Layer, true);
-            button.SourceRect.Y = 128;
-
-            button.PressedSourceX = 288;
-            LayerMenu.buttons.Add(button);
-
             // Make sure the create area button is placed last in list.
             for (int i = 0; i < LayerMenu.buttons.Count; i++)
             {
@@ -1288,7 +1296,7 @@ namespace tile_mapper
                 {
                     LayerMenu.buttons.Remove(btn);
                     LayerMenu.buttons.Add(btn);
-                    break; // Once found, no need to continue the loop
+                    break;
                 }
             }
 
@@ -1298,9 +1306,35 @@ namespace tile_mapper
             {
                 btn.ButtonRect.Y = Properties.Destination.Y + 32 + 16 + 48 * j + (int)LayerMenu.ScrollMenuOffset.Y;
                 btn.HelperInt = j;
+
+                if (btn.IsDeletable)
+                {
+                    btn.DeleteButton.ButtonRect.Y = btn.ButtonRect.Y + 16;
+                    btn.DeleteButton.HelperInt = j;
+                }
                 j++;
             }
+        }
 
+        internal void AddLayer()
+        {
+            // Create button.
+            Button button = new Button("Layer: " + (LayerMenu.buttons.Count()).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, 0, 224, 48), 288, 64, ButtonAction.Layer, true);
+            button.SourceRect.Y = 128;
+            button.PressedSourceX = 288;
+            button.IsDeletable = true;
+            
+            // Add delete button (X) to the button.
+            button.DeleteButton = new Button("", new Rectangle(button.ButtonRect.X + 224 - 24, 0, 16, 16), 144, 128, ButtonAction.RemoveLayer, true);
+            button.DeleteButton.SourceRect.Y = 96;
+            button.DeleteButton.SourceRect.X = 128;
+
+            // Add button to the list.
+            LayerMenu.buttons.Add(button);
+
+            UpdateLayerList();
+
+            // Update map data.
             CurrentMap.LayerAmount++;
             CurrentMap.AddLayerToAreas();
         }
