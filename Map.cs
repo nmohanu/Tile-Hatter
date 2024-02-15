@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection.Emit;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -252,40 +253,39 @@ namespace tile_mapper
     {
         public Rectangle AreaCords;
         public string AreaName;
-        public Layer[] layers = new Layer[3];
-        Layer Terrain;
-        Layer Objects;
-        Layer Foreground;
+        public List<Layer> layers;
 
-        public Area(Rectangle areaCords, string areaName)
+        public Area(Rectangle areaCords, string areaName, int LayerAmount)
         {
             this.AreaCords = areaCords;
             this.AreaName = areaName;
-            Layer Terrain = new Layer(0, areaCords);
-            Layer Objects = new Layer(1, areaCords);
-            Layer Foreground = new Layer(2, areaCords);
 
-            layers[0] = Terrain;
-            layers[1] = Objects;
-            layers[2] = Foreground;
+            layers = new List<Layer>();
 
-            foreach (var layer in layers)
+
+            for(int k = 0; k < LayerAmount; k++)
             {
-                for(int i = 0; i < this.AreaCords.Height; i++)
+                AddLayer();
+            }
+        }
+
+        public void AddLayer()
+        {
+            Layer layer = new Layer(this.AreaCords);
+            for (int i = 0; i < this.AreaCords.Height; i++)
+            {
+                for (int j = 0; j < this.AreaCords.Width; j++)
                 {
-                    for(int j = 0; j < this.AreaCords.Width; j++)
-                    {
-                        layer.TileMap[i, j] = new Tile();
-                 
-                    }
+                    layer.TileMap[i, j] = new Tile();
                 }
             }
+            layers.Add(layer);
         }
     }
 
     internal class Canvas
     {
-        public int LayerAmount = 2;
+        public int LayerAmount = 0;
 
         public List<Area> areas = new List<Area>();
 
@@ -301,9 +301,17 @@ namespace tile_mapper
             
         }
 
+        public void AddLayerToAreas()
+        {
+            foreach (var area in areas)
+            {
+                area.AddLayer();
+            }
+        }
+
         public void CreateArea(Rectangle Selection, string AreaName)
         {
-            areas.Add(new Area(Selection, AreaName));
+            areas.Add(new Area(Selection, AreaName, this.LayerAmount));
         }
     }
 
@@ -315,15 +323,9 @@ namespace tile_mapper
 
     internal class Layer
     {
-        public int Depth;
-
         public Tile[,] TileMap;
-
-
-        public Layer(int depth, Rectangle rectangle)
+        public Layer(Rectangle rectangle)
         {
-            this.Depth = depth;
-
             TileMap = new Tile[rectangle.Height, rectangle.Width];
         }
     }

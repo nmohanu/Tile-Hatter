@@ -108,6 +108,7 @@ namespace tile_mapper
         Button LayerMenuButton;
         Button ObjectMenuButton;
         Button SpriteMenuButton;
+        Button CreateLayerButton;
 
         Area StartArea;
         Area SelectedArea;
@@ -258,6 +259,8 @@ namespace tile_mapper
             SpriteMenuButton.SourceRect.Y = 1184 + 96;
             SpriteMenuButton.PressedSourceX = 1648;
 
+            
+
             CurrentTileID = new Label();
             Collision = new Label();
 
@@ -320,20 +323,20 @@ namespace tile_mapper
 
 
             // Layer menu.
-            for (int i = 0; i <= CurrentMap.LayerAmount; i++)
-            {
-                Button button = new Button("Layer: " + (i + 1).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * i, 224, 48), 288, 64, ButtonAction.Layer, true);
-                button.SourceRect.Y = 128;
-                if(i == 0)
-                {
-                    button.IsPressed = true;
-                    ClickedLayerButton = button;
-                }
-                button.HelperInt = i;
-                button.PressedSourceX = 288;
-                LayerMenu.buttons.Add(button);
+            CreateLayerButton = new Button("New layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.AddLayer, true);
+            CreateLayerButton.SourceRect.Y = 240;
+            LayerMenu.buttons.Add(CreateLayerButton);
 
+            // Add the default 3 layers.
+            for (int i = 1; i <= 3; i++)
+            {
+                AddLayer();
             }
+
+            LayerMenu.buttons[0].IsPressed = true;
+            ClickedLayerButton = LayerMenu.buttons[0];
+
+            
 
             LayerName.Text = "ID: " + ClickedLayerButton.Text;
 
@@ -1008,6 +1011,9 @@ namespace tile_mapper
                             }
 
                             break;
+                        case ButtonAction.AddLayer:
+                            AddLayer();
+                            break;
                     }
             }
         }
@@ -1266,6 +1272,39 @@ namespace tile_mapper
         internal void ChangeAreaProperties()
         {
 
+        }
+
+        internal void AddLayer()
+        {
+            Button button = new Button("Layer: " + (LayerMenu.buttons.Count()).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, 0, 224, 48), 288, 64, ButtonAction.Layer, true);
+            button.SourceRect.Y = 128;
+
+            button.PressedSourceX = 288;
+            LayerMenu.buttons.Add(button);
+
+            // Make sure the create area button is placed last in list.
+            for (int i = 0; i < LayerMenu.buttons.Count; i++)
+            {
+                var btn = LayerMenu.buttons[i];
+                if (btn.Action == ButtonAction.AddLayer)
+                {
+                    LayerMenu.buttons.Remove(btn);
+                    LayerMenu.buttons.Add(btn);
+                    break; // Once found, no need to continue the loop
+                }
+            }
+
+            // Update button positions.
+            int j = 0;
+            foreach (var btn in LayerMenu.buttons)
+            {
+                btn.ButtonRect.Y = Properties.Destination.Y + 32 + 16 + 48 * j + (int)MenuScrollOffset.Y;
+                btn.HelperInt = j;
+                j++;
+            }
+
+            CurrentMap.LayerAmount++;
+            CurrentMap.AddLayerToAreas();
         }
     }
 }

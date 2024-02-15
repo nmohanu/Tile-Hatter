@@ -102,7 +102,7 @@ namespace tile_mapper
                     {
                         for (int j = Math.Max(area.AreaCords.X, StartX); j < Math.Min(area.AreaCords.X + area.AreaCords.Width, EndX); j++)
                         {
-                            for (int k = 0; k <= CurrentMap.LayerAmount; k++)
+                            for (int k = 0; k <= CurrentMap.LayerAmount-1; k++)
                             {
                                 Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * Scale + Offset.X), (int)(i * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
 
