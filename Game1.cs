@@ -1000,12 +1000,15 @@ namespace tile_mapper
                             case ButtonAction.RemoveLayer:
                                 CurrentMap.RemoveLayer(buttonClicked.HelperInt);
                                 LayerMenu.buttons.Remove(LayerMenu.buttons[buttonClicked.HelperInt]);
+                                if (CurrentLayer == buttonClicked.HelperInt)
+                                    CurrentLayer--;
                                 UpdateListOrder(LayerMenu);
                                 break;
                             case ButtonAction.RemoveArea:
                                 CurrentMap.RemoveArea(buttonClicked.HelperInt);
                                 AreaMenu.buttons.Remove(AreaMenu.buttons[buttonClicked.HelperInt]);
                                 UpdateListOrder(AreaMenu);
+                                CurrentArea = null;
                                 break;
                         }
                     }
@@ -1025,7 +1028,7 @@ namespace tile_mapper
                         switch (CursorActionState)
                         {
                             case CursorState.Draw:
-                                if(area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID != selected.ID)
+                                if(CurrentMap.LayerAmount > 0 && area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID != selected.ID)
                                 {
                                     area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = selected.ID;
                                     area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = selected.Source;
