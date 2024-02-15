@@ -25,6 +25,7 @@ namespace tile_mapper
         public Rectangle Destination;
         public List<Button> buttons;
         public bool Scrollable;
+        public Vector2 ScrollMenuOffset = new Vector2(0,0);
 
         public UI_Menu(bool IsVisible, Rectangle Source, Rectangle Destination)
         {
@@ -36,7 +37,7 @@ namespace tile_mapper
         }
 
 
-        public void Draw(SpriteBatch spriteBatch, Texture2D UI, int ScreenHeight, int ScreenWidth, float ScaleX, float ScaleY, SpriteFont font, float TextScale, bool RenderScrollableMenus, Vector2 ScrollMenuOffset)
+        public void Draw(SpriteBatch spriteBatch, Texture2D UI, int ScreenHeight, int ScreenWidth, float ScaleX, float ScaleY, SpriteFont font, float TextScale, bool RenderScrollableMenus)
         {
             if(IsVisible && (!Scrollable || RenderScrollableMenus))
             {

@@ -131,8 +131,6 @@ namespace tile_mapper
         Label AreaX;
         Label AreaY;
 
-        public Vector2 MenuScrollOffset = new Vector2(0, 0);
-
         Rectangle MouseSource = new Rectangle(0, 784, 32, 32);
         CursorState CursorActionState = Game1.CursorState.None;
         bool TilePaletteVisible;
@@ -501,19 +499,19 @@ namespace tile_mapper
                         if (menu.Scrollable && menu.buttons.Count() > 0)
                         {
                             int adjustment = (int) ((mouseState.ScrollWheelValue - OriginalScrollWheelValue) * 0.04f);
-                            int ScrollYOrg = (int) MenuScrollOffset.Y;
-                            MenuScrollOffset.Y += adjustment;
-                            MenuScrollOffset.Y = Math.Min(MenuScrollOffset.Y, 0);
+                            int ScrollYOrg = (int) menu.ScrollMenuOffset.Y;
+                            menu.ScrollMenuOffset.Y += adjustment;
+                            menu.ScrollMenuOffset.Y = Math.Min(menu.ScrollMenuOffset.Y, 0);
 
-                            if(menu.buttons[menu.buttons.Count() - 1].ButtonRect.Y + (int)(MenuScrollOffset.Y - ScrollYOrg) < menu.Destination.Bottom - 64)
+                            if(menu.buttons[menu.buttons.Count() - 1].ButtonRect.Y + (int)(menu.ScrollMenuOffset.Y - ScrollYOrg) < menu.Destination.Bottom - 64)
                             {
-                                MenuScrollOffset.Y = ScrollYOrg;
+                                menu.ScrollMenuOffset.Y = ScrollYOrg;
                             }
                             else
                             {
                                 foreach (var btn in menu.buttons)
                                 {
-                                    btn.ButtonRect = new Rectangle(btn.ButtonRect.X, btn.ButtonRect.Y + (int)(MenuScrollOffset.Y - ScrollYOrg), 224, 48);
+                                    btn.ButtonRect = new Rectangle(btn.ButtonRect.X, btn.ButtonRect.Y + (int)(menu.ScrollMenuOffset.Y - ScrollYOrg), 224, 48);
                                 }
                             }
                         }
@@ -587,7 +585,7 @@ namespace tile_mapper
                 if(allowed)
                 {
                     string name = "Area: " + (CurrentMap.areas.Count() +1).ToString();
-                    Button btn = new Button(name, new Rectangle(AreaMenu.Destination.X + AreaMenu.Destination.Width / 2 - 224 / 2, AreaMenu.Destination.Y + 16 + 48 * CurrentMap.areas.Count() + (int)MenuScrollOffset.Y, 224, 48), 288, 64, ButtonAction.SelectArea, true);
+                    Button btn = new Button(name, new Rectangle(AreaMenu.Destination.X + AreaMenu.Destination.Width / 2 - 224 / 2, AreaMenu.Destination.Y + 16 + 48 * CurrentMap.areas.Count() + (int)AreaMenu.ScrollMenuOffset.Y, 224, 48), 288, 64, ButtonAction.SelectArea, true);
                     CurrentMap.CreateArea(Selection, name);
 
                     btn.PressedSourceX = 288;
@@ -601,7 +599,7 @@ namespace tile_mapper
                         {
                             button.ButtonRect = new Rectangle(button.ButtonRect.X, button.ButtonRect.Y - 48, 224, 48);
                         }
-                        MenuScrollOffset.Y -= 48;
+                        AreaMenu.ScrollMenuOffset.Y -= 48;
                     }
                 }
             }
@@ -688,7 +686,7 @@ namespace tile_mapper
             // UI elements
             foreach (var menu in UI_Elements)
             {
-                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, false, MenuScrollOffset);
+                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, false);
             }
 
             _spriteBatch.End();
@@ -702,7 +700,7 @@ namespace tile_mapper
             // Draw scrollable menus, elements need to be cut off when out of bounds.
             foreach (var menu in Scrollable_Menus)
             {
-                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, true, MenuScrollOffset);
+                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, true);
             }
 
             _spriteBatch.End();
@@ -1298,7 +1296,7 @@ namespace tile_mapper
             int j = 0;
             foreach (var btn in LayerMenu.buttons)
             {
-                btn.ButtonRect.Y = Properties.Destination.Y + 32 + 16 + 48 * j + (int)MenuScrollOffset.Y;
+                btn.ButtonRect.Y = Properties.Destination.Y + 32 + 16 + 48 * j + (int)LayerMenu.ScrollMenuOffset.Y;
                 btn.HelperInt = j;
                 j++;
             }
