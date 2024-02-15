@@ -191,7 +191,9 @@ namespace tile_mapper
         OpenAreaMenu,
         OpenSpriteMenu,
         EditorScreen,
-        SheetScreen
+        SheetScreen,
+        SelectCollisionSprite,
+        RemoveCollisionSprite
     }
     internal class Button
     {

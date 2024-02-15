@@ -110,6 +110,7 @@ namespace tile_mapper
         Button ObjectMenuButton;
         Button SpriteMenuButton;
         Button CreateLayerButton;
+        Button ClickedTileButton;
 
 
         Area StartArea;
@@ -141,7 +142,7 @@ namespace tile_mapper
         Area CurrentArea;
         float TestingScale = 4f;
         float TestingSpeed = 516f;
-        UI_Menu TileProperties;
+        UI_Menu CollisionSpriteList;
 
         UI_Menu TileLabels;
         UI_Menu AreaLabels;
@@ -285,8 +286,8 @@ namespace tile_mapper
             AreaMenu.Scrollable = true;
             ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
             ObjectMenu.Scrollable = true;
-            TileProperties = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
-            TileProperties.Scrollable = true;
+            CollisionSpriteList = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+            CollisionSpriteList.Scrollable = true;
 
             TileLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
             AreaLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
@@ -390,10 +391,16 @@ namespace tile_mapper
             UI_Elements.Add(GeneralOverlay);
             UI_Elements.Add(Properties);
 
+            // Scrollable
             UI_Elements.Add(ObjectMenu);
             UI_Elements.Add(AreaMenu);
             UI_Elements.Add(LayerMenu);
+            UI_Elements.Add(CollisionSpriteList);
+
+            // Tile palette
             UI_Elements.Add(TileMenu);
+
+            // Labels
             UI_Elements.Add(LayerLabels);
             UI_Elements.Add(AreaLabels);
             UI_Elements.Add(TileLabels);
@@ -403,12 +410,12 @@ namespace tile_mapper
             PropertyMenu1.Add(LayerMenu);
             PropertyMenu1.Add(AreaMenu);
             PropertyMenu1.Add(ObjectMenu);
-            PropertyMenu1.Add(TileProperties);
+            PropertyMenu1.Add(CollisionSpriteList);
 
             Scrollable_Menus.Add(LayerMenu);
             Scrollable_Menus.Add(AreaMenu);
             Scrollable_Menus.Add(ObjectMenu);
-            Scrollable_Menus.Add(TileProperties);
+            Scrollable_Menus.Add(CollisionSpriteList);
 
             LabelMenus.Add(LayerLabels);
             LabelMenus.Add(AreaLabels);
@@ -489,15 +496,7 @@ namespace tile_mapper
                         // User selected a sprite.
                         if (mouseState.LeftButton == ButtonState.Pressed)
                         {
-                            selected = rect;
-                            selected.ID = rect.ID;
-                            selected.Source = rect.Source;
-                            CursorActionState = CursorState.Draw;
-                            CurrentTileID.IsVisible = true;
-                            CurrentTileID.Text = "ID: " + selected.ID;
-                            Collision.IsVisible = true;
-                            CollisionCheckBox.IsVisible = true;
-                            CollisionCheckBox.IsPressed = selected.Collision;
+                            SelectTile(rect);
                         }
                         else
                         {
@@ -996,6 +995,19 @@ namespace tile_mapper
                                     CurrentMap.CollisionTiles.Add(tile);
                             }
 
+                            // Tile is added to list, create button for it.
+                            if(buttonClicked.IsPressed)
+                            {
+                                Button button = CreateRemovableButton(ButtonAction.SelectCollisionSprite, ButtonAction.RemoveCollisionSprite);
+                                button.Text = selected.ID;
+                                CollisionSpriteList.buttons.Add(button);
+                                UpdateListOrder(CollisionSpriteList);
+                            } 
+                            else // Removed from list, remove the button.
+                            {
+                                CollisionSpriteList.buttons.Remove(CollisionSpriteList.buttons.FirstOrDefault(obj => obj.Text == selected.ID));
+                                UpdateListOrder(CollisionSpriteList);
+                            }
                             break;
                         case ButtonAction.AddLayer:
                             AddLayer();
@@ -1003,6 +1015,13 @@ namespace tile_mapper
                         case ButtonAction.RemoveLayer:
                             CurrentMap.RemoveLayer(buttonClicked.HelperInt);
                             UpdateListOrder(LayerMenu);
+                            break;
+                        case ButtonAction.SelectCollisionSprite:
+                            if(ClickedTileButton != null)
+                                ClickedTileButton.IsPressed = false;
+                            buttonClicked.IsPressed = true;
+                            SelectTile(TileSpriteList[currentPage].LastOrDefault(obj => obj.ID == buttonClicked.Text));
+                            ClickedTileButton = buttonClicked;
                             break;
                     }
                     if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(MousePos))
@@ -1029,6 +1048,11 @@ namespace tile_mapper
                                 AreaMenu.buttons.Remove(AreaMenu.buttons[buttonClicked.HelperInt]);
                                 UpdateListOrder(AreaMenu);
                                 UpdateAreaLabels();
+                                break;
+                            case ButtonAction.RemoveCollisionSprite:
+                                CollisionSpriteList.buttons.Remove(buttonClicked);
+                                UpdateListOrder(CollisionSpriteList);
+                                ClearLabels(TileLabels);
                                 break;
                         }
                     }
@@ -1272,7 +1296,7 @@ namespace tile_mapper
                     SpriteMenuButton.IsPressed = false;
                     break;
                 case MenuState.SpriteTileMenu:
-                    TileProperties.IsVisible = true;
+                    CollisionSpriteList.IsVisible = true;
                     TileLabels.IsVisible = true;
                     LayerMenuButton.IsPressed = false;
                     AreaMenuButton.IsPressed = false;
@@ -1387,6 +1411,10 @@ namespace tile_mapper
             {
                 label.Text = "";
             }
+            foreach(var button in menu.buttons)
+            {
+                button.IsVisible = false;
+            }
         }
 
         internal void AddLayer()
@@ -1409,6 +1437,7 @@ namespace tile_mapper
             Button button = new Button("Layer: " + (LayerMenu.buttons.Count()).ToString(), new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, 0, 224, 48), 288, 64, action, true);
             button.SourceRect.Y = 128;
             button.PressedSourceX = 288;
+            button.SourceRect.X = button.OriginalX;
             button.IsDeletable = true;
 
             // Add delete button (X) to the button.
@@ -1417,6 +1446,20 @@ namespace tile_mapper
             button.DeleteButton.SourceRect.X = 128;
 
             return button;
+        }
+
+        internal void SelectTile(SpriteTile rect)
+        {
+            selected = rect;
+            selected.ID = rect.ID;
+            selected.Source = rect.Source;
+            CursorActionState = CursorState.Draw;
+            CurrentTileID.IsVisible = true;
+            CurrentTileID.Text = "ID: " + selected.ID;
+            Collision.IsVisible = true;
+            CollisionCheckBox.IsVisible = true;
+            Collision.Text = "Collision";
+            CollisionCheckBox.IsPressed = selected.Collision;
         }
     }
 }
