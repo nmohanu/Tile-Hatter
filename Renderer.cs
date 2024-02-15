@@ -143,21 +143,22 @@ namespace tile_mapper
             EndX++;
             EndY++;
 
-            for (int i = Math.Max(area.AreaCords.Y, StartY); i < Math.Min(area.AreaCords.Y + area.AreaCords.Height, EndY); i++)
-            {
-                for (int j = Math.Max(area.AreaCords.X, StartX); j < Math.Min(area.AreaCords.X + area.AreaCords.Width, EndX); j++)
+            if (CurrentMap.areas.Count() > 0)
+                for (int i = Math.Max(area.AreaCords.Y, StartY); i < Math.Min(area.AreaCords.Y + area.AreaCords.Height, EndY); i++)
                 {
-                    for (int k = 0; k <= CurrentMap.LayerAmount; k++)
+                    for (int j = Math.Max(area.AreaCords.X, StartX); j < Math.Min(area.AreaCords.X + area.AreaCords.Width, EndX); j++)
                     {
-                        Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * Scale + Offset.X), (int)(i * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
-
-                        if (area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID != "0")
+                        for (int k = 0; k <= CurrentMap.LayerAmount-1; k++)
                         {
-                            spriteBatch.Draw(TileSheet, DestRect, area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White);
+                            Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * Scale + Offset.X), (int)(i * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+
+                            if (area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID != "0")
+                            {
+                                spriteBatch.Draw(TileSheet, DestRect, area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White);
+                            }
                         }
                     }
                 }
-            }
         }
 
         public static void DrawPalette(bool HasTileSheet, List<List<SpriteTile>> TileSpriteList, SpriteBatch spriteBatch, SpriteTile selected, Texture2D Grid, Texture2D TileSheet)

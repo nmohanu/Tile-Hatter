@@ -79,6 +79,7 @@ namespace tile_mapper
 
         List<UI_Menu> UI_Elements;
         List<UI_Menu> Scrollable_Menus = new List<UI_Menu>();
+        List<UI_Menu> LabelMenus = new List<UI_Menu>();
 
         List<List<SpriteTile>> TileSpriteList;
         bool HasTileSheet = false;
@@ -110,6 +111,7 @@ namespace tile_mapper
         Button SpriteMenuButton;
         Button CreateLayerButton;
 
+
         Area StartArea;
         Area SelectedArea;
 
@@ -140,6 +142,11 @@ namespace tile_mapper
         float TestingScale = 4f;
         float TestingSpeed = 516f;
         UI_Menu TileProperties;
+
+        UI_Menu TileLabels;
+        UI_Menu AreaLabels;
+        UI_Menu LayerLabels;
+        UI_Menu ObjectLabels;
 
         MenuState menuState;
 
@@ -281,6 +288,11 @@ namespace tile_mapper
             TileProperties = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
             TileProperties.Scrollable = true;
 
+            TileLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+            AreaLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+            LayerLabels = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+            ObjectLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+
             LayerName = new Label();
             LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
             LayerName.IsVisible = true;
@@ -359,18 +371,18 @@ namespace tile_mapper
             Properties.buttons.Add(SpriteMenuButton);
 
 
-            TileProperties.labels.Add(CurrentTileID);
-            TileProperties.labels.Add(Collision);
-            TileProperties.buttons.Add(CollisionCheckBox);
+            TileLabels.labels.Add(CurrentTileID);
+            TileLabels.labels.Add(Collision);
+            TileLabels.buttons.Add(CollisionCheckBox);
 
-            LayerMenu.labels.Add(LayerName);
+            LayerLabels.labels.Add(LayerName);
 
             // Labels for area menu
-            AreaMenu.labels.Add(AreaName);
-            AreaMenu.labels.Add(AreaWidth);
-            AreaMenu.labels.Add(AreaHeight);
-            AreaMenu.labels.Add(AreaX);
-            AreaMenu.labels.Add(AreaY);
+            AreaLabels.labels.Add(AreaName);
+            AreaLabels.labels.Add(AreaWidth);
+            AreaLabels.labels.Add(AreaHeight);
+            AreaLabels.labels.Add(AreaX);
+            AreaLabels.labels.Add(AreaY);
 
             // Draw these to screen.
             UI_Elements.Add(TileMenu);
@@ -382,6 +394,10 @@ namespace tile_mapper
             UI_Elements.Add(AreaMenu);
             UI_Elements.Add(LayerMenu);
             UI_Elements.Add(TileMenu);
+            UI_Elements.Add(LayerLabels);
+            UI_Elements.Add(AreaLabels);
+            UI_Elements.Add(TileLabels);
+            UI_Elements.Add(ObjectLabels);
 
             // Keep track of the menus in the right UI bar.
             PropertyMenu1.Add(LayerMenu);
@@ -393,6 +409,11 @@ namespace tile_mapper
             Scrollable_Menus.Add(AreaMenu);
             Scrollable_Menus.Add(ObjectMenu);
             Scrollable_Menus.Add(TileProperties);
+
+            LabelMenus.Add(LayerLabels);
+            LabelMenus.Add(AreaLabels);
+            LabelMenus.Add(TileLabels);
+            LabelMenus.Add(ObjectLabels);
 
             CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int) (32 * 2f), (int)(32 * 2f));
 
@@ -917,16 +938,7 @@ namespace tile_mapper
                                     SelectedArea = area;
                                 }
                             }
-                            if (SelectedArea != null)
-                            {
-                                AreaName.Text = SelectedArea.AreaName;
-                                AreaHeight.Text = "Width: " + SelectedArea.AreaCords.Height.ToString();
-                                AreaWidth.Text = "Height: " + SelectedArea.AreaCords.Width.ToString();
-                                AreaX.Text = "Left: " + SelectedArea.AreaCords.X.ToString();
-                                AreaY.Text = "Top: " + SelectedArea.AreaCords.Y.ToString();
-                            }
-
-
+                            UpdateAreaLabels();
                             break;
                         case ButtonAction.OpenAreaMenu:
                             menuState = MenuState.AreaMenu;
@@ -944,6 +956,7 @@ namespace tile_mapper
                                 }
 
                                 Properties.buttons.Remove(Properties.buttons.LastOrDefault(obj => obj.Text == ClickedAreaButton.Text));
+
 
                                 ClickedAreaButton = null;
                             }
@@ -1001,14 +1014,21 @@ namespace tile_mapper
                                 CurrentMap.RemoveLayer(buttonClicked.HelperInt);
                                 LayerMenu.buttons.Remove(LayerMenu.buttons[buttonClicked.HelperInt]);
                                 if (CurrentLayer == buttonClicked.HelperInt)
+                                {
                                     CurrentLayer--;
+                                    ClearLabels(LayerLabels);
+                                }
+                                    
                                 UpdateListOrder(LayerMenu);
                                 break;
                             case ButtonAction.RemoveArea:
                                 CurrentMap.RemoveArea(buttonClicked.HelperInt);
+                                if(SelectedArea.AreaName == CurrentMap.areas[buttonClicked.HelperInt].AreaName)
+                                    SelectedArea = null;
+
                                 AreaMenu.buttons.Remove(AreaMenu.buttons[buttonClicked.HelperInt]);
                                 UpdateListOrder(AreaMenu);
-                                CurrentArea = null;
+                                UpdateAreaLabels();
                                 break;
                         }
                     }
@@ -1228,11 +1248,16 @@ namespace tile_mapper
             {
                 menu.IsVisible = false;
             }
+            foreach (var menu in LabelMenus)
+            {
+                menu.IsVisible = false;
+            }
 
             switch (menuState)
             {
                 case MenuState.LayerMenu:
                     LayerMenu.IsVisible = true;
+                    LayerLabels.IsVisible = true;
                     LayerMenuButton.IsPressed = true;
                     AreaMenuButton.IsPressed = false;
                     ObjectMenuButton.IsPressed = false;
@@ -1240,6 +1265,7 @@ namespace tile_mapper
                     break;
                 case MenuState.AreaMenu:
                     AreaMenu.IsVisible = true;
+                    AreaLabels.IsVisible = true;
                     LayerMenuButton.IsPressed = false;
                     AreaMenuButton.IsPressed = true;
                     ObjectMenuButton.IsPressed = false;
@@ -1247,6 +1273,7 @@ namespace tile_mapper
                     break;
                 case MenuState.SpriteTileMenu:
                     TileProperties.IsVisible = true;
+                    TileLabels.IsVisible = true;
                     LayerMenuButton.IsPressed = false;
                     AreaMenuButton.IsPressed = false;
                     ObjectMenuButton.IsPressed = false;
@@ -1254,6 +1281,7 @@ namespace tile_mapper
                     break;
                 case MenuState.ObjectMenu:
                     ObjectMenu.IsVisible = true;
+                    ObjectLabels.IsVisible = true;
                     LayerMenuButton.IsPressed = false;
                     AreaMenuButton.IsPressed = false;
                     ObjectMenuButton.IsPressed = true;
@@ -1334,6 +1362,30 @@ namespace tile_mapper
                     btn.DeleteButton.HelperInt = j;
                 }
                 j++;
+            }
+        }
+
+        internal void UpdateAreaLabels()
+        {
+            if (SelectedArea != null)
+            {
+                AreaName.Text = SelectedArea.AreaName;
+                AreaHeight.Text = "Width: " + SelectedArea.AreaCords.Height.ToString();
+                AreaWidth.Text = "Height: " + SelectedArea.AreaCords.Width.ToString();
+                AreaX.Text = "Left: " + SelectedArea.AreaCords.X.ToString();
+                AreaY.Text = "Top: " + SelectedArea.AreaCords.Y.ToString();
+            }
+            else
+            {
+                ClearLabels(AreaLabels);
+            }
+        }
+
+        internal void ClearLabels(UI_Menu menu)
+        {
+            foreach(Label label in menu.labels)
+            {
+                label.Text = "";
             }
         }
 
