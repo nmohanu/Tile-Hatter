@@ -104,16 +104,16 @@ namespace tile_mapper
                             {
                                 Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * Scale + Offset.X), (int)(i * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
 
-                                if (area.layers[k].TileMap[i-area.AreaCords.Y, j-area.AreaCords.X].ID != "0")
+                                if (area.Layers[k].TileMap[i-area.AreaCords.Y, j-area.AreaCords.X].ID != "0")
                                 {
 
                                     if (k == CurrentLayer)
                                     {
-                                        spriteBatch.Draw(TileSheet, DestRect, area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White);
+                                        spriteBatch.Draw(TileSheet, DestRect, area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White);
                                     }
                                     else
                                     {
-                                        spriteBatch.Draw(TileSheet, DestRect, area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White * 0.5f);
+                                        spriteBatch.Draw(TileSheet, DestRect, area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White * 0.5f);
                                     }
                                 }
                                 else
@@ -150,9 +150,9 @@ namespace tile_mapper
                         {
                             Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * Scale + Offset.X), (int)(i * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
 
-                            if (area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID != "0")
+                            if (area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID != "0")
                             {
-                                spriteBatch.Draw(TileSheet, DestRect, area.layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White);
+                                spriteBatch.Draw(TileSheet, DestRect, area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White);
                             }
                         }
                     }

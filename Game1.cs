@@ -113,6 +113,7 @@ namespace tile_mapper
         Button SpriteMenuButton;
         Button CreateLayerButton;
         Button ClickedTileButton;
+        Button CreateObjectLayerButton;
 
         Rectangle SpritePaletteDestination;
         
@@ -196,6 +197,8 @@ namespace tile_mapper
             UI_Elements = new List<UI_Menu>();
 
             Window.Title = "Tile-Hatter";
+
+            Window.AllowUserResizing = false;
 
             ScreenWidth = 1920;
             ScreenHeight = 1080;
@@ -338,11 +341,17 @@ namespace tile_mapper
             CollisionCheckBox.SourceRect.Y = 80;
             CollisionCheckBox.PressedSourceX = 64;
 
-
-            // Layer menu.
-            CreateLayerButton = new Button("New layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.AddLayer, true);
+            // Create Layer btn.
+            CreateLayerButton = new Button("New Layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.AddLayer, true);
             CreateLayerButton.SourceRect.Y = 240;
             LayerMenu.buttons.Add(CreateLayerButton);
+
+            // Create ObjectLayer btn..
+            CreateObjectLayerButton = new Button("New Object Layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.CreateObjectLayer, true);
+            CreateObjectLayerButton.SourceRect.Y = 240;
+            ObjectMenu.buttons.Add(CreateObjectLayerButton);
+            UpdateListOrder(ObjectMenu);
+
 
             // Add the default 3 layers.
             for (int i = 1; i <= 3; i++)
@@ -632,7 +641,7 @@ namespace tile_mapper
                         {
                             if (area.AreaCords.Contains(UndoAction.x, UndoAction.y))
                             {
-                                area.layers[UndoAction.Layer].TileMap[UndoAction.y - area.AreaCords.Y, UndoAction.x - area.AreaCords.X] = new Tile();
+                                area.Layers[UndoAction.Layer].TileMap[UndoAction.y - area.AreaCords.Y, UndoAction.x - area.AreaCords.X] = new Tile();
                             }
                         }
                     }
@@ -1096,16 +1105,16 @@ namespace tile_mapper
                         switch (CursorActionState)
                         {
                             case CursorState.Draw:
-                                if(CurrentMap.LayerAmount > 0 && area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID != selected.ID)
+                                if(CurrentMap.LayerAmount > 0 && area.Layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID != selected.ID)
                                 {
-                                    area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = selected.ID;
-                                    area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = selected.Source;
+                                    area.Layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = selected.ID;
+                                    area.Layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = selected.Source;
                                     Actions.Push(new UserAction(UserAction.ActionType.Draw, CurrentLayer, SelectedX, SelectedY));
                                 }
                                 break;
                             case CursorState.Eraser:
-                                area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = "0";
-                                area.layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = new Rectangle();
+                                area.Layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].ID = "0";
+                                area.Layers[CurrentLayer].TileMap[SelectedY - area.AreaCords.Y, SelectedX - area.AreaCords.X].Source = new Rectangle();
                                 break;
                             case CursorState.Fill:
                                 if(PreviousMouseState.LeftButton != ButtonState.Pressed) // Exception
@@ -1182,9 +1191,9 @@ namespace tile_mapper
                     {
                         for (int j = Math.Max(CharacterX - 3, areaToSearch.AreaCords.X); j < Math.Min(areaToSearch.AreaCords.X + areaToSearch.AreaCords.Width, CharacterX + 3); j++)
                         {
-                            if (areaToSearch.layers[k].TileMap[i - areaToSearch.AreaCords.Y, j - areaToSearch.AreaCords.X].ID != "0")
+                            if (areaToSearch.Layers[k].TileMap[i - areaToSearch.AreaCords.Y, j - areaToSearch.AreaCords.X].ID != "0")
                             {
-                                var collisionTile = CurrentMap.CollisionTiles.FirstOrDefault(obj => obj.ID == areaToSearch.layers[k].TileMap[i - areaToSearch.AreaCords.Y, j - areaToSearch.AreaCords.X].ID);
+                                var collisionTile = CurrentMap.CollisionTiles.FirstOrDefault(obj => obj.ID == areaToSearch.Layers[k].TileMap[i - areaToSearch.AreaCords.Y, j - areaToSearch.AreaCords.X].ID);
                                 if (collisionTile?.Collision == true)
                                 {
                                     Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * TestingScale + (Offset.X + Velocity.X)), (int)(i * TILE_SIZE * TestingScale + (Offset.Y + Velocity.Y)), (int)(TILE_SIZE * TestingScale + 1), (int)(TILE_SIZE * TestingScale + 1));
@@ -1237,8 +1246,8 @@ namespace tile_mapper
                     {
                         if (area.AreaCords.Contains(j, i))
                         {
-                            area.layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID = selected.ID;
-                            area.layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source = selected.Source;
+                            area.Layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID = selected.ID;
+                            area.Layers[CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source = selected.Source;
                         }
                     }
                 }
@@ -1261,7 +1270,7 @@ namespace tile_mapper
                 return;
             }
 
-            string IDToFill = areaClicked.layers[CurrentLayer].TileMap[SelectedY - areaClicked.AreaCords.Y, SelectedX - areaClicked.AreaCords.X].ID;
+            string IDToFill = areaClicked.Layers[CurrentLayer].TileMap[SelectedY - areaClicked.AreaCords.Y, SelectedX - areaClicked.AreaCords.X].ID;
 
             HashSet<(int, int)> visited = new HashSet<(int, int)>();
             Queue<(int, int)> queue = new Queue<(int, int)>();
@@ -1271,7 +1280,7 @@ namespace tile_mapper
             {
                 var (x, y) = queue.Dequeue();
 
-                if (!areaClicked.AreaCords.Contains(x, y) || areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID != IDToFill || visited.Contains((x, y)))
+                if (!areaClicked.AreaCords.Contains(x, y) || areaClicked.Layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID != IDToFill || visited.Contains((x, y)))
                 {
                     continue;
                 }
@@ -1279,8 +1288,8 @@ namespace tile_mapper
                 visited.Add((x, y));
 
                 // Fill the current tile
-                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
-                areaClicked.layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].Source = selected.Source;
+                areaClicked.Layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].ID = selected.ID;
+                areaClicked.Layers[CurrentLayer].TileMap[y - areaClicked.AreaCords.Y, x - areaClicked.AreaCords.X].Source = selected.Source;
 
                 // Enqueue neighboring tiles
                 queue.Enqueue((x + 1, y));

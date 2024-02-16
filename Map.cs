@@ -44,19 +44,25 @@ namespace tile_mapper
     {
         public Rectangle AreaCords;
         public string AreaName;
-        public List<Layer> layers;
+        public List<Layer> Layers;
+        public List<ObjectLayer> ObjectLayers;
 
-        public Area(Rectangle areaCords, string areaName, int LayerAmount)
+        public Area(Rectangle areaCords, string areaName, int LayerAmount, int ObjectLayerAmount)
         {
             this.AreaCords = areaCords;
             this.AreaName = areaName;
 
-            layers = new List<Layer>();
-
+            Layers = new List<Layer>();
+            ObjectLayers = new List<ObjectLayer>();
 
             for(int k = 0; k < LayerAmount; k++)
             {
                 AddLayer();
+            }
+
+            for (int k = 0; k < ObjectLayerAmount; k++)
+            {
+                AddObjectLayer();
             }
         }
 
@@ -70,18 +76,31 @@ namespace tile_mapper
                     layer.TileMap[i, j] = new Tile();
                 }
             }
-            layers.Add(layer);
+            Layers.Add(layer);
         }
 
         public void RemoveLayer(int layerIndex)
         {
-            layers.Remove(layers[layerIndex]);
+            Layers.Remove(Layers[layerIndex]);
+        }
+
+        public void AddObjectLayer()
+        {
+            ObjectLayer objectLayer = new ObjectLayer();
+            ObjectLayers.Add(objectLayer);
+        }
+
+        public void RemoveObjectLayer(int objectLayerIndex)
+        {
+            ObjectLayers.Remove(ObjectLayers[objectLayerIndex]);
         }
     }
 
     internal class Canvas
     {
         public int LayerAmount = 0;
+
+        public int ObjectLayerAmount = 0;
 
         public List<Area> areas = new List<Area>();
 
@@ -102,7 +121,7 @@ namespace tile_mapper
 
         public void CreateArea(Rectangle Selection, string AreaName)
         {
-            areas.Add(new Area(Selection, AreaName, this.LayerAmount));
+            areas.Add(new Area(Selection, AreaName, LayerAmount, ObjectLayerAmount));
         }
 
         public void RemoveLayer(int layerIndex)
@@ -135,5 +154,45 @@ namespace tile_mapper
         }
     }
 
+    internal class ObjectLayer
+    {
+        public string ID;
 
+        public List<Object> objects;
+    }
+
+    internal class Object
+    {
+        public string ID;
+
+        public Rectangle TileRect; // Tile specifying.
+        public Rectangle PixelRect; // To adjust pixel specific.
+
+        public Property property;
+    }
+
+    internal class Property // User properties.
+    {
+        public string String;
+        public int Int;
+        public float Float;
+        public bool Bool;
+        public string ClassID;
+
+        Type PropertyType;
+
+        public Property(Type type)
+        {
+            this.PropertyType = type;
+        }
+
+        public enum Type
+        {
+            String,
+            Integer,
+            Float,
+            Bool,
+            Class
+        }
+    }
 }

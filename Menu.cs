@@ -193,6 +193,7 @@ namespace tile_mapper
         EditorScreen,
         SheetScreen,
         SelectCollisionSprite,
-        RemoveCollisionSprite
+        RemoveCollisionSprite,
+        CreateObjectLayer
     }
 }
