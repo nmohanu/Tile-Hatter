@@ -4,8 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace tile_mapper
@@ -161,24 +159,49 @@ namespace tile_mapper
                 }
         }
 
-        public static void DrawPalette(bool HasTileSheet, List<List<SpriteTile>> TileSpriteList, SpriteBatch spriteBatch, SpriteTile selected, Texture2D Grid, Texture2D TileSheet)
+        public static void DrawPalette(bool HasTileSheet, List<List<SpriteTile>> TileSpriteList, SpriteBatch spriteBatch, SpriteTile selected, Texture2D UI, Texture2D TileSheet, UI_Menu TileMenu, Vector2 ScrollOffset, Rectangle PaletteDestination)
         {
+            Vector2 Difference = new Vector2(-ScrollOffset.X, -ScrollOffset.Y);
+
+            int StartX = (int)(Difference.X / 64 / 1f);
+            int EndX = (int)((Difference.X + 256) / 64 / 1f);
+            int StartY = (int)(Difference.Y / 64 / 1f);
+            int EndY = (int)((Difference.Y + 480) / 64 / 1f);
+
+            StartX--;
+            StartY--;
+            EndX++;
+            EndY++;
+
+            Rectangle Dest = new Rectangle((int)(PaletteDestination.X + ScrollOffset.X), (int)(PaletteDestination.Y + ScrollOffset.Y), PaletteDestination.Width, PaletteDestination.Height);  
+
+            for(int y = StartY ; y < EndY; y++)
+            {
+                for(int x = StartX ; x < EndX; x++)
+                {
+                    Rectangle AdjDest = new Rectangle((int)(Dest.X + x * 64), (int)(Dest.Y + y * 64), 64, 64);
+                    spriteBatch.Draw(UI, AdjDest, new Rectangle(0, 912, 64, 64), Color.White);
+                }
+            }
+
             if (HasTileSheet)
             {
                 foreach (var list in TileSpriteList)
                 {
                     foreach (var rectangle in list)
                     {
-                        spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X, rectangle.Destination.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
+                        spriteBatch.Draw(TileSheet, new Vector2((int) rectangle.Destination.X + ScrollOffset.X, (int) rectangle.Destination.Y + ScrollOffset.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
                         if (rectangle.hovers)
-                            spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(320, 0, 16, 16), Color.White);
+                            spriteBatch.Draw(UI, new Rectangle((int) (rectangle.Destination.X + ScrollOffset.X), (int) (rectangle.Destination.Y + ScrollOffset.Y), rectangle.Destination.Width, rectangle.Destination.Height), new Rectangle(0, 896, 16, 16), Color.White);
                         if (selected != null && rectangle.ID == selected.ID)
                         {
-                            spriteBatch.Draw(Grid, rectangle.Destination, new Rectangle(336, 0, 16, 16), Color.White);
+                            spriteBatch.Draw(UI, new Rectangle((int)(rectangle.Destination.X + ScrollOffset.X), (int)(rectangle.Destination.Y + ScrollOffset.Y), rectangle.Destination.Width, rectangle.Destination.Height), new Rectangle(16, 896, 16, 16), Color.White);
                         }
                     }
                 }
             }
+
+            spriteBatch.Draw(UI, TileMenu.Destination, TileMenu.Source, Color.White);
         }
     }
 }

@@ -77,6 +77,8 @@ namespace tile_mapper
         UI_Menu AreaMenu;
         UI_Menu ObjectMenu;
 
+        Vector2 PreviousMousePos;
+
         List<UI_Menu> UI_Elements;
         List<UI_Menu> Scrollable_Menus = new List<UI_Menu>();
         List<UI_Menu> LabelMenus = new List<UI_Menu>();
@@ -112,6 +114,8 @@ namespace tile_mapper
         Button CreateLayerButton;
         Button ClickedTileButton;
 
+        Rectangle SpritePaletteDestination;
+        
 
         Area StartArea;
         Area SelectedArea;
@@ -124,6 +128,8 @@ namespace tile_mapper
 
         Rectangle CharacterRect;
         Vector2 OriginalOffset;
+
+        Vector2 PaletteScrollOffset;
         
         Label CurrentTileID;
         Label Collision;
@@ -201,10 +207,10 @@ namespace tile_mapper
             ScaleX = 1f;
             ScaleY = 1f;
 
-            Import = new Button("Import", new Rectangle(144 - 128/2, ScreenHeight / 2 - 24, 128, 48), 288, 64, ButtonAction.Import, true);
+            Import = new Button("Import", new Rectangle(144 - 128/2, ScreenHeight / 2 - 24, 128, 48), 288, 64, ButtonAction.Import, false);
             Import.SourceRect.Y = 128;
             OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.OpenPalette, true);
-            ClosePalette = new Button("", new Rectangle(272, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.ClosePalette, true);
+            ClosePalette = new Button("", new Rectangle(272, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.ClosePalette, false);
 
             DrawTool = new Button("", new Rectangle(0, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
             DrawTool.SourceRect.Y = 96;
@@ -276,7 +282,7 @@ namespace tile_mapper
 
             Offset = new Vector2(ScreenWidth/2, ScreenHeight/2);
 
-            TileMenu = new UI_Menu(false, new Rectangle(0, 192, 288, 520), new Rectangle(0, ScreenHeight / 2 - 256, 80, 352));
+            TileMenu = new UI_Menu(false, new Rectangle(0, 192, 288, 512), new Rectangle(0, ScreenHeight / 2 - 256, 288, 512));
             TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 80), new Rectangle(0, 0, 1920, 67));
             GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
             Properties = new UI_Menu(true, new Rectangle(1655, 64, 266, 1080), new Rectangle(1655, 0, 266, 1080));
@@ -363,8 +369,8 @@ namespace tile_mapper
             TopBar.buttons.Add(SheetScreen);
             TopBar.buttons.Add(RuleSetScreen);
             GeneralOverlay.buttons.Add(OpenPalette);
-            TileMenu.buttons.Add(Import);
-            TileMenu.buttons.Add(ClosePalette);
+            GeneralOverlay.buttons.Add(Import);
+            GeneralOverlay.buttons.Add(ClosePalette);
 
             Properties.buttons.Add(LayerMenuButton);
             Properties.buttons.Add(ObjectMenuButton);
@@ -426,6 +432,8 @@ namespace tile_mapper
 
             ScrollMenuBounds = new RenderTarget2D(GraphicsDevice, LayerMenu.Destination.Width, LayerMenu.Destination.Height);
 
+            SpritePaletteDestination = new Rectangle(TileMenu.Destination.X + 16, TileMenu.Destination.Y + 16, TileMenu.Destination.Width - 32, TileMenu.Destination.Height - 32);
+
             base.Initialize();
         }
 
@@ -463,6 +471,14 @@ namespace tile_mapper
             HandleLeftClick(mouseState);
             HandleLeftHold(mouseState, keyboardState);
 
+            if(mouseState.RightButton == ButtonState.Pressed)
+            {
+                if(PreviousMousePos != null && PreviousMousePos != MousePos && SpritePaletteDestination.Contains(MousePos))
+                {
+                    PaletteScrollOffset -= PreviousMousePos - MousePos;
+                }
+            }
+
             //if(mouseState.LeftButton == ButtonState.Pressed)
             //{
             //    TimeSinceLastClick = DoubleClickTimer.ElapsedGameTime.Milliseconds;
@@ -491,7 +507,7 @@ namespace tile_mapper
                 foreach (var rect in TileSpriteList[currentPage])
                 {
                     // User is hoovering on sprite tile.
-                    if (rect.Destination.Contains(MousePos))
+                    if (rect.Destination.Contains(MousePos - PaletteScrollOffset))
                     {
                         // User selected a sprite.
                         if (mouseState.LeftButton == ButtonState.Pressed)
@@ -631,6 +647,7 @@ namespace tile_mapper
             OriginalScrollWheelValue = mouseState.ScrollWheelValue;
             PreviousMouseState = mouseState;
             PreviousKeybordState = keyboardState;
+            PreviousMousePos = MousePos;
 
             base.Update(gameTime);
         }
@@ -678,17 +695,30 @@ namespace tile_mapper
                 Renderer.DrawArea(CurrentArea, Offset, TILE_SIZE, TestingScale, ScreenWidth, ScreenHeight, CurrentMap, _spriteBatch, TileSheet);
                 _spriteBatch.Draw(UI, CharacterRect, CharacterSource, Color.White);
             }
+            _spriteBatch.End();
+
+            Rectangle orgScissorRec = _spriteBatch.GraphicsDevice.ScissorRectangle;
+            RasterizerState rasterizerState = new RasterizerState() { ScissorTestEnable = true };
+
+            // Tile palette cropping
+            _spriteBatch.GraphicsDevice.ScissorRectangle = TileMenu.Destination;
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, rasterizerState);
+
+            // Sprite palette menu
+            if (TilePaletteVisible)
+                Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, UI, TileSheet, TileMenu, PaletteScrollOffset, SpritePaletteDestination);
+
+            _spriteBatch.End();
+
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             // UI elements
             foreach (var menu in UI_Elements)
             {
                 menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, false);
             }
-
             _spriteBatch.End();
 
-            Rectangle orgScissorRec = _spriteBatch.GraphicsDevice.ScissorRectangle;
-            RasterizerState rasterizerState = new RasterizerState() { ScissorTestEnable = true };
             _spriteBatch.GraphicsDevice.ScissorRectangle = LayerMenu.Destination;
 
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.Default, rasterizerState);
@@ -701,13 +731,10 @@ namespace tile_mapper
 
             _spriteBatch.End();
 
+            
+
             _spriteBatch.GraphicsDevice.ScissorRectangle = orgScissorRec;
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-
-            // Sprite palette menu
-            if (TilePaletteVisible)
-                Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, Grid, TileSheet);
-
             // Draw cordinates
             string Cords = "X: " + SelectedX.ToString() + " Y: " + SelectedY.ToString();
             _spriteBatch.DrawString(font, Cords, new Vector2(96 - font.MeasureString(Cords).X/2, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
@@ -737,7 +764,6 @@ namespace tile_mapper
         {
             
         }
-
 
         internal void OpenSpriteSheetFile(string path)
         {
@@ -912,8 +938,11 @@ namespace tile_mapper
                             WriteFile();
                             break;
                         case ButtonAction.OpenPalette:
-                            TileMenu.IsVisible = true;
-                            GeneralOverlay.buttons[0].IsVisible = false;
+                            // TileMenu.IsVisible = true;
+                            OpenPalette.IsVisible = false;
+                            ClosePalette.IsVisible = true;
+                            if(!HasTileSheet)
+                                Import.IsVisible = true;
                             TilePaletteVisible = true;
                             break;
                         case ButtonAction.DrawTool:
@@ -969,8 +998,10 @@ namespace tile_mapper
                             CursorActionState = CursorState.SpecifyDoor;
                             break;
                         case ButtonAction.ClosePalette:
-                            TileMenu.IsVisible = false;
-                            GeneralOverlay.buttons[0].IsVisible = true;
+                            // TileMenu.IsVisible = false;
+                            OpenPalette.IsVisible = true;
+                            Import.IsVisible = false;
+                            ClosePalette.IsVisible = false;
                             TilePaletteVisible = false;
                             break;
                         case ButtonAction.TestState:
@@ -1044,7 +1075,7 @@ namespace tile_mapper
                                 break;
                             case ButtonAction.RemoveArea:
                                 CurrentMap.RemoveArea(buttonClicked.HelperInt);
-                                if(SelectedArea.AreaName == CurrentMap.areas[buttonClicked.HelperInt].AreaName)
+                                if(SelectedArea.AreaName != null && SelectedArea.AreaName == CurrentMap.areas[buttonClicked.HelperInt-1].AreaName)
                                     SelectedArea = null;
 
                                 AreaMenu.buttons.Remove(AreaMenu.buttons[buttonClicked.HelperInt]);
@@ -1064,6 +1095,9 @@ namespace tile_mapper
 
         internal void HandleLeftHold(MouseState mouseState, KeyboardState keyboardState)
         {
+            foreach (var menu in UI_Elements)
+                if (menu.Destination.Contains(MousePos))
+                    return;
             // Execute each frame if mouse button is held.
             if (mouseState.LeftButton == ButtonState.Pressed && selected != null)
             {
