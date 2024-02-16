@@ -428,6 +428,8 @@ namespace tile_mapper
             LabelMenus.Add(TileLabels);
             LabelMenus.Add(ObjectLabels);
 
+            TileSpriteList = new List<List<SpriteTile>>(); // Rectangles for the sprites.
+
             CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int) (32 * 2f), (int)(32 * 2f));
 
             ScrollMenuBounds = new RenderTarget2D(GraphicsDevice, LayerMenu.Destination.Width, LayerMenu.Destination.Height);
@@ -709,7 +711,6 @@ namespace tile_mapper
                 Renderer.DrawPalette(HasTileSheet, TileSpriteList, _spriteBatch, selected, UI, TileSheet, TileMenu, PaletteScrollOffset, SpritePaletteDestination);
 
             _spriteBatch.End();
-
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             // UI elements
@@ -730,8 +731,6 @@ namespace tile_mapper
             }
 
             _spriteBatch.End();
-
-            
 
             _spriteBatch.GraphicsDevice.ScissorRectangle = orgScissorRec;
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
@@ -767,51 +766,40 @@ namespace tile_mapper
 
         internal void OpenSpriteSheetFile(string path)
         {
-            using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open))
+            using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open)) // Import file.
             {
                 TileSheet = Texture2D.FromStream(GraphicsDevice, stream);
             }
 
-            SheetWidth = TileSheet.Width / TILE_SIZE;
-            SheetHeight = TileSheet.Height / TILE_SIZE;
+            SheetWidth = TileSheet.Width / TILE_SIZE; // Sheet width.
+            SheetHeight = TileSheet.Height / TILE_SIZE; // Sheet height.
 
-            SheetMenuPages = (int)Math.Ceiling((float)(SheetWidth * SheetHeight / 120));
-            SheetMenuPages++;
+            List<SpriteTile> page = new List<SpriteTile>(); // For multiple sprite sheets.
 
-            TileSpriteList = new List<List<SpriteTile>>();
-
-            for (int i = 0; i < SheetMenuPages; i++)
+            for (int y = 0; y < SheetHeight; y++)
             {
-                List<SpriteTile> page = new List<SpriteTile>();
-
-                for (int y = 0; y < SheetHeight; y++)
+                for (int x = 0; x < SheetWidth; x++)
                 {
-                    for (int x = 0; x < SheetWidth; x++)
-                    {
-                        int xcord = x * TILE_SIZE;
-                        int ycord = y * TILE_SIZE;
+                    int xcord = x * TILE_SIZE;
+                    int ycord = y * TILE_SIZE;
 
-                        SpriteTile tile = new SpriteTile();
-                        tile.Source = new Rectangle(xcord, ycord, TILE_SIZE, TILE_SIZE);
+                    int xdest = TileMenu.Destination.X + 16 + x * TILE_SIZE * 2;
+                    int ydest = TileMenu.Destination.Y + 16 + y * TILE_SIZE * 2;
 
-                        tile.Destination = new Rectangle();
+                    SpriteTile tile = new SpriteTile();
+                    tile.Source = new Rectangle(xcord, ycord, TILE_SIZE, TILE_SIZE);
 
-                        tile.ID = "X" + x.ToString() + "Y" + y.ToString();
+                    tile.Destination = new Rectangle();
 
-                        page.Add(tile);
-                    }
+                    tile.ID = "X" + x.ToString() + "Y" + y.ToString(); // Set sprite unique ID.
+                    tile.Destination = new Rectangle(xdest, ydest, TILE_SIZE * 2, TILE_SIZE * 2);
+
+                    page.Add(tile);
+
                 }
-
-                for (int j = 0; j < SheetHeight * SheetWidth; j++)
-                {
-                    int x = TileMenu.Destination.X + 16 + (j % 8) * TILE_SIZE * 2;
-                    int y = TileMenu.Destination.Y + 16 + (j / 8) * TILE_SIZE * 2;
-
-                    page[j].Destination = new Rectangle(x, y, TILE_SIZE * 2, TILE_SIZE * 2);
-                }
-
-                TileSpriteList.Add(page);
             }
+
+            TileSpriteList.Add(page);
 
             HasTileSheet = true;
 
@@ -1057,7 +1045,7 @@ namespace tile_mapper
                             ClickedTileButton = buttonClicked;
                             break;
                     }
-                    if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(MousePos))
+                    if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(MousePos)) // The delete buttons (X)
                     {
 
                         switch (buttonClicked.DeleteButton.Action)
