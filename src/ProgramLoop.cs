@@ -1101,10 +1101,20 @@ namespace tile_mapper.src
                                 break;
                             case ButtonAction.RemoveCollisionSprite:
                                 CollisionSpriteList.buttons.Remove(buttonClicked);
+                                selected.Collision = false;
                                 UpdateListOrder(CollisionSpriteList);
                                 ClearLabels(TileLabels);
                                 break;
-
+                            case ButtonAction.RemoveObjectLayer:
+                                ObjectMenu.buttons.Remove(buttonClicked);
+                                CurrentMap.ObjectLayers.RemoveAt(buttonClicked.HelperInt);
+                                UpdateListOrder(ObjectMenu);
+                                break;
+                            case ButtonAction.RemoveObject:
+                                ObjectLabels.buttons.Remove(buttonClicked);
+                                CurrentMap.ObjectLayers[SelectedObjectLayerButton.HelperInt].objects.RemoveAt(buttonClicked.HelperInt);
+                                UpdateListOrder(ObjectLabels);
+                                break;
                         }
                     }
                 }
