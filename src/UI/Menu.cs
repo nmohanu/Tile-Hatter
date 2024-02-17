@@ -158,7 +158,7 @@ namespace tile_mapper.src.UI
         public Rectangle LabelRect;
         public Rectangle SourceRect = new Rectangle(320, 112, 0, 0); // Standard button
         public bool IsVisible;
-
+        public bool IsTextEditable;
     }
     public enum ButtonAction
     {
