@@ -303,6 +303,7 @@ namespace tile_mapper.src
             AreaLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
             LayerLabels = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
             ObjectLabels = new UI_Menu(false, new Rectangle(1660, 96, 256, 422), LabelMenuDestination); // Object menu has 2 button lists instead of labels.
+            ObjectLabels.Scrollable = true;
 
             LayerName = new Label();
             LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
@@ -413,7 +414,6 @@ namespace tile_mapper.src
             UI_Elements.Add(GeneralOverlay);
             UI_Elements.Add(Properties);
 
-            // Scrollable
             UI_Elements.Add(ObjectMenu);
             UI_Elements.Add(AreaMenu);
             UI_Elements.Add(LayerMenu);
@@ -434,10 +434,12 @@ namespace tile_mapper.src
             PropertyMenu1.Add(ObjectMenu);
             PropertyMenu1.Add(CollisionSpriteList);
 
+            // Scrollable
             Scrollable_Menus.Add(LayerMenu);
             Scrollable_Menus.Add(AreaMenu);
             Scrollable_Menus.Add(ObjectMenu);
             Scrollable_Menus.Add(CollisionSpriteList);
+            Scrollable_Menus.Add(ObjectLabels);
 
             LabelMenus.Add(LayerLabels);
             LabelMenus.Add(AreaLabels);
@@ -736,17 +738,21 @@ namespace tile_mapper.src
             }
             _spriteBatch.End();
 
-            _spriteBatch.GraphicsDevice.ScissorRectangle = LayerMenu.Destination;
-
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.Default, rasterizerState);
+            
 
             // Draw scrollable menus, elements need to be cut off when out of bounds.
             foreach (var menu in Scrollable_Menus)
             {
-                menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, true);
+                if(menu.IsVisible)
+                {
+                    _spriteBatch.GraphicsDevice.ScissorRectangle = menu.Destination;
+                    _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.Default, rasterizerState);
+                    menu.Draw(_spriteBatch, UI, ScreenHeight, ScreenWidth, ScaleX, ScaleY, font, TextScale, true);
+                    _spriteBatch.End();
+                }
             }
 
-            _spriteBatch.End();
+            
 
             _spriteBatch.GraphicsDevice.ScissorRectangle = orgScissorRec;
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
@@ -1127,7 +1133,7 @@ namespace tile_mapper.src
                 if (menu.Destination.Contains(MousePos))
                     return;
             // Execute each frame if mouse button is held.
-            if (mouseState.LeftButton == ButtonState.Pressed && selected != null)
+            if (mouseState.LeftButton == ButtonState.Pressed && selected != null && !keyboardState.IsKeyDown(Keys.LeftShift))
             {
                 foreach (var area in CurrentMap.areas)
                 {
@@ -1455,11 +1461,6 @@ namespace tile_mapper.src
             }
         }                  
         
-        internal void UpdateLabelMenu()
-        {
-
-        }
-
         internal void UpdateAreaLabels()
         {
             if (SelectedArea != null)
