@@ -1054,6 +1054,9 @@ namespace tile_mapper.src
                             SelectTile(TileSpriteList[currentPage].LastOrDefault(obj => obj.ID == buttonClicked.Text));
                             ClickedTileButton = buttonClicked;
                             break;
+                        case ButtonAction.CreateObjectLayer:
+                            AddObjectLayer();
+                            break;
                     }
                     if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(MousePos)) // The delete buttons (X)
                     {
@@ -1395,11 +1398,11 @@ namespace tile_mapper.src
 
         internal void UpdateListOrder(UI_Menu menu)
         {
-            // Make sure the create area button is placed last in list.
+            // Make sure the create button is placed last in list.
             for (int i = 0; i < menu.buttons.Count; i++)
             {
                 var btn = menu.buttons[i];
-                if (btn.Action == ButtonAction.AddLayer)
+                if (btn.Action == ButtonAction.AddLayer || btn.Action == ButtonAction.CreateObjectLayer)
                 {
                     menu.buttons.Remove(btn);
                     menu.buttons.Add(btn);
@@ -1463,11 +1466,17 @@ namespace tile_mapper.src
             UpdateListOrder(LayerMenu);
 
             // Update map data.
-            CurrentMap.LayerAmount++;
             CurrentMap.AddLayerToAreas();
         }
 
-
+        internal void AddObjectLayer()
+        {
+            Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.Layer, ButtonAction.RemoveObjectLayer, Properties);
+            btn.Text = "ObjectLayer " + (CurrentMap.ObjectLayerAmount + 1).ToString();
+            ObjectMenu.buttons.Add(btn);
+            UpdateListOrder(ObjectMenu);
+            CurrentMap.CreateObjectLayer();
+        }
 
         internal void SelectTile(SpriteTile rect)
         {

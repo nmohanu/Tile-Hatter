@@ -94,6 +94,11 @@ namespace tile_mapper.src
         {
             ObjectLayers.Remove(ObjectLayers[objectLayerIndex]);
         }
+
+        public void CreateObjectLayer()
+        {
+            ObjectLayers.Add(new ObjectLayer());
+        }
     }
 
     internal class Canvas
@@ -117,6 +122,7 @@ namespace tile_mapper.src
             {
                 area.AddLayer();
             }
+            LayerAmount++;
         }
 
         public void CreateArea(Rectangle Selection, string AreaName)
@@ -136,6 +142,15 @@ namespace tile_mapper.src
         public void RemoveArea(int areaIndex)
         {
             areas.Remove(areas[areaIndex]);
+        }
+
+        public void CreateObjectLayer()
+        {
+            foreach (var area in areas)
+            {
+                area.CreateObjectLayer();
+            }
+            ObjectLayerAmount++;
         }
     }
 

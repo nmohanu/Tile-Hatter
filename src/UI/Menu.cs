@@ -194,6 +194,7 @@ namespace tile_mapper.src.UI
         SheetScreen,
         SelectCollisionSprite,
         RemoveCollisionSprite,
-        CreateObjectLayer
+        CreateObjectLayer,
+        RemoveObjectLayer
     }
 }
