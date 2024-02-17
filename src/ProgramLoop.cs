@@ -188,24 +188,7 @@ namespace tile_mapper.src
             IsMouseVisible = false;
         }
 
-        internal void InitializeToolsetButtons()
-        {
-            DrawTool = new Button("", new Rectangle(0, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
-            DrawTool.SourceRect.Y = 96;
-
-            FillTool = new Button("", new Rectangle(32, 32, 32, 32), 160 + 32, 160 + 32, ButtonAction.FillTool, true);
-            FillTool.SourceRect.Y = 96;
-
-            EraserTool = new Button("", new Rectangle(64, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
-            EraserTool.SourceRect.Y = 96;
-
-            SpecifyStartPoint = new Button("", new Rectangle(96, 32, 32, 32), 288 + 32, 288 + 32, ButtonAction.SpecifyStartPoint, true);
-            SpecifyStartPoint.SourceRect.Y = 96;
-
-            SpecifyDoor = new Button("", new Rectangle(128, 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
-            SpecifyDoor.SourceRect.Y = 96;
-        }
-
+        
         internal void InitializeHelperVariables()
         {
             PreviousMouseState = new MouseState();
@@ -224,6 +207,24 @@ namespace tile_mapper.src
             _graphics.PreferredBackBufferWidth = ScreenWidth;
             _graphics.PreferredBackBufferHeight = ScreenHeight;
             _graphics.ApplyChanges();
+        }
+
+        internal void InitializeToolsetButtons()
+        {
+            DrawTool = new Button("", new Rectangle(0, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
+            DrawTool.SourceRect.Y = 96;
+
+            FillTool = new Button("", new Rectangle(32, 32, 32, 32), 160 + 32, 160 + 32, ButtonAction.FillTool, true);
+            FillTool.SourceRect.Y = 96;
+
+            EraserTool = new Button("", new Rectangle(64, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
+            EraserTool.SourceRect.Y = 96;
+
+            SpecifyStartPoint = new Button("", new Rectangle(96, 32, 32, 32), 288 + 32, 288 + 32, ButtonAction.SpecifyStartPoint, true);
+            SpecifyStartPoint.SourceRect.Y = 96;
+
+            SpecifyDoor = new Button("", new Rectangle(128, 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
+            SpecifyDoor.SourceRect.Y = 96;
         }
 
         internal void InitializePaletteButtons()
@@ -259,29 +260,9 @@ namespace tile_mapper.src
             RuleSetScreen.PressedSourceX = 448;
             RuleSetScreen.SourceRect.Y = 192;
         }
-        protected override void Initialize()
+
+        internal void InitializeScrollMenuButtons()
         {
-            // Initialize program.
-            InitializeHelperVariables();
-
-            // Initialize window.
-            InitializeWindow();
-
-            // Initialize graphics device.
-            InitializeGraphicsDevice();
-
-            // Initialize toolset buttons.
-            InitializeToolsetButtons();
-
-            // Initialize palette Buttons.
-            InitializePaletteButtons();
-
-            // Intialize testing buttons.
-            InitializeTestButtons();
-
-            // Initialize top bar buttons (scene switch buttons).
-            InitializeTopBarButtons();
-
             LayerMenuButton = new Button("", new Rectangle(1660, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenLayerMenu, true);
             LayerMenuButton.IsPressed = true;
             LayerMenuButton.SourceRect.Y = 1184;
@@ -301,6 +282,40 @@ namespace tile_mapper.src
             SpriteMenuButton.IsPressed = false;
             SpriteMenuButton.SourceRect.Y = 1184 + 96;
             SpriteMenuButton.PressedSourceX = 1648;
+        }
+
+        internal void InitializeUI()
+        {
+            // Initialize toolset buttons.
+            InitializeToolsetButtons();
+
+            // Initialize palette Buttons.
+            InitializePaletteButtons();
+
+            // Intialize testing buttons.
+            InitializeTestButtons();
+
+            // Initialize top bar buttons (scene switch buttons).
+            InitializeTopBarButtons();
+
+            // Initialize the buttons for the side menu.
+            InitializeScrollMenuButtons();
+        }
+
+        
+        protected override void Initialize()
+        {
+            // Initialize program.
+            InitializeHelperVariables();
+
+            // Initialize window.
+            InitializeWindow();
+
+            // Initialize graphics device.
+            InitializeGraphicsDevice();
+
+            // Initialize all UI.
+            InitializeUI();
 
             CurrentTileID = new Label();
             Collision = new Label();
@@ -406,7 +421,6 @@ namespace tile_mapper.src
             TopBar.buttons.Add(SpecifyDoor);
             TopBar.buttons.Add(TestMap);
             TopBar.buttons.Add(StopTest);
-            TopBar.buttons.Add(ObjectButton);
             TopBar.buttons.Add(WorldScreen);
             TopBar.buttons.Add(SheetScreen);
             TopBar.buttons.Add(RuleSetScreen);
@@ -474,8 +488,6 @@ namespace tile_mapper.src
             TileSpriteList = new List<List<SpriteTile>>(); // Rectangles for the sprites.
 
             CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int)(32 * 2f), (int)(32 * 2f));
-
-            ScrollMenuBounds = new RenderTarget2D(GraphicsDevice, LayerMenu.Destination.Width, LayerMenu.Destination.Height);
 
             SpritePaletteDestination = new Rectangle(TileMenu.Destination.X + 16, TileMenu.Destination.Y + 16, TileMenu.Destination.Width - 32, TileMenu.Destination.Height - 32);
 
