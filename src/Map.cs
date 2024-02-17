@@ -45,7 +45,6 @@ namespace tile_mapper.src
         public Rectangle AreaCords;
         public string AreaName;
         public List<Layer> Layers;
-        public List<ObjectLayer> ObjectLayers;
 
         public Area(Rectangle areaCords, string areaName, int LayerAmount, int ObjectLayerAmount)
         {
@@ -53,16 +52,10 @@ namespace tile_mapper.src
             AreaName = areaName;
 
             Layers = new List<Layer>();
-            ObjectLayers = new List<ObjectLayer>();
 
             for (int k = 0; k < LayerAmount; k++)
             {
                 AddLayer();
-            }
-
-            for (int k = 0; k < ObjectLayerAmount; k++)
-            {
-                AddObjectLayer();
             }
         }
 
@@ -84,21 +77,6 @@ namespace tile_mapper.src
             Layers.Remove(Layers[layerIndex]);
         }
 
-        public void AddObjectLayer()
-        {
-            ObjectLayer objectLayer = new ObjectLayer();
-            ObjectLayers.Add(objectLayer);
-        }
-
-        public void RemoveObjectLayer(int objectLayerIndex)
-        {
-            ObjectLayers.Remove(ObjectLayers[objectLayerIndex]);
-        }
-
-        public void CreateObjectLayer()
-        {
-            ObjectLayers.Add(new ObjectLayer());
-        }
     }
 
     internal class Canvas
@@ -115,6 +93,8 @@ namespace tile_mapper.src
 
         public Point StartLocation;
         public bool StartLocationSpecified;
+
+        public List<ObjectLayer> ObjectLayers = new List<ObjectLayer>();
 
         public void AddLayerToAreas()
         {
@@ -144,13 +124,17 @@ namespace tile_mapper.src
             areas.Remove(areas[areaIndex]);
         }
 
+
+        public void RemoveObjectLayer(int objectLayerIndex)
+        {
+            ObjectLayers.Remove(ObjectLayers[objectLayerIndex]);
+        }
+
         public void CreateObjectLayer()
         {
-            foreach (var area in areas)
-            {
-                area.CreateObjectLayer();
-            }
-            ObjectLayerAmount++;
+            ObjectLayer layer = new ObjectLayer();
+            layer.objects = new List<Object>();
+            ObjectLayers.Add(layer);
         }
     }
 
@@ -174,6 +158,11 @@ namespace tile_mapper.src
         public string ID;
 
         public List<Object> objects;
+
+        public void AddObject(Object obj)
+        {
+            objects.Add(obj);
+        }
     }
 
     internal class Object

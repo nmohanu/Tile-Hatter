@@ -115,9 +115,11 @@ namespace tile_mapper.src
         Button CreateLayerButton;
         Button ClickedTileButton;
         Button CreateObjectLayerButton;
+        Button CreateObjectButton;
+        Button SelectedObjectLayerButton;
 
         Rectangle SpritePaletteDestination;
-
+        Rectangle LabelMenuDestination = new Rectangle(1660, 622 - 64, 256, 422);
 
         Area StartArea;
         Area SelectedArea;
@@ -275,8 +277,6 @@ namespace tile_mapper.src
             SpriteMenuButton.SourceRect.Y = 1184 + 96;
             SpriteMenuButton.PressedSourceX = 1648;
 
-
-
             CurrentTileID = new Label();
             Collision = new Label();
 
@@ -299,10 +299,10 @@ namespace tile_mapper.src
             CollisionSpriteList = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
             CollisionSpriteList.Scrollable = true;
 
-            TileLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
-            AreaLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
-            LayerLabels = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
-            ObjectLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+            TileLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
+            AreaLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
+            LayerLabels = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
+            ObjectLabels = new UI_Menu(false, new Rectangle(1660, 96, 256, 422), LabelMenuDestination); // Object menu has 2 button lists instead of labels.
 
             LayerName = new Label();
             LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
@@ -347,11 +347,17 @@ namespace tile_mapper.src
             CreateLayerButton.SourceRect.Y = 240;
             LayerMenu.buttons.Add(CreateLayerButton);
 
-            // Create ObjectLayer btn..
+            // Create ObjectLayer btn.
             CreateObjectLayerButton = new Button("New Object Layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.CreateObjectLayer, true);
             CreateObjectLayerButton.SourceRect.Y = 240;
             ObjectMenu.buttons.Add(CreateObjectLayerButton);
             UpdateListOrder(ObjectMenu);
+
+            // Create Object btn.
+            CreateObjectButton = new Button("New Object", new Rectangle(ObjectLabels.Destination.X + ObjectLabels.Destination.Width / 2 - 224 / 2, ObjectLabels.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateObject, true);
+            CreateObjectButton.SourceRect.Y = 240;
+            ObjectLabels.buttons.Add(CreateObjectButton);
+            UpdateListOrder(ObjectLabels);
 
 
             // Add the default 3 layers.
@@ -1057,6 +1063,16 @@ namespace tile_mapper.src
                         case ButtonAction.CreateObjectLayer:
                             AddObjectLayer();
                             break;
+                        case ButtonAction.CreateObject:
+                            AddObject();
+                            break;
+                        case ButtonAction.SelectObjectLayer:
+                            if(SelectedObjectLayerButton != null)
+                                SelectedObjectLayerButton.IsPressed = false;
+                            SelectedObjectLayerButton = buttonClicked;
+                            buttonClicked.IsPressed = true;
+                            ReloadObjects();
+                            break;
                     }
                     if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(MousePos)) // The delete buttons (X)
                     {
@@ -1088,6 +1104,7 @@ namespace tile_mapper.src
                                 UpdateListOrder(CollisionSpriteList);
                                 ClearLabels(TileLabels);
                                 break;
+
                         }
                     }
                 }
@@ -1402,7 +1419,7 @@ namespace tile_mapper.src
             for (int i = 0; i < menu.buttons.Count; i++)
             {
                 var btn = menu.buttons[i];
-                if (btn.Action == ButtonAction.AddLayer || btn.Action == ButtonAction.CreateObjectLayer)
+                if (btn.Action == ButtonAction.AddLayer || btn.Action == ButtonAction.CreateObjectLayer || btn.Action == ButtonAction.CreateObject)
                 {
                     menu.buttons.Remove(btn);
                     menu.buttons.Add(btn);
@@ -1414,7 +1431,8 @@ namespace tile_mapper.src
             int j = 0;
             foreach (var btn in menu.buttons)
             {
-                btn.ButtonRect.Y = Properties.Destination.Y + 32 + 16 + 48 * j + (int)menu.ScrollMenuOffset.Y;
+              
+                btn.ButtonRect.Y = menu.Destination.Y + 16 + 48 * j + (int)menu.ScrollMenuOffset.Y;
                 btn.HelperInt = j;
 
                 if (btn.IsDeletable)
@@ -1423,7 +1441,13 @@ namespace tile_mapper.src
                     btn.DeleteButton.HelperInt = j;
                 }
                 j++;
+                
             }
+        }                  
+        
+        internal void UpdateLabelMenu()
+        {
+
         }
 
         internal void UpdateAreaLabels()
@@ -1471,11 +1495,42 @@ namespace tile_mapper.src
 
         internal void AddObjectLayer()
         {
-            Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.Layer, ButtonAction.RemoveObjectLayer, Properties);
-            btn.Text = "ObjectLayer " + (CurrentMap.ObjectLayerAmount + 1).ToString();
+            Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectObjectLayer, ButtonAction.RemoveObjectLayer, Properties);
+            btn.Text = "ObjectLayer " + (CurrentMap.ObjectLayers.Count() + 1).ToString();
             ObjectMenu.buttons.Add(btn);
             UpdateListOrder(ObjectMenu);
             CurrentMap.CreateObjectLayer();
+        }
+
+        internal void AddObject()
+        {
+            if (SelectedObjectLayerButton != null)
+            {
+                
+                Object NewObject = new Object();
+                NewObject.ID = "Object: " + (CurrentMap.ObjectLayers[SelectedObjectLayerButton.HelperInt].objects.Count() + 1).ToString();
+
+                CurrentMap.ObjectLayers[SelectedObjectLayerButton.HelperInt].AddObject(NewObject);
+
+                ReloadObjects();
+                
+            }
+        }
+
+        internal void ReloadObjects()
+        {
+            if(SelectedObjectLayerButton != null)
+            {
+                ObjectLabels.buttons.Clear();
+                ObjectLabels.buttons.Add(CreateObjectButton);
+                foreach (var Object in CurrentMap.ObjectLayers[SelectedObjectLayerButton.HelperInt].objects)
+                {
+                    Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectObject, ButtonAction.RemoveObject, Properties);
+                    btn.Text = Object.ID.ToString();
+                    ObjectLabels.buttons.Add(btn);
+                }
+                UpdateListOrder(ObjectLabels);
+            }
         }
 
         internal void SelectTile(SpriteTile rect)

@@ -52,23 +52,22 @@ namespace tile_mapper.src.UI
                         {
                             spriteBatch.Draw(UI, button.DeleteButton.ButtonRect, button.DeleteButton.SourceRect, Color.White);
                         }
+                        if (button.Text != null)
+                            spriteBatch.DrawString(
+                            font,
+                            button.Text,
+                            new Vector2(
+                                    Destination.X + Destination.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
+                                    Destination.Y + Destination.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
+                                ),
+                                button.color,
+                                0f, // Rotation angle, set to 0 for no rotation
+                                Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
+                                TextScale, // Scale factor
+                                SpriteEffects.None, // Sprite effects, set to None for no effects
+                                0f // Depth, set to 0 for the default depth
 
-                        spriteBatch.DrawString(
-                        font,
-                        button.Text,
-                        new Vector2(
-                                Destination.X + Destination.Width / 2 - font.MeasureString(button.Text).X * TextScale / 2,
-                                Destination.Y + Destination.Height / 2 - font.MeasureString(button.Text).Y * TextScale / 2
-                            ),
-                            button.color,
-                            0f, // Rotation angle, set to 0 for no rotation
-                            Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
-                            TextScale, // Scale factor
-                            SpriteEffects.None, // Sprite effects, set to None for no effects
-                            0f // Depth, set to 0 for the default depth
-
-
-                        );
+                            );
                     }
                 }
                 foreach (var label in labels)
@@ -195,6 +194,10 @@ namespace tile_mapper.src.UI
         SelectCollisionSprite,
         RemoveCollisionSprite,
         CreateObjectLayer,
-        RemoveObjectLayer
+        RemoveObjectLayer,
+        CreateObject,
+        SelectObject,
+        RemoveObject,
+        SelectObjectLayer
     }
 }
