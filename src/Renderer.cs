@@ -4,21 +4,22 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using tile_mapper.src.UI;
 using static System.Formats.Asn1.AsnWriter;
 
-namespace tile_mapper
+namespace tile_mapper.src
 {
     internal static class Renderer
     {
-        public static void RenderGrid(SpriteBatch spriteBatch, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection, Canvas CurrentMap, Game1.CursorState CursorActionState)
+        public static void RenderGrid(SpriteBatch spriteBatch, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection, Canvas CurrentMap, ProgramLoop.CursorState CursorActionState)
         {
 
-            Vector2 Difference = new Vector2(- Offset.X, - Offset.Y);
+            Vector2 Difference = new Vector2(-Offset.X, -Offset.Y);
 
-            int StartX = (int) (Difference.X / TILE_SIZE / Scale);
-            int EndX = (int) ((Difference.X  + ScreenWidth) / TILE_SIZE / Scale);
-            int StartY = (int) (Difference.Y / TILE_SIZE / Scale);
-            int EndY = (int) ((Difference.Y + ScreenHeight) / TILE_SIZE / Scale);
+            int StartX = (int)(Difference.X / TILE_SIZE / Scale);
+            int EndX = (int)((Difference.X + ScreenWidth) / TILE_SIZE / Scale);
+            int StartY = (int)(Difference.Y / TILE_SIZE / Scale);
+            int EndY = (int)((Difference.Y + ScreenHeight) / TILE_SIZE / Scale);
             // Prevent weird edges since it's rounded down.
             StartX--;
             StartY--;
@@ -56,7 +57,7 @@ namespace tile_mapper
 
                     if (j == SelectedY && i == SelectedX)
                     {
-                        if (selected != null && CursorActionState == Game1.CursorState.Draw)
+                        if (selected != null && CursorActionState == ProgramLoop.CursorState.Draw)
                             spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
                         else
                             spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White * 0.3f);
@@ -90,21 +91,21 @@ namespace tile_mapper
             EndX++;
             EndY++;
 
-            
+
 
             if (CurrentMap.areas.Count() > 0)
             {
-                foreach (var area in CurrentMap.areas) 
+                foreach (var area in CurrentMap.areas)
                 {
                     for (int i = Math.Max(area.AreaCords.Y, StartY); i < Math.Min(area.AreaCords.Y + area.AreaCords.Height, EndY); i++)
                     {
                         for (int j = Math.Max(area.AreaCords.X, StartX); j < Math.Min(area.AreaCords.X + area.AreaCords.Width, EndX); j++)
                         {
-                            for (int k = 0; k <= CurrentMap.LayerAmount-1; k++)
+                            for (int k = 0; k <= CurrentMap.LayerAmount - 1; k++)
                             {
                                 Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * Scale + Offset.X), (int)(i * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
 
-                                if (area.Layers[k].TileMap[i-area.AreaCords.Y, j-area.AreaCords.X].ID != "0")
+                                if (area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID != "0")
                                 {
 
                                     if (k == CurrentLayer)
@@ -146,7 +147,7 @@ namespace tile_mapper
                 {
                     for (int j = Math.Max(area.AreaCords.X, StartX); j < Math.Min(area.AreaCords.X + area.AreaCords.Width, EndX); j++)
                     {
-                        for (int k = 0; k <= CurrentMap.LayerAmount-1; k++)
+                        for (int k = 0; k <= CurrentMap.LayerAmount - 1; k++)
                         {
                             Rectangle DestRect = new Rectangle((int)(j * TILE_SIZE * Scale + Offset.X), (int)(i * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
 
@@ -173,13 +174,13 @@ namespace tile_mapper
             EndX++;
             EndY++;
 
-            Rectangle Dest = new Rectangle((int)(PaletteDestination.X + ScrollOffset.X), (int)(PaletteDestination.Y + ScrollOffset.Y), PaletteDestination.Width, PaletteDestination.Height);  
+            Rectangle Dest = new Rectangle((int)(PaletteDestination.X + ScrollOffset.X), (int)(PaletteDestination.Y + ScrollOffset.Y), PaletteDestination.Width, PaletteDestination.Height);
 
-            for(int y = StartY ; y < EndY; y++)
+            for (int y = StartY; y < EndY; y++)
             {
-                for(int x = StartX ; x < EndX; x++)
+                for (int x = StartX; x < EndX; x++)
                 {
-                    Rectangle AdjDest = new Rectangle((int)(Dest.X + x * 64), (int)(Dest.Y + y * 64), 64, 64);
+                    Rectangle AdjDest = new Rectangle(Dest.X + x * 64, Dest.Y + y * 64, 64, 64);
                     spriteBatch.Draw(UI, AdjDest, new Rectangle(0, 912, 64, 64), Color.White);
                 }
             }
@@ -190,9 +191,9 @@ namespace tile_mapper
                 {
                     foreach (var rectangle in list)
                     {
-                        spriteBatch.Draw(TileSheet, new Vector2((int) rectangle.Destination.X + ScrollOffset.X, (int) rectangle.Destination.Y + ScrollOffset.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
+                        spriteBatch.Draw(TileSheet, new Vector2(rectangle.Destination.X + ScrollOffset.X, rectangle.Destination.Y + ScrollOffset.Y), rectangle.Source, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0);
                         if (rectangle.hovers)
-                            spriteBatch.Draw(UI, new Rectangle((int) (rectangle.Destination.X + ScrollOffset.X), (int) (rectangle.Destination.Y + ScrollOffset.Y), rectangle.Destination.Width, rectangle.Destination.Height), new Rectangle(0, 896, 16, 16), Color.White);
+                            spriteBatch.Draw(UI, new Rectangle((int)(rectangle.Destination.X + ScrollOffset.X), (int)(rectangle.Destination.Y + ScrollOffset.Y), rectangle.Destination.Width, rectangle.Destination.Height), new Rectangle(0, 896, 16, 16), Color.White);
                         if (selected != null && rectangle.ID == selected.ID)
                         {
                             spriteBatch.Draw(UI, new Rectangle((int)(rectangle.Destination.X + ScrollOffset.X), (int)(rectangle.Destination.Y + ScrollOffset.Y), rectangle.Destination.Width, rectangle.Destination.Height), new Rectangle(16, 896, 16, 16), Color.White);

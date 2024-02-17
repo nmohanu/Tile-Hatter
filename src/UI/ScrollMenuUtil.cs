@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace tile_mapper
+namespace tile_mapper.src.UI
 {
     internal static class ScrollMenuUtil
     {

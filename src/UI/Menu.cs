@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace tile_mapper
+namespace tile_mapper.src.UI
 {
     internal class UI_Menu
     {
@@ -126,28 +126,28 @@ namespace tile_mapper
         public Button DeleteButton;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible)
         {
-            this.Text = text;
-            this.ButtonRect = rect;
-            this.SelectionX = selectionX;
-            this.OriginalX = originalX;
-            this.Action = action;
-            this.IsVisible = isVisible;
+            Text = text;
+            ButtonRect = rect;
+            SelectionX = selectionX;
+            OriginalX = originalX;
+            Action = action;
+            IsVisible = isVisible;
 
             SourceRect.Width = rect.Width;
             SourceRect.Height = rect.Height;
         }
         public void ChangeSourceX(Vector2 MousePos)
         {
-            if (this.ButtonRect.Contains(MousePos))
+            if (ButtonRect.Contains(MousePos))
             {
-                this.SourceRect.X = this.SelectionX;
-                if (this.IsDeletable && this.DeleteButton.ButtonRect.Contains(MousePos)) { this.DeleteButton.SourceRect.X = this.DeleteButton.SelectionX; }
-                else if (this.IsDeletable) { this.DeleteButton.SourceRect.X = this.DeleteButton.OriginalX; }
+                SourceRect.X = SelectionX;
+                if (IsDeletable && DeleteButton.ButtonRect.Contains(MousePos)) { DeleteButton.SourceRect.X = DeleteButton.SelectionX; }
+                else if (IsDeletable) { DeleteButton.SourceRect.X = DeleteButton.OriginalX; }
             }
             else
             {
-                this.SourceRect.X = this.OriginalX;
-                if (this.IsDeletable) { this.DeleteButton.SourceRect.X = this.DeleteButton.OriginalX; }
+                SourceRect.X = OriginalX;
+                if (IsDeletable) { DeleteButton.SourceRect.X = DeleteButton.OriginalX; }
             }
         }
     }

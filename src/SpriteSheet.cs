@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace tile_mapper
+namespace tile_mapper.src
 {
     internal class SpriteTile
     {
@@ -20,7 +20,7 @@ namespace tile_mapper
         int TileSize;
         public SpriteSheet(int tilesize)
         {
-            this.TileSize = tilesize;
+            TileSize = tilesize;
         }
     }
 

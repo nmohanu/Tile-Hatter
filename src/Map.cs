@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 
-namespace tile_mapper
+namespace tile_mapper.src
 {
     internal class UserAction
     {
@@ -14,21 +14,21 @@ namespace tile_mapper
         public int x, y, Layer;
         public Rectangle Rect;
         Area Area;
-       
-        public UserAction(ActionType action, int layer, int x, int y) 
+
+        public UserAction(ActionType action, int layer, int x, int y)
         {
-            this.Action = action;
-            this.Layer = layer;
+            Action = action;
+            Layer = layer;
             this.x = x;
             this.y = y;
 
         }
         public UserAction(ActionType action, int layer, Rectangle rect, Area area)
         {
-            this.Action = action;
-            this.Layer = layer;
-            this.Rect = rect;
-            this.Area = area;
+            Action = action;
+            Layer = layer;
+            Rect = rect;
+            Area = area;
         }
 
         public enum ActionType
@@ -39,7 +39,7 @@ namespace tile_mapper
             RemoveMultiple,
         }
     }
-    
+
     internal class Area
     {
         public Rectangle AreaCords;
@@ -49,13 +49,13 @@ namespace tile_mapper
 
         public Area(Rectangle areaCords, string areaName, int LayerAmount, int ObjectLayerAmount)
         {
-            this.AreaCords = areaCords;
-            this.AreaName = areaName;
+            AreaCords = areaCords;
+            AreaName = areaName;
 
             Layers = new List<Layer>();
             ObjectLayers = new List<ObjectLayer>();
 
-            for(int k = 0; k < LayerAmount; k++)
+            for (int k = 0; k < LayerAmount; k++)
             {
                 AddLayer();
             }
@@ -68,10 +68,10 @@ namespace tile_mapper
 
         public void AddLayer()
         {
-            Layer layer = new Layer(this.AreaCords);
-            for (int i = 0; i < this.AreaCords.Height; i++)
+            Layer layer = new Layer(AreaCords);
+            for (int i = 0; i < AreaCords.Height; i++)
             {
-                for (int j = 0; j < this.AreaCords.Width; j++)
+                for (int j = 0; j < AreaCords.Width; j++)
                 {
                     layer.TileMap[i, j] = new Tile();
                 }
@@ -126,7 +126,7 @@ namespace tile_mapper
 
         public void RemoveLayer(int layerIndex)
         {
-            foreach(var area in  areas)
+            foreach (var area in areas)
             {
                 area.RemoveLayer(layerIndex);
             }
@@ -183,7 +183,7 @@ namespace tile_mapper
 
         public Property(Type type)
         {
-            this.PropertyType = type;
+            PropertyType = type;
         }
 
         public enum Type
