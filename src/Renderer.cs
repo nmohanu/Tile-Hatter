@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using tile_mapper.src.Canvas;
 using tile_mapper.src.UI;
+using tile_mapper.src.UserSprites;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace tile_mapper.src

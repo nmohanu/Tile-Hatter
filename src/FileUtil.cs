@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using tile_mapper.src.UI;
+using tile_mapper.src.UserSprites;
 
 namespace tile_mapper.src
 {

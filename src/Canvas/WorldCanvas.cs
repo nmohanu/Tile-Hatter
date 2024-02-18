@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using tile_mapper.src.Layer;
+using tile_mapper.src.UserSprites;
 
 
 namespace tile_mapper.src.Canvas

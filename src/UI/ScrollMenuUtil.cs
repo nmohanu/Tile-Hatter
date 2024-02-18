@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static tile_mapper.src.ProgramLoop;
 
 namespace tile_mapper.src.UI
 {
@@ -57,6 +58,52 @@ namespace tile_mapper.src.UI
 
             }
         }
+        public static void UpdateMenuState()
+        {
+            foreach (var menu in Global.PropertyMenu)
+            {
+                menu.IsVisible = false;
+            }
+            foreach (var menu in Global.LabelMenus)
+            {
+                menu.IsVisible = false;
+            }
 
+            switch (Global.menuState)
+            {
+                case MenuState.LayerMenu:
+                    GlobalMenus.LayerMenu.IsVisible = true;
+                    GlobalMenus.LayerLabels.IsVisible = true;
+                    GlobalButtons.LayerMenuButton.IsPressed = true;
+                    GlobalButtons.AreaMenuButton.IsPressed = false;
+                    GlobalButtons.ObjectMenuButton.IsPressed = false;
+                    GlobalButtons.SpriteMenuButton.IsPressed = false;
+                    break;
+                case MenuState.AreaMenu:
+                    GlobalMenus.AreaMenu.IsVisible = true;
+                    GlobalMenus.AreaLabels.IsVisible = true;
+                    GlobalButtons.LayerMenuButton.IsPressed = false;
+                    GlobalButtons.AreaMenuButton.IsPressed = true;
+                    GlobalButtons.ObjectMenuButton.IsPressed = false;
+                    GlobalButtons.SpriteMenuButton.IsPressed = false;
+                    break;
+                case MenuState.SpriteTileMenu:
+                    GlobalMenus.CollisionSpriteList.IsVisible = true;
+                    GlobalMenus.TileLabels.IsVisible = true;
+                    GlobalButtons.LayerMenuButton.IsPressed = false;
+                    GlobalButtons.AreaMenuButton.IsPressed = false;
+                    GlobalButtons.ObjectMenuButton.IsPressed = false;
+                    GlobalButtons.SpriteMenuButton.IsPressed = true;
+                    break;
+                case MenuState.ObjectMenu:
+                    GlobalMenus.ObjectMenu.IsVisible = true;
+                    GlobalMenus.ObjectLabels.IsVisible = true;
+                    GlobalButtons.LayerMenuButton.IsPressed = false;
+                    GlobalButtons.AreaMenuButton.IsPressed = false;
+                    GlobalButtons.ObjectMenuButton.IsPressed = true;
+                    GlobalButtons.SpriteMenuButton.IsPressed = false;
+                    break;
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using static tile_mapper.src.ProgramLoop;
 using tile_mapper.src.UI;
 using tile_mapper.src.Canvas;
+using tile_mapper.src.UserSprites;
 
 namespace tile_mapper.src
 {
@@ -36,6 +37,8 @@ namespace tile_mapper.src
         public static Vector2 PreviousMousePos;
 
         // Helper variables
+        public static bool resetSelection;
+        public static bool resetCursorState;
         public static GameTime DoubleClickTimer;
         public static float TimeSinceLastClick;
         public static float ScaleX = 1f;

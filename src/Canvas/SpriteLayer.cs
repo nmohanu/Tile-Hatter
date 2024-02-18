@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using tile_mapper.src.UserSprites;
 
 namespace tile_mapper.src.Layer
 {

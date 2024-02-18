@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace tile_mapper.src
+namespace tile_mapper.src.UserSprites
 {
     internal class SpriteTile
     {
