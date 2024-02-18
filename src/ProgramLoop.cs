@@ -202,9 +202,10 @@ namespace tile_mapper.src
         // Update
         protected override void Update(GameTime gameTime)
         {
+            Global.Timer += gameTime.ElapsedGameTime.Milliseconds;
+            
             // Calculate fps
             Global.fps = (float)(1.0f / gameTime.ElapsedGameTime.TotalSeconds);
-            bool DoubleClick;
 
             // Keyboard.
             KeyboardState keyboardState = Keyboard.GetState();
@@ -215,8 +216,18 @@ namespace tile_mapper.src
             MouseState mouseState = Mouse.GetState();
             Global.MousePos = new Vector2(mouseState.X, mouseState.Y);
             Vector2 MousePosRelative = Global.MousePos - Global.Offset;
-            ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice);
             ClickHandeler.HandleLeftHold(mouseState, keyboardState);
+
+            if (mouseState.LeftButton == ButtonState.Pressed &&
+                Global.PreviousMouseState.LeftButton == ButtonState.Released)
+            {
+                ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice);
+
+                if (Global.Timer - Global.TimeOfLastClick < 500)
+                    ClickHandeler.HandleDoubleClick();
+                else
+                    Global.TimeOfLastClick = Global.Timer;
+            }
 
             if (mouseState.RightButton == ButtonState.Pressed)
             {

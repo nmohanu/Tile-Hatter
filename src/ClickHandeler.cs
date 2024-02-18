@@ -16,6 +16,11 @@ namespace tile_mapper.src
 {
     internal static class ClickHandeler
     {
+        public static void HandleDoubleClick()
+        {
+
+        }
+    
         public static void HandleLeftClick(MouseState mouseState, GraphicsDevice graphicsDevice)
         {
             if (mouseState.LeftButton == ButtonState.Pressed && Global.PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.

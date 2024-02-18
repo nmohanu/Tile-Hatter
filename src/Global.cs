@@ -40,7 +40,7 @@ namespace tile_mapper.src
         public static bool resetSelection;
         public static bool resetCursorState;
         public static GameTime DoubleClickTimer;
-        public static float TimeSinceLastClick;
+        public static float TimeOfLastClick;
         public static float ScaleX = 1f;
         public static float ScaleY = 1f;
         public static int SelectedX;
@@ -69,6 +69,7 @@ namespace tile_mapper.src
         public static int CurrentPage = 0;
         public static int CurrentLayer = 0;
         public static float fps;
+        public static float Timer;
 
         // Textures
         public static Texture2D Grid;
@@ -97,5 +98,6 @@ namespace tile_mapper.src
         public static Stack<UserAction> Actions = new Stack<UserAction>();
         // The sprite that the user has selected.
         public static SpriteTile selected;
+
     }
 }
