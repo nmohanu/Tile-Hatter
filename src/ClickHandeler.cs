@@ -16,12 +16,7 @@ namespace tile_mapper.src
 {
     internal static class ClickHandeler
     {
-        public static void HandleDoubleClick()
-        {
-
-        }
-    
-        public static void HandleLeftClick(MouseState mouseState, GraphicsDevice graphicsDevice)
+        public static void HandleLeftClick(MouseState mouseState, GraphicsDevice graphicsDevice, bool IsDoubleClick)
         {
             if (mouseState.LeftButton == ButtonState.Pressed && Global.PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
             {
@@ -56,8 +51,9 @@ namespace tile_mapper.src
                     if (GlobalButtons.ClickedAreaButton != null)
                         GlobalButtons.ClickedAreaButton.IsPressed = false;
                 }
-                Button buttonClicked = null;
 
+                // Check whether a button is clicked.
+                Button buttonClicked = null;
                 foreach (var UI in Global.All_UI_Menus)
                 {
 
@@ -69,11 +65,13 @@ namespace tile_mapper.src
                     }
                 }
 
-                if (buttonClicked == null)
+                if (buttonClicked == null) // No button clicked.
                     return;
-                else
+                else // Button clicked, process.
                 {
                     HandleButtonClick(buttonClicked, graphicsDevice);
+
+                    // Check if the delete button (X) on the button was clicked and delete if so.
                     if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(Global.MousePos)) // The delete buttons (X)
                     {
                         switch (buttonClicked.DeleteButton.Action)
@@ -118,6 +116,7 @@ namespace tile_mapper.src
                 }
             }
         }
+
         public static void HandleButtonClick(Button buttonClicked, GraphicsDevice graphicsDevice)
         {
             switch (buttonClicked.Action)

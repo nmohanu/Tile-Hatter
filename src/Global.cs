@@ -28,7 +28,7 @@ namespace tile_mapper.src
 
         // Temp
         public static int TILE_SIZE = 16;
-        public static string TileSheetPath = "../../../Content/Temp/tile_sheet.png";
+        public static string TileSheetPath = "../../../Content/Temp/Tiles.png";
 
         // Vectors
         public static Vector2 Velocity = Vector2.Zero;

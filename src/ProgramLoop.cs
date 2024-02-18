@@ -221,10 +221,10 @@ namespace tile_mapper.src
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 Global.PreviousMouseState.LeftButton == ButtonState.Released)
             {
-                ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice);
+                ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, false); // Single click.
 
                 if (Global.Timer - Global.TimeOfLastClick < 500)
-                    ClickHandeler.HandleDoubleClick();
+                    ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, true); // Double click.
                 else
                     Global.TimeOfLastClick = Global.Timer;
             }
@@ -253,7 +253,7 @@ namespace tile_mapper.src
 
 
             // Tile sheet is imported.
-            if (Global.HasTileSheet)
+            if (Global.HasTileSheet && GlobalMenus.TileMenu.Destination.Contains(Global.MousePos))
             {
                 foreach (var rect in Global.TileSpriteList[Global.CurrentPage])
                 {
