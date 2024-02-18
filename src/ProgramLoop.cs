@@ -188,20 +188,23 @@ namespace tile_mapper.src
             IsMouseVisible = false;
         }
 
-        
+        // Helper variables
         internal void InitializeHelperVariables()
         {
             PreviousMouseState = new MouseState();
             PreviousKeybordState = new KeyboardState();
             All_UI_Menus = new List<UI_Menu>();
+            Offset = new Vector2(ScreenWidth / 2, ScreenHeight / 2);
+            TileSpriteList = new List<List<SpriteTile>>(); // Rectangles for the sprites.
+            CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int)(32 * 2f), (int)(32 * 2f));
         }
 
+        // Monogame window stuff
         internal void InitializeWindow()
         {
             Window.Title = "Tile-Hatter";
             Window.AllowUserResizing = false;
         }
-
         internal void InitializeGraphicsDevice()
         {
             _graphics.PreferredBackBufferWidth = ScreenWidth;
@@ -209,6 +212,7 @@ namespace tile_mapper.src
             _graphics.ApplyChanges();
         }
 
+        // Buttons
         internal void InitializeToolsetButtons()
         {
             DrawTool = new Button("", new Rectangle(0, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
@@ -226,15 +230,15 @@ namespace tile_mapper.src
             SpecifyDoor = new Button("", new Rectangle(128, 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
             SpecifyDoor.SourceRect.Y = 96;
         }
-
         internal void InitializePaletteButtons()
         {
             Import = new Button("Import", new Rectangle(144 - 128 / 2, ScreenHeight / 2 - 24, 128, 48), 288, 64, ButtonAction.Import, false);
             Import.SourceRect.Y = 128;
             OpenPalette = new Button("", new Rectangle(0, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.OpenPalette, true);
             ClosePalette = new Button("", new Rectangle(272, ScreenHeight / 2 - 32 / 2, 32, 32), 32, 0, ButtonAction.ClosePalette, false);
+            OpenPalette.SourceRect = new Rectangle(0, 720, 32, 32);
+            ClosePalette.SourceRect = new Rectangle(0, 752, 32, 32);
         }
-
         internal void InitializeTestButtons()
         {
             TestMap = new Button("", new Rectangle(ScreenWidth / 2 - 32, 0, 32, 32), 0, 0, ButtonAction.TestState, true);
@@ -242,7 +246,6 @@ namespace tile_mapper.src
             StopTest = new Button("", new Rectangle(ScreenWidth / 2, 0, 32, 32), 32, 32, ButtonAction.EditState, true);
             StopTest.SourceRect.Y = 128;
         }
-
         internal void InitializeTopBarButtons()
         {
             WorldScreen = new Button("Editor", new Rectangle(0, 0, 144, 32), 304, 304, ButtonAction.EditorScreen, true);
@@ -260,7 +263,6 @@ namespace tile_mapper.src
             RuleSetScreen.PressedSourceX = 448;
             RuleSetScreen.SourceRect.Y = 192;
         }
-
         internal void InitializeScrollMenuButtons()
         {
             LayerMenuButton = new Button("", new Rectangle(1660, 1044 - 64, 32, 32), 1680 + 32, 1680, ButtonAction.OpenLayerMenu, true);
@@ -283,67 +285,97 @@ namespace tile_mapper.src
             SpriteMenuButton.SourceRect.Y = 1184 + 96;
             SpriteMenuButton.PressedSourceX = 1648;
         }
+        
+        // Menus
+        internal void InitializePaletteMenu()
+        { 
+            TileMenu = new UI_Menu(false, new Rectangle(0, 192, 288, 512), new Rectangle(0, ScreenHeight / 2 - 256, 288, 512));
+            SpritePaletteDestination = new Rectangle(TileMenu.Destination.X + 16, TileMenu.Destination.Y + 16, TileMenu.Destination.Width - 32, TileMenu.Destination.Height - 32);
+        }
+        internal void InitializeTopBar()
+        { TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 80), new Rectangle(0, 0, 1920, 67)); }
+        internal void InitializeGeneralOverlay()
+        { GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0)); }
+        internal void InitializePropertyMenu()
+        { Properties = new UI_Menu(true, new Rectangle(1655, 64, 266, 1080), new Rectangle(1655, 0, 266, 1080)); }
 
-        internal void InitializeUI()
+        // Scrollable menus
+        internal void InitializeLayerScrollMenu()
         {
-            // Initialize toolset buttons.
-            InitializeToolsetButtons();
+            LayerMenu = new UI_Menu(true, new Rectangle(1655, 0, 0, 0), new Rectangle(1660, 32, 256, 496));
+            LayerMenu.Scrollable = true;
 
-            // Initialize palette Buttons.
-            InitializePaletteButtons();
+            // Create Layer btn.
+            CreateLayerButton = new Button("New Layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.AddLayer, true);
+            CreateLayerButton.SourceRect.Y = 240;
+            LayerMenu.buttons.Add(CreateLayerButton);
 
-            // Intialize testing buttons.
-            InitializeTestButtons();
+            // Add the default 3 layers.
+            for (int i = 1; i <= 3; i++)
+            {
+                AddLayer();
+            }
+            LayerMenu.buttons[0].IsPressed = true;
+            ClickedLayerButton = LayerMenu.buttons[0];
+        }
+        internal void InitializeAreaScrollMenu()
+        {
+            AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
+            AreaMenu.Scrollable = true;
+        }
+        internal void InitializeObjectLayerScrollMenu()
+        {
+            ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
+            ObjectMenu.Scrollable = true;
 
-            // Initialize top bar buttons (scene switch buttons).
-            InitializeTopBarButtons();
+            // Create ObjectLayer btn.
+            CreateObjectLayerButton = new Button("New Object Layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.CreateObjectLayer, true);
+            CreateObjectLayerButton.SourceRect.Y = 240;
+            ObjectMenu.buttons.Add(CreateObjectLayerButton);
+            UpdateListOrder(ObjectMenu);
+        }
+        internal void InitializeSpriteMenu()
+        {
+            // Collision sprite list
+            CollisionSpriteList = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
+            CollisionSpriteList.Scrollable = true;
+        }
+        internal void InitializeObjectScrollMenu()
+        {
+            ObjectLabels = new UI_Menu(false, new Rectangle(1660, 96, 256, 422), LabelMenuDestination); // Object menu has 2 button lists instead of labels.
+            ObjectLabels.Scrollable = true;
 
-            // Initialize the buttons for the side menu.
-            InitializeScrollMenuButtons();
+            // Create Object btn.
+            CreateObjectButton = new Button("New Object", new Rectangle(ObjectLabels.Destination.X + ObjectLabels.Destination.Width / 2 - 224 / 2, ObjectLabels.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateObject, true);
+            CreateObjectButton.SourceRect.Y = 240;
+            ObjectLabels.buttons.Add(CreateObjectButton);
+            UpdateListOrder(ObjectLabels);
         }
 
-        
-        protected override void Initialize()
+        // Label menus
+        internal void InitializeTileLabelMenu()
         {
-            // Initialize program.
-            InitializeHelperVariables();
-
-            // Initialize window.
-            InitializeWindow();
-
-            // Initialize graphics device.
-            InitializeGraphicsDevice();
-
-            // Initialize all UI.
-            InitializeUI();
-
+            TileLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
             CurrentTileID = new Label();
             Collision = new Label();
 
-            OpenPalette.SourceRect = new Rectangle(0, 720, 32, 32);
-            ClosePalette.SourceRect = new Rectangle(0, 752, 32, 32);
+            // Sprite tile properties.
+            CurrentTileID.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
+            CurrentTileID.SourceRect.Width = 0;
+            CurrentTileID.SourceRect.Height = 0;
 
+            Collision.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
+            Collision.Text = "Collision";
+            Collision.SourceRect.Width = 0;
+            Collision.SourceRect.Height = 0;
 
-            Offset = new Vector2(ScreenWidth / 2, ScreenHeight / 2);
-
-            TileMenu = new UI_Menu(false, new Rectangle(0, 192, 288, 512), new Rectangle(0, ScreenHeight / 2 - 256, 288, 512));
-            TopBar = new UI_Menu(true, new Rectangle(0, 0, 1920, 80), new Rectangle(0, 0, 1920, 67));
-            GeneralOverlay = new UI_Menu(true, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0));
-            Properties = new UI_Menu(true, new Rectangle(1655, 64, 266, 1080), new Rectangle(1655, 0, 266, 1080));
-            LayerMenu = new UI_Menu(true, new Rectangle(1655, 0, 0, 0), new Rectangle(1660, 32, 256, 496));
-            LayerMenu.Scrollable = true;
-            AreaMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
-            AreaMenu.Scrollable = true;
-            ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
-            ObjectMenu.Scrollable = true;
-            CollisionSpriteList = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), new Rectangle(1660, 32, 256, 496));
-            CollisionSpriteList.Scrollable = true;
-
-            TileLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
+            CollisionCheckBox = new Button("", new Rectangle(1660, 656 - 64, 32, 32), 32, 0, ButtonAction.MakeCollision, false);
+            CollisionCheckBox.SourceRect.Y = 80;
+            CollisionCheckBox.PressedSourceX = 64;
+        }
+        internal void InitializeAreaLabelMenu()
+        {
             AreaLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
-            LayerLabels = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
-            ObjectLabels = new UI_Menu(false, new Rectangle(1660, 96, 256, 422), LabelMenuDestination); // Object menu has 2 button lists instead of labels.
-            ObjectLabels.Scrollable = true;
 
             LayerName = new Label();
             LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
@@ -368,52 +400,16 @@ namespace tile_mapper.src
             AreaY = new Label();
             AreaY.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
             AreaY.IsVisible = true;
-
-            // Sprite tile properties.
-            CurrentTileID.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
-            CurrentTileID.SourceRect.Width = 0;
-            CurrentTileID.SourceRect.Height = 0;
-
-            Collision.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
-            Collision.Text = "Collision";
-            Collision.SourceRect.Width = 0;
-            Collision.SourceRect.Height = 0;
-
-            CollisionCheckBox = new Button("", new Rectangle(1660, 656 - 64, 32, 32), 32, 0, ButtonAction.MakeCollision, false);
-            CollisionCheckBox.SourceRect.Y = 80;
-            CollisionCheckBox.PressedSourceX = 64;
-
-            // Create Layer btn.
-            CreateLayerButton = new Button("New Layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.AddLayer, true);
-            CreateLayerButton.SourceRect.Y = 240;
-            LayerMenu.buttons.Add(CreateLayerButton);
-
-            // Create ObjectLayer btn.
-            CreateObjectLayerButton = new Button("New Object Layer", new Rectangle(Properties.Destination.X + Properties.Destination.Width / 2 - 224 / 2, Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.CreateObjectLayer, true);
-            CreateObjectLayerButton.SourceRect.Y = 240;
-            ObjectMenu.buttons.Add(CreateObjectLayerButton);
-            UpdateListOrder(ObjectMenu);
-
-            // Create Object btn.
-            CreateObjectButton = new Button("New Object", new Rectangle(ObjectLabels.Destination.X + ObjectLabels.Destination.Width / 2 - 224 / 2, ObjectLabels.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateObject, true);
-            CreateObjectButton.SourceRect.Y = 240;
-            ObjectLabels.buttons.Add(CreateObjectButton);
-            UpdateListOrder(ObjectLabels);
-
-
-            // Add the default 3 layers.
-            for (int i = 1; i <= 3; i++)
-            {
-                AddLayer();
-            }
-
-            LayerMenu.buttons[0].IsPressed = true;
-            ClickedLayerButton = LayerMenu.buttons[0];
-
-
-
+        }
+        internal void InitializeLayerLabelMenu()
+        {
+            LayerLabels = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), LabelMenuDestination);
             LayerName.Text = "ID: " + ClickedLayerButton.Text;
+        }
 
+        // Add buttons to the menus
+        internal void AddButtonsToMenus()
+        {
             TopBar.buttons.Add(DrawTool);
             TopBar.buttons.Add(FillTool);
             TopBar.buttons.Add(EraserTool);
@@ -424,29 +420,36 @@ namespace tile_mapper.src
             TopBar.buttons.Add(WorldScreen);
             TopBar.buttons.Add(SheetScreen);
             TopBar.buttons.Add(RuleSetScreen);
+
             GeneralOverlay.buttons.Add(OpenPalette);
             GeneralOverlay.buttons.Add(Import);
             GeneralOverlay.buttons.Add(ClosePalette);
 
+            // Property menu buttons (the small tabs at the bottom).
             Properties.buttons.Add(LayerMenuButton);
             Properties.buttons.Add(ObjectMenuButton);
             Properties.buttons.Add(AreaMenuButton);
             Properties.buttons.Add(SpriteMenuButton);
 
-
+            // Tile property labels.
             TileLabels.labels.Add(CurrentTileID);
             TileLabels.labels.Add(Collision);
             TileLabels.buttons.Add(CollisionCheckBox);
 
+            // Layer labels.
             LayerLabels.labels.Add(LayerName);
 
-            // Labels for area menu
+            // Labels for area menu.
             AreaLabels.labels.Add(AreaName);
             AreaLabels.labels.Add(AreaWidth);
             AreaLabels.labels.Add(AreaHeight);
             AreaLabels.labels.Add(AreaX);
             AreaLabels.labels.Add(AreaY);
+        }
 
+        // Add UI to lists.
+        internal void AddUIToLists()
+        {
             // Draw these to screen.
             All_UI_Menus.Add(TileMenu);
             All_UI_Menus.Add(TopBar);
@@ -457,9 +460,6 @@ namespace tile_mapper.src
             All_UI_Menus.Add(AreaMenu);
             All_UI_Menus.Add(LayerMenu);
             All_UI_Menus.Add(CollisionSpriteList);
-
-            // Tile palette
-            All_UI_Menus.Add(TileMenu);
 
             // Labels
             All_UI_Menus.Add(LayerLabels);
@@ -484,12 +484,63 @@ namespace tile_mapper.src
             LabelMenus.Add(AreaLabels);
             LabelMenus.Add(TileLabels);
             LabelMenus.Add(ObjectLabels);
+        }
 
-            TileSpriteList = new List<List<SpriteTile>>(); // Rectangles for the sprites.
+        internal void InitializeUI()
+        {
+            // Initialize toolset buttons.
+            InitializeToolsetButtons();
 
-            CharacterRect = new Rectangle(ScreenWidth / 2 - 16, ScreenHeight / 2 - 16, (int)(32 * 2f), (int)(32 * 2f));
+            // Initialize palette Buttons.
+            InitializePaletteButtons();
 
-            SpritePaletteDestination = new Rectangle(TileMenu.Destination.X + 16, TileMenu.Destination.Y + 16, TileMenu.Destination.Width - 32, TileMenu.Destination.Height - 32);
+            // Intialize testing buttons.
+            InitializeTestButtons();
+
+            // Initialize top bar buttons (scene switch buttons).
+            InitializeTopBarButtons();
+
+            // Initialize the buttons for the side menu.
+            InitializeScrollMenuButtons();
+
+            // Initialize the UI menu's
+            InitializeTopBar();
+            InitializeGeneralOverlay();
+            InitializePropertyMenu();
+            InitializePaletteMenu();
+
+            // Scroll menus
+            InitializeSpriteMenu();
+            InitializeLayerScrollMenu();
+            InitializeAreaScrollMenu();
+            InitializeObjectScrollMenu();
+            InitializeObjectLayerScrollMenu();
+
+            // Label menus
+            InitializeTileLabelMenu();
+            InitializeAreaLabelMenu();
+            InitializeLayerLabelMenu();
+
+            // Add buttons and labels to the menus
+            AddButtonsToMenus();
+
+            // Add the created UI elements to a list.
+            AddUIToLists();
+        }
+
+        protected override void Initialize()
+        {
+            // Initialize program.
+            InitializeHelperVariables();
+
+            // Initialize window.
+            InitializeWindow();
+
+            // Initialize graphics device.
+            InitializeGraphicsDevice();
+
+            // Initialize all UI.
+            InitializeUI();
 
             base.Initialize();
         }
