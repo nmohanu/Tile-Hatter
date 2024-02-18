@@ -528,6 +528,7 @@ namespace tile_mapper.src
             AddUIToLists();
         }
 
+        // Initialize
         protected override void Initialize()
         {
             // Initialize program.
@@ -545,6 +546,7 @@ namespace tile_mapper.src
             base.Initialize();
         }
 
+        // Load content
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -561,6 +563,7 @@ namespace tile_mapper.src
             font = Content.Load<SpriteFont>("font");
         }
 
+        // Update
         protected override void Update(GameTime gameTime)
         {
             // Calculate fps
@@ -760,6 +763,7 @@ namespace tile_mapper.src
             base.Update(gameTime);
         }
 
+        // Draw
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Gray);
@@ -869,53 +873,7 @@ namespace tile_mapper.src
         }
 
 
-        internal void WriteFile()
-        {
-
-        }
-
-        internal void OpenSpriteSheetFile(string path)
-        {
-            using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open)) // Import file.
-            {
-                TileSheet = Texture2D.FromStream(GraphicsDevice, stream);
-            }
-
-            SheetWidth = TileSheet.Width / TILE_SIZE; // Sheet width.
-            SheetHeight = TileSheet.Height / TILE_SIZE; // Sheet height.
-
-            List<SpriteTile> page = new List<SpriteTile>(); // For multiple sprite sheets.
-
-            for (int y = 0; y < SheetHeight; y++)
-            {
-                for (int x = 0; x < SheetWidth; x++)
-                {
-                    int xcord = x * TILE_SIZE;
-                    int ycord = y * TILE_SIZE;
-
-                    int xdest = TileMenu.Destination.X + 16 + x * TILE_SIZE * 2;
-                    int ydest = TileMenu.Destination.Y + 16 + y * TILE_SIZE * 2;
-
-                    SpriteTile tile = new SpriteTile();
-                    tile.Source = new Rectangle(xcord, ycord, TILE_SIZE, TILE_SIZE);
-
-                    tile.Destination = new Rectangle();
-
-                    tile.ID = "X" + x.ToString() + "Y" + y.ToString(); // Set sprite unique ID.
-                    tile.Destination = new Rectangle(xdest, ydest, TILE_SIZE * 2, TILE_SIZE * 2);
-
-                    page.Add(tile);
-
-                }
-            }
-
-            TileSpriteList.Add(page);
-
-            HasTileSheet = true;
-
-            System.Diagnostics.Debug.WriteLine(TileSheetPath);
-        }
-
+        // User input
         internal void HandleLeftClick(MouseState mouseState)
         {
             if (mouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
@@ -1033,7 +991,6 @@ namespace tile_mapper.src
                             UpdateMenuState();
                             break;
                         case ButtonAction.Save:
-                            WriteFile();
                             break;
                         case ButtonAction.OpenPalette:
                             // TileMenu.IsVisible = true;
@@ -1214,7 +1171,6 @@ namespace tile_mapper.src
                 }
             }
         }
-
         internal void HandleLeftHold(MouseState mouseState, KeyboardState keyboardState)
         {
             foreach (var menu in All_UI_Menus)
@@ -1267,7 +1223,6 @@ namespace tile_mapper.src
                 Selection = new Rectangle(TopLeft.X, TopLeft.Y, BottomRight.X - TopLeft.X + 1, BottomRight.Y - TopLeft.Y + 1);
             }
         }
-
         internal void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime)
         {
             float Speed = State == EditorState.Test ? TestingSpeed : MoveSpeed;
@@ -1292,7 +1247,25 @@ namespace tile_mapper.src
                 CharacterSource.X = 32;
             }
         }
+        internal void HandleLabelDoubleClick()
+        {
 
+        }
+        internal void SelectTile(SpriteTile rect)
+        {
+            selected = rect;
+            selected.ID = rect.ID;
+            selected.Source = rect.Source;
+            CursorActionState = CursorState.Draw;
+            CurrentTileID.IsVisible = true;
+            CurrentTileID.Text = "ID: " + selected.ID;
+            Collision.IsVisible = true;
+            CollisionCheckBox.IsVisible = true;
+            Collision.Text = "Collision";
+            CollisionCheckBox.IsPressed = selected.Collision;
+        }
+
+        // Mechanics
         internal bool CheckCollision()
         {
             Area areaToSearch = null;
@@ -1355,7 +1328,49 @@ namespace tile_mapper.src
 
             return false;
         }
+        internal void OpenSpriteSheetFile(string path)
+        {
+            using (FileStream stream = new FileStream(TileSheetPath, FileMode.Open)) // Import file.
+            {
+                TileSheet = Texture2D.FromStream(GraphicsDevice, stream);
+            }
 
+            SheetWidth = TileSheet.Width / TILE_SIZE; // Sheet width.
+            SheetHeight = TileSheet.Height / TILE_SIZE; // Sheet height.
+
+            List<SpriteTile> page = new List<SpriteTile>(); // For multiple sprite sheets.
+
+            for (int y = 0; y < SheetHeight; y++)
+            {
+                for (int x = 0; x < SheetWidth; x++)
+                {
+                    int xcord = x * TILE_SIZE;
+                    int ycord = y * TILE_SIZE;
+
+                    int xdest = TileMenu.Destination.X + 16 + x * TILE_SIZE * 2;
+                    int ydest = TileMenu.Destination.Y + 16 + y * TILE_SIZE * 2;
+
+                    SpriteTile tile = new SpriteTile();
+                    tile.Source = new Rectangle(xcord, ycord, TILE_SIZE, TILE_SIZE);
+
+                    tile.Destination = new Rectangle();
+
+                    tile.ID = "X" + x.ToString() + "Y" + y.ToString(); // Set sprite unique ID.
+                    tile.Destination = new Rectangle(xdest, ydest, TILE_SIZE * 2, TILE_SIZE * 2);
+
+                    page.Add(tile);
+
+                }
+            }
+
+            TileSpriteList.Add(page);
+
+            HasTileSheet = true;
+
+            System.Diagnostics.Debug.WriteLine(TileSheetPath);
+        }
+
+        // Tools used
         internal void FillSelection()
         {
             if (selected == null)
@@ -1378,7 +1393,6 @@ namespace tile_mapper.src
                 }
             }
         }
-
         internal void FillClicked()
         {
             Area areaClicked = null;
@@ -1424,6 +1438,7 @@ namespace tile_mapper.src
             }
         }
 
+        // UI
         internal void UpdateMenuState()
         {
             foreach (var menu in PropertyMenu)
@@ -1471,17 +1486,10 @@ namespace tile_mapper.src
                     break;
             }
         }
-
-        internal void HandleLabelDoubleClick()
-        {
-
-        }
-
         internal void ChangeAreaProperties()
         {
 
         }
-
         internal void AddArea()
         {
             bool allowed = true;
@@ -1516,7 +1524,6 @@ namespace tile_mapper.src
                 }
             }
         }
-
         internal void UpdateListOrder(UI_Menu menu)
         {
             // Make sure the create button is placed last in list.
@@ -1548,7 +1555,6 @@ namespace tile_mapper.src
                 
             }
         }                  
-        
         internal void UpdateAreaLabels()
         {
             if (SelectedArea != null)
@@ -1564,7 +1570,6 @@ namespace tile_mapper.src
                 ClearLabels(AreaLabels);
             }
         }
-
         internal void ClearLabels(UI_Menu menu)
         {
             foreach (Label label in menu.labels)
@@ -1576,7 +1581,6 @@ namespace tile_mapper.src
                 button.IsVisible = false;
             }
         }
-
         internal void AddLayer()
         {
             Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.Layer, ButtonAction.RemoveLayer, Properties);
@@ -1591,7 +1595,6 @@ namespace tile_mapper.src
             // Update map data.
             CurrentMap.AddLayerToAreas();
         }
-
         internal void AddObjectLayer()
         {
             Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectObjectLayer, ButtonAction.RemoveObjectLayer, Properties);
@@ -1600,7 +1603,6 @@ namespace tile_mapper.src
             UpdateListOrder(ObjectMenu);
             CurrentMap.CreateObjectLayer();
         }
-
         internal void AddObject()
         {
             if (SelectedObjectLayerButton != null)
@@ -1615,7 +1617,6 @@ namespace tile_mapper.src
                 
             }
         }
-
         internal void ReloadObjects()
         {
             if(SelectedObjectLayerButton != null)
@@ -1631,21 +1632,5 @@ namespace tile_mapper.src
                 UpdateListOrder(ObjectLabels);
             }
         }
-
-        internal void SelectTile(SpriteTile rect)
-        {
-            selected = rect;
-            selected.ID = rect.ID;
-            selected.Source = rect.Source;
-            CursorActionState = CursorState.Draw;
-            CurrentTileID.IsVisible = true;
-            CurrentTileID.Text = "ID: " + selected.ID;
-            Collision.IsVisible = true;
-            CollisionCheckBox.IsVisible = true;
-            Collision.Text = "Collision";
-            CollisionCheckBox.IsPressed = selected.Collision;
-        }
     }
 }
-
-
