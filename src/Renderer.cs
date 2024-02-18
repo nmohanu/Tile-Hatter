@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using tile_mapper.src.Canvas;
 using tile_mapper.src.UI;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -11,7 +12,7 @@ namespace tile_mapper.src
 {
     internal static class Renderer
     {
-        public static void RenderGrid(SpriteBatch spriteBatch, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection, Canvas CurrentMap, ProgramLoop.CursorState CursorActionState)
+        public static void RenderGrid(SpriteBatch spriteBatch, int TILE_SIZE, Texture2D TileSheet, Texture2D Grid, float Scale, Vector2 Offset, SpriteTile selected, int SelectedX, int SelectedY, int ScreenWidth, int ScreenHeight, Rectangle Selection, WorldCanvas CurrentMap, ProgramLoop.CursorState CursorActionState)
         {
 
             Vector2 Difference = new Vector2(-Offset.X, -Offset.Y);
@@ -79,7 +80,7 @@ namespace tile_mapper.src
                 }
             }
         }
-        public static void RenderMap(Canvas CurrentMap, int CurrentLayer, SpriteBatch spriteBatch, Texture2D TileSheet, int TILE_SIZE, float Scale, Vector2 Offset, int ScreenWidth, int ScreenHeight, Texture2D Grid)
+        public static void RenderMap(WorldCanvas CurrentMap, int CurrentLayer, SpriteBatch spriteBatch, Texture2D TileSheet, int TILE_SIZE, float Scale, Vector2 Offset, int ScreenWidth, int ScreenHeight, Texture2D Grid)
         {
             Vector2 Difference = new Vector2(-Offset.X, -Offset.Y);
 
@@ -130,7 +131,7 @@ namespace tile_mapper.src
 
         }
 
-        public static void DrawArea(Area area, Vector2 Offset, int TILE_SIZE, float Scale, int ScreenWidth, int ScreenHeight, Canvas CurrentMap, SpriteBatch spriteBatch, Texture2D TileSheet)
+        public static void DrawArea(Area area, Vector2 Offset, int TILE_SIZE, float Scale, int ScreenWidth, int ScreenHeight, WorldCanvas CurrentMap, SpriteBatch spriteBatch, Texture2D TileSheet)
         {
             Vector2 Difference = new Vector2(-Offset.X, -Offset.Y);
 

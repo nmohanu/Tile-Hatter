@@ -25,5 +25,38 @@ namespace tile_mapper.src.UI
 
             return button;
         }
+
+        internal static void UpdateListOrder(UI_Menu menu)
+        {
+            // Make sure the create button is placed last in list.
+            for (int i = 0; i < menu.buttons.Count; i++)
+            {
+                var btn = menu.buttons[i];
+                if (btn.Action == ButtonAction.AddLayer || btn.Action == ButtonAction.CreateObjectLayer || btn.Action == ButtonAction.CreateObject)
+                {
+                    menu.buttons.Remove(btn);
+                    menu.buttons.Add(btn);
+                    break;
+                }
+            }
+
+            // Update button positions.
+            int j = 0;
+            foreach (var btn in menu.buttons)
+            {
+
+                btn.ButtonRect.Y = menu.Destination.Y + 16 + 48 * j + (int)menu.ScrollMenuOffset.Y;
+                btn.HelperInt = j;
+
+                if (btn.IsDeletable)
+                {
+                    btn.DeleteButton.ButtonRect.Y = btn.ButtonRect.Y + 16;
+                    btn.DeleteButton.HelperInt = j;
+                }
+                j++;
+
+            }
+        }
+
     }
 }
