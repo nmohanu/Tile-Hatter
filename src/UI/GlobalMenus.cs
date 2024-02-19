@@ -15,12 +15,12 @@ namespace tile_mapper.src.UI
         public static UI_Menu Properties;
         public static UI_Menu LayerMenu;
         public static UI_Menu AreaMenu;
-        public static UI_Menu ObjectMenu;
+        public static UI_Menu ObjectLayerMenu;
         public static UI_Menu PopUpMenu;
         public static UI_Menu TileLabels;
-        public static UI_Menu AreaLabels;
-        public static UI_Menu LayerLabels;
-        public static UI_Menu ObjectLabels;
+        public static UI_Menu AreaProperties;
+        public static UI_Menu LayerProperties;
+        public static UI_Menu ObjectMenu;
         public static UI_Menu CollisionSpriteList;
     }
 }

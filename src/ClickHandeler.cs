@@ -82,7 +82,7 @@ namespace tile_mapper.src
                                 if (Global.CurrentLayer == buttonClicked.HelperInt)
                                 {
                                     Global.CurrentLayer--;
-                                    LabelUtil.ClearLabels(GlobalMenus.LayerLabels);
+                                    LabelUtil.ClearLabels(GlobalMenus.LayerProperties);
                                 }
                                 ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerMenu);
                                 break;
@@ -102,14 +102,14 @@ namespace tile_mapper.src
                                 LabelUtil.ClearLabels(GlobalMenus.TileLabels);
                                 break;
                             case ButtonAction.RemoveObjectLayer:
-                                GlobalMenus.ObjectMenu.buttons.Remove(buttonClicked);
+                                GlobalMenus.ObjectLayerMenu.buttons.Remove(buttonClicked);
                                 Global.CurrentMap.ObjectLayers.RemoveAt(buttonClicked.HelperInt);
-                                ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectMenu);
+                                ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectLayerMenu);
                                 break;
                             case ButtonAction.RemoveObject:
-                                GlobalMenus.ObjectLabels.buttons.Remove(buttonClicked);
+                                GlobalMenus.ObjectMenu.buttons.Remove(buttonClicked);
                                 Global.CurrentMap.ObjectLayers[GlobalButtons.SelectedObjectLayerButton.HelperInt].objects.RemoveAt(buttonClicked.HelperInt);
-                                ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectLabels);
+                                ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectMenu);
                                 break;
                         }
                     }
@@ -131,7 +131,7 @@ namespace tile_mapper.src
                         GlobalButtons.ClickedLayerButton.IsPressed = false;
                     buttonClicked.IsPressed = true;
                     GlobalButtons.ClickedLayerButton = buttonClicked;
-                    GlobalLabels.LayerName.Text = "ID: " + GlobalButtons.ClickedLayerButton.Text;
+                    // GlobalLabels.LayerName.Text = "ID: " + GlobalButtons.ClickedLayerButton.Text;
                     break;
                 case ButtonAction.OpenLayerMenu:
                     Global.menuState = MenuState.LayerMenu;

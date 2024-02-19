@@ -123,14 +123,14 @@ namespace tile_mapper.src.UI
         }
         public static void InitializeObjectLayerScrollMenu()
         {
-            GlobalMenus.ObjectMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
-            GlobalMenus.ObjectMenu.Scrollable = true;
+            GlobalMenus.ObjectLayerMenu = new UI_Menu(false, new Rectangle(1760, 32, 0, 0), new Rectangle(1660, 32, 256, 496));
+            GlobalMenus.ObjectLayerMenu.Scrollable = true;
 
             // Create ObjectLayer btn.
             GlobalButtons.CreateObjectLayerButton = new Button("New Object Layer", new Rectangle(GlobalMenus.Properties.Destination.X + GlobalMenus.Properties.Destination.Width / 2 - 224 / 2, GlobalMenus.Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.CreateObjectLayer, true);
             GlobalButtons.CreateObjectLayerButton.SourceRect.Y = 240;
-            GlobalMenus.ObjectMenu.buttons.Add(GlobalButtons.CreateObjectLayerButton);
-            ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectMenu);
+            GlobalMenus.ObjectLayerMenu.buttons.Add(GlobalButtons.CreateObjectLayerButton);
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectLayerMenu);
         }
         public static void InitializeSpriteMenu()
         {
@@ -140,14 +140,14 @@ namespace tile_mapper.src.UI
         }
         public static void InitializeObjectScrollMenu()
         {
-            GlobalMenus.ObjectLabels = new UI_Menu(false, new Rectangle(1660, 96, 256, 422), Global.LabelMenuDestination); // Object menu has 2 button lists instead of labels.
-            GlobalMenus.ObjectLabels.Scrollable = true;
+            GlobalMenus.ObjectMenu = new UI_Menu(false, new Rectangle(1660, 96, 256, 422), Global.LabelMenuDestination); // Object menu has 2 button lists instead of labels.
+            GlobalMenus.ObjectMenu.Scrollable = true;
 
             // Create Object btn.
-            GlobalButtons.CreateObjectButton = new Button("New Object", new Rectangle(GlobalMenus.ObjectLabels.Destination.X + GlobalMenus.ObjectLabels.Destination.Width / 2 - 224 / 2, GlobalMenus.ObjectLabels.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateObject, true);
+            GlobalButtons.CreateObjectButton = new Button("New Object", new Rectangle(GlobalMenus.ObjectMenu.Destination.X + GlobalMenus.ObjectMenu.Destination.Width / 2 - 224 / 2, GlobalMenus.ObjectMenu.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateObject, true);
             GlobalButtons.CreateObjectButton.SourceRect.Y = 240;
-            GlobalMenus.ObjectLabels.buttons.Add(GlobalButtons.CreateObjectButton);
-            ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectLabels);
+            GlobalMenus.ObjectMenu.buttons.Add(GlobalButtons.CreateObjectButton);
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectMenu);
         }
 
         // Label menus
@@ -173,36 +173,47 @@ namespace tile_mapper.src.UI
         }
         public static void InitializeAreaLabelMenu()
         {
-            GlobalMenus.AreaLabels = new UI_Menu(false, new Rectangle(1768, 802, 0, 0), Global.LabelMenuDestination);
+            GlobalMenus.AreaProperties = new UI_Menu(true, Global.ScrollMenuSource, Global.LabelMenuDestination);
 
-            GlobalLabels.LayerName = new Label();
-            GlobalLabels.LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
-            GlobalLabels.LayerName.IsVisible = true;
-
-            GlobalLabels.AreaName = new Label();
-            GlobalLabels.AreaName.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
-            GlobalLabels.AreaName.IsVisible = true;
-
-            GlobalLabels.AreaWidth = new Label();
-            GlobalLabels.AreaWidth.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
-            GlobalLabels.AreaWidth.IsVisible = true;
-
-            GlobalLabels.AreaHeight = new Label();
-            GlobalLabels.AreaHeight.LabelRect = new Rectangle(1660, 624, 256, 32);
-            GlobalLabels.AreaHeight.IsVisible = true;
-
-            GlobalLabels.AreaX = new Label();
-            GlobalLabels.AreaX.LabelRect = new Rectangle(1660, 624 + 32, 256, 32);
-            GlobalLabels.AreaX.IsVisible = true;
-
-            GlobalLabels.AreaY = new Label();
-            GlobalLabels.AreaY.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
-            GlobalLabels.AreaY.IsVisible = true;
+            // Create layer property btn.
+            GlobalButtons.CreateAreaPropertyButton = new Button("New Property", new Rectangle(GlobalMenus.AreaProperties.Destination.X + GlobalMenus.AreaProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.AreaProperties.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateProperty, true);
+            GlobalButtons.CreateAreaPropertyButton.SourceRect.Y = 240;
+            GlobalMenus.AreaProperties.buttons.Add(GlobalButtons.CreateAreaPropertyButton);
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.AreaProperties);
+            // 
+            // GlobalLabels.LayerName = new Label();
+            // GlobalLabels.LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
+            // GlobalLabels.LayerName.IsVisible = true;
+            // 
+            // GlobalLabels.AreaName = new Label();
+            // GlobalLabels.AreaName.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
+            // GlobalLabels.AreaName.IsVisible = true;
+            // 
+            // GlobalLabels.AreaWidth = new Label();
+            // GlobalLabels.AreaWidth.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
+            // GlobalLabels.AreaWidth.IsVisible = true;
+            // 
+            // GlobalLabels.AreaHeight = new Label();
+            // GlobalLabels.AreaHeight.LabelRect = new Rectangle(1660, 624, 256, 32);
+            // GlobalLabels.AreaHeight.IsVisible = true;
+            // 
+            // GlobalLabels.AreaX = new Label();
+            // GlobalLabels.AreaX.LabelRect = new Rectangle(1660, 624 + 32, 256, 32);
+            // GlobalLabels.AreaX.IsVisible = true;
+            // 
+            // GlobalLabels.AreaY = new Label();
+            // GlobalLabels.AreaY.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
+            // GlobalLabels.AreaY.IsVisible = true;
         }
         public static void InitializeLayerLabelMenu()
         {
-            GlobalMenus.LayerLabels = new UI_Menu(true, new Rectangle(1768, 802, 0, 0), Global.LabelMenuDestination);
-            GlobalLabels.LayerName.Text = "ID: " + GlobalButtons.ClickedLayerButton.Text;
+            GlobalMenus.LayerProperties = new UI_Menu(true, Global.ScrollMenuSource, Global.LabelMenuDestination);
+
+            // Create layer property btn.
+            GlobalButtons.CreateLayerPropertyButton = new Button("New Property", new Rectangle(GlobalMenus.LayerProperties.Destination.X + GlobalMenus.LayerProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.LayerProperties.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateProperty, true);
+            GlobalButtons.CreateLayerPropertyButton.SourceRect.Y = 240;
+            GlobalMenus.LayerProperties.buttons.Add(GlobalButtons.CreateLayerPropertyButton);
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerProperties);
         }
 
         // Add buttons to the menus
@@ -234,15 +245,12 @@ namespace tile_mapper.src.UI
             GlobalMenus.TileLabels.labels.Add(GlobalLabels.Collision);
             GlobalMenus.TileLabels.buttons.Add(GlobalButtons.CollisionCheckBox);
 
-            // Layer labels.
-            GlobalMenus.LayerLabels.labels.Add(GlobalLabels.LayerName);
-
             // Labels for area menu.
-            GlobalMenus.AreaLabels.labels.Add(GlobalLabels.AreaName);
-            GlobalMenus.AreaLabels.labels.Add(GlobalLabels.AreaWidth);
-            GlobalMenus.AreaLabels.labels.Add(GlobalLabels.AreaHeight);
-            GlobalMenus.AreaLabels.labels.Add(GlobalLabels.AreaX);
-            GlobalMenus.AreaLabels.labels.Add(GlobalLabels.AreaY);
+            GlobalMenus.AreaProperties.labels.Add(GlobalLabels.AreaName);
+            GlobalMenus.AreaProperties.labels.Add(GlobalLabels.AreaWidth);
+            GlobalMenus.AreaProperties.labels.Add(GlobalLabels.AreaHeight);
+            GlobalMenus.AreaProperties.labels.Add(GlobalLabels.AreaX);
+            GlobalMenus.AreaProperties.labels.Add(GlobalLabels.AreaY);
         }
     }
 }

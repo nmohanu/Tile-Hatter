@@ -73,7 +73,7 @@ namespace tile_mapper.src.UI
             {
                 case MenuState.LayerMenu:
                     GlobalMenus.LayerMenu.IsVisible = true;
-                    GlobalMenus.LayerLabels.IsVisible = true;
+                    GlobalMenus.LayerProperties.IsVisible = true;
                     GlobalButtons.LayerMenuButton.IsPressed = true;
                     GlobalButtons.AreaMenuButton.IsPressed = false;
                     GlobalButtons.ObjectMenuButton.IsPressed = false;
@@ -81,7 +81,7 @@ namespace tile_mapper.src.UI
                     break;
                 case MenuState.AreaMenu:
                     GlobalMenus.AreaMenu.IsVisible = true;
-                    GlobalMenus.AreaLabels.IsVisible = true;
+                    GlobalMenus.AreaProperties.IsVisible = true;
                     GlobalButtons.LayerMenuButton.IsPressed = false;
                     GlobalButtons.AreaMenuButton.IsPressed = true;
                     GlobalButtons.ObjectMenuButton.IsPressed = false;
@@ -96,8 +96,8 @@ namespace tile_mapper.src.UI
                     GlobalButtons.SpriteMenuButton.IsPressed = true;
                     break;
                 case MenuState.ObjectMenu:
+                    GlobalMenus.ObjectLayerMenu.IsVisible = true;
                     GlobalMenus.ObjectMenu.IsVisible = true;
-                    GlobalMenus.ObjectLabels.IsVisible = true;
                     GlobalButtons.LayerMenuButton.IsPressed = false;
                     GlobalButtons.AreaMenuButton.IsPressed = false;
                     GlobalButtons.ObjectMenuButton.IsPressed = true;

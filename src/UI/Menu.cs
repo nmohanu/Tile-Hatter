@@ -72,7 +72,7 @@ namespace tile_mapper.src.UI
                 }
                 foreach (var label in labels)
                 {
-                    if (label.IsVisible && label.Text != null)
+                    if (label != null && label.IsVisible && label.Text != null)
                     {
                         spriteBatch.Draw(UI, label.LabelRect, label.SourceRect, Color.White);
                         spriteBatch.DrawString(
@@ -205,6 +205,7 @@ namespace tile_mapper.src.UI
         CreateObject,
         SelectObject,
         RemoveObject,
-        SelectObjectLayer
+        SelectObjectLayer,
+        CreateProperty
     }
 }

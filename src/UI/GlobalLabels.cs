@@ -11,7 +11,6 @@ namespace tile_mapper.src.UI
         // Labels
         public static Label CurrentTileID;
         public static Label Collision;
-        public static Label LayerName;
         public static Label AreaName;
         public static Label AreaWidth;
         public static Label AreaHeight;

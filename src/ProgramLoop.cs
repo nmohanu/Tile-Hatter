@@ -92,34 +92,34 @@ namespace tile_mapper.src
             Global.All_UI_Menus.Add(GlobalMenus.GeneralOverlay);
             Global.All_UI_Menus.Add(GlobalMenus.Properties);
 
-            Global.All_UI_Menus.Add(GlobalMenus.ObjectMenu);
+            Global.All_UI_Menus.Add(GlobalMenus.ObjectLayerMenu);
             Global.All_UI_Menus.Add(GlobalMenus.AreaMenu);
             Global.All_UI_Menus.Add(GlobalMenus.LayerMenu);
             Global.All_UI_Menus.Add(GlobalMenus.CollisionSpriteList);
 
             // Labels
-            Global.All_UI_Menus.Add(GlobalMenus.LayerLabels);
-            Global.All_UI_Menus.Add(GlobalMenus.AreaLabels);
+            Global.All_UI_Menus.Add(GlobalMenus.LayerProperties);
+            Global.All_UI_Menus.Add(GlobalMenus.AreaProperties);
             Global.All_UI_Menus.Add(GlobalMenus.TileLabels);
-            Global.All_UI_Menus.Add(GlobalMenus.ObjectLabels);
+            Global.All_UI_Menus.Add(GlobalMenus.ObjectMenu);
 
             // Keep track of the menus in the right UI bar.
             Global.PropertyMenu.Add(GlobalMenus.LayerMenu);
             Global.PropertyMenu.Add(GlobalMenus.AreaMenu);
-            Global.PropertyMenu.Add(GlobalMenus.ObjectMenu);
+            Global.PropertyMenu.Add(GlobalMenus.ObjectLayerMenu);
             Global.PropertyMenu.Add(GlobalMenus.CollisionSpriteList);
 
             // Scrollable
             Global.ScrollableMenus.Add(GlobalMenus.LayerMenu);
             Global.ScrollableMenus.Add(GlobalMenus.AreaMenu);
-            Global.ScrollableMenus.Add(GlobalMenus.ObjectMenu);
+            Global.ScrollableMenus.Add(GlobalMenus.ObjectLayerMenu);
             Global.ScrollableMenus.Add(GlobalMenus.CollisionSpriteList);
-            Global.ScrollableMenus.Add(GlobalMenus.ObjectLabels);
+            Global.ScrollableMenus.Add(GlobalMenus.ObjectMenu);
 
-            Global.LabelMenus.Add(GlobalMenus.LayerLabels);
-            Global.LabelMenus.Add(GlobalMenus.AreaLabels);
+            Global.LabelMenus.Add(GlobalMenus.LayerProperties);
+            Global.LabelMenus.Add(GlobalMenus.AreaProperties);
             Global.LabelMenus.Add(GlobalMenus.TileLabels);
-            Global.LabelMenus.Add(GlobalMenus.ObjectLabels);
+            Global.LabelMenus.Add(GlobalMenus.ObjectMenu);
         }
 
         internal void InitializeUI()

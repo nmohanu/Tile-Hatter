@@ -57,6 +57,7 @@ namespace tile_mapper.src
         public static Rectangle SpritePaletteDestination;
         public static Rectangle LabelMenuDestination = new Rectangle(1660, 622 - 64, 256, 422);
         public static Rectangle CharacterSource = new Rectangle(0, 864, 32, 32);
+        public static Rectangle ScrollMenuSource = new Rectangle(1660, 96, 256, 422);
         public static Area StartArea;
         public static Area SelectedArea;
         public static Rectangle CharacterRect;
