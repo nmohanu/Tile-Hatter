@@ -259,7 +259,12 @@ namespace tile_mapper.src
                     break;
                 case ButtonAction.RemoveLayer:
                     Global.CurrentMap.RemoveLayer(buttonClicked.HelperInt);
+                    if(Global.CurrentLayer == buttonClicked.HelperInt)
+                    {
+                        Global.CurrentLayer = 0;
+                    }
                     ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerMenu);
+                    ObjectUtil.ReloadLayerProperties();
                     break;
                 case ButtonAction.SelectCollisionSprite:
                     if (GlobalButtons.ClickedTileButton != null)

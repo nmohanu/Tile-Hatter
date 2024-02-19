@@ -52,19 +52,21 @@ namespace tile_mapper.src.Canvas
         {
             int amount = 0;
             bool IsNull = true;
-            foreach(var area in Global.CurrentMap.areas)
+            Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.LayerProperties);
+
+            foreach (var area in Global.CurrentMap.areas)
             {
                 List < Property > list = area.Layers[Global.CurrentLayer].Properties;
                 amount = list.Count() + 1;
                 Property property = new Property();
                 property.ID = "Property " + (list.Count() + 1).ToString();
+                btn.Property = property;
                 list.Add(property);
                 IsNull = false;
             }
             
             if(!IsNull)
             {
-                Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.LayerProperties);
                 btn.Text = "Property " + (amount).ToString();
                 GlobalMenus.LayerProperties.buttons.Add(btn);
             }
@@ -82,6 +84,7 @@ namespace tile_mapper.src.Canvas
 
                 Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.LayerProperties);
                 btn.Text = property.ID;
+                btn.Property = property;
                 GlobalMenus.AreaProperties.buttons.Add(btn);
                 ScrollMenuUtil.UpdateListOrder(GlobalMenus.AreaProperties);
             }
@@ -90,6 +93,7 @@ namespace tile_mapper.src.Canvas
         public static void ReloadLayerProperties()
         {
             GlobalMenus.LayerProperties.buttons.Clear();
+            GlobalButtons.CreateLayerPropertyButton.IsVisible = true;
             GlobalMenus.LayerProperties.buttons.Add(GlobalButtons.CreateLayerPropertyButton);
 
             if (Global.CurrentMap.areas.Count > 0 && Global.CurrentMap.areas[0].Layers[Global.CurrentLayer].Properties.Count() > 0)
@@ -101,6 +105,7 @@ namespace tile_mapper.src.Canvas
                     {
                         Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.Properties);
                         btn.Text = Property.ID.ToString();
+                        btn.Property = Property;
                         GlobalMenus.LayerProperties.buttons.Add(btn);
                     }
                 }
@@ -121,6 +126,8 @@ namespace tile_mapper.src.Canvas
                     {
                         Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.Properties);
                         btn.Text = Property.ID.ToString();
+                        btn.Property = Property;
+
                         GlobalMenus.AreaProperties.buttons.Add(btn);
                     }
                 }

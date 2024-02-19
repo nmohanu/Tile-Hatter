@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using tile_mapper.src.Canvas;
 
 namespace tile_mapper.src.UI
 {
@@ -123,6 +124,7 @@ namespace tile_mapper.src.UI
         public Color color = Color.White;
         public bool IsDeletable;
         public Button DeleteButton;
+        public Property Property;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible)
         {
             Text = text;
