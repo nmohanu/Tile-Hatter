@@ -174,12 +174,13 @@ namespace tile_mapper.src.UI
         public static void InitializeAreaLabelMenu()
         {
             GlobalMenus.AreaProperties = new UI_Menu(true, Global.ScrollMenuSource, Global.LabelMenuDestination);
-
+            GlobalMenus.AreaProperties.Scrollable = true;
             // Create layer property btn.
-            GlobalButtons.CreateAreaPropertyButton = new Button("New Property", new Rectangle(GlobalMenus.AreaProperties.Destination.X + GlobalMenus.AreaProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.AreaProperties.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateProperty, true);
+            GlobalButtons.CreateAreaPropertyButton = new Button("New Property", new Rectangle(GlobalMenus.AreaProperties.Destination.X + GlobalMenus.AreaProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.AreaProperties.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateAreaProperty, true);
             GlobalButtons.CreateAreaPropertyButton.SourceRect.Y = 240;
             GlobalMenus.AreaProperties.buttons.Add(GlobalButtons.CreateAreaPropertyButton);
             ScrollMenuUtil.UpdateListOrder(GlobalMenus.AreaProperties);
+            
             // 
             // GlobalLabels.LayerName = new Label();
             // GlobalLabels.LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
@@ -208,9 +209,10 @@ namespace tile_mapper.src.UI
         public static void InitializeLayerLabelMenu()
         {
             GlobalMenus.LayerProperties = new UI_Menu(true, Global.ScrollMenuSource, Global.LabelMenuDestination);
-
+            GlobalMenus.LayerProperties.IsVisible = true;
+            GlobalMenus.LayerProperties.Scrollable = true;
             // Create layer property btn.
-            GlobalButtons.CreateLayerPropertyButton = new Button("New Property", new Rectangle(GlobalMenus.LayerProperties.Destination.X + GlobalMenus.LayerProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.LayerProperties.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateProperty, true);
+            GlobalButtons.CreateLayerPropertyButton = new Button("New Property", new Rectangle(GlobalMenus.LayerProperties.Destination.X + GlobalMenus.LayerProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.LayerProperties.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateLayerProperty, true);
             GlobalButtons.CreateLayerPropertyButton.SourceRect.Y = 240;
             GlobalMenus.LayerProperties.buttons.Add(GlobalButtons.CreateLayerPropertyButton);
             ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerProperties);

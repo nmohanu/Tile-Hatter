@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,6 +46,86 @@ namespace tile_mapper.src.Canvas
                 }
                 ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectMenu);
             }
+        }
+
+        public static void AddLayerProperty()
+        {
+            int amount = 0;
+            bool IsNull = true;
+            foreach(var area in Global.CurrentMap.areas)
+            {
+                List < Property > list = area.Layers[Global.CurrentLayer].Properties;
+                amount = list.Count() + 1;
+                Property property = new Property();
+                property.ID = "Property " + (list.Count() + 1).ToString();
+                list.Add(property);
+                IsNull = false;
+            }
+            
+            if(!IsNull)
+            {
+                Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.LayerProperties);
+                btn.Text = "Property " + (amount).ToString();
+                GlobalMenus.LayerProperties.buttons.Add(btn);
+            }
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerProperties);
+        }
+
+        public static void AddAreaProperty()
+        {
+            if(Global.CurrentMap.areas != null && GlobalButtons.ClickedAreaButton != null && Global.CurrentMap.areas[GlobalButtons.ClickedAreaButton.HelperInt] != null)
+            {
+                List<Property> list = Global.CurrentMap.areas[GlobalButtons.ClickedAreaButton.HelperInt].Properties;
+                Property property = new Property();
+                property.ID = "Property " + (list.Count() + 1).ToString();
+                list.Add(property);
+
+                Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.LayerProperties);
+                btn.Text = property.ID;
+                GlobalMenus.AreaProperties.buttons.Add(btn);
+                ScrollMenuUtil.UpdateListOrder(GlobalMenus.AreaProperties);
+            }
+        }
+
+        public static void ReloadLayerProperties()
+        {
+            GlobalMenus.LayerProperties.buttons.Clear();
+            GlobalMenus.LayerProperties.buttons.Add(GlobalButtons.CreateLayerPropertyButton);
+
+            if (Global.CurrentMap.areas.Count > 0 && Global.CurrentMap.areas[0].Layers[Global.CurrentLayer].Properties.Count() > 0)
+            {
+                
+                foreach (var Property in Global.CurrentMap.areas[0].Layers[Global.CurrentLayer].Properties)
+                {
+                    if(Property != null)
+                    {
+                        Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.Properties);
+                        btn.Text = Property.ID.ToString();
+                        GlobalMenus.LayerProperties.buttons.Add(btn);
+                    }
+                }
+            }
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerProperties);
+        }
+
+        public static void ReloadAreaProperties()
+        {
+            GlobalMenus.AreaProperties.buttons.Clear();
+            GlobalMenus.AreaProperties.buttons.Add(GlobalButtons.CreateAreaPropertyButton);
+
+            if (Global.CurrentMap.areas[GlobalButtons.ClickedAreaButton.HelperInt].Properties.Count() > 0)
+            {
+                foreach (var Property in Global.CurrentMap.areas[GlobalButtons.ClickedAreaButton.HelperInt].Properties)
+                {
+                    if (Property != null)
+                    {
+                        Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.Properties);
+                        btn.Text = Property.ID.ToString();
+                        GlobalMenus.AreaProperties.buttons.Add(btn);
+                    }
+                }
+            }
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.AreaProperties);
         }
     }
 }

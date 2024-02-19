@@ -131,6 +131,7 @@ namespace tile_mapper.src
                         GlobalButtons.ClickedLayerButton.IsPressed = false;
                     buttonClicked.IsPressed = true;
                     GlobalButtons.ClickedLayerButton = buttonClicked;
+                    ObjectUtil.ReloadLayerProperties();
                     // GlobalLabels.LayerName.Text = "ID: " + GlobalButtons.ClickedLayerButton.Text;
                     break;
                 case ButtonAction.OpenLayerMenu:
@@ -179,6 +180,7 @@ namespace tile_mapper.src
                         }
                     }
                     AreaUtil.UpdateAreaLabels();
+                    ObjectUtil.ReloadAreaProperties();
                     break;
                 case ButtonAction.OpenAreaMenu:
                     Global.menuState = MenuState.AreaMenu;
@@ -278,6 +280,12 @@ namespace tile_mapper.src
                     GlobalButtons.SelectedObjectLayerButton = buttonClicked;
                     buttonClicked.IsPressed = true;
                     ObjectUtil.ReloadObjects();
+                    break;
+                case ButtonAction.CreateLayerProperty:
+                    ObjectUtil.AddLayerProperty();
+                    break;
+                case ButtonAction.CreateAreaProperty:
+                    ObjectUtil.AddAreaProperty();
                     break;
             }
 

@@ -32,7 +32,7 @@ namespace tile_mapper.src.Canvas
         public Rectangle TileRect; // Tile specifying.
         public Rectangle PixelRect; // To adjust pixel specific.
 
-        public Property property;
+        public List<Property> Properties;
     }
 
     internal class Property // User properties.
@@ -42,12 +42,12 @@ namespace tile_mapper.src.Canvas
         public float Float;
         public bool Bool;
         public string ClassID;
+        public string ID;
 
         Type PropertyType;
 
-        public Property(Type type)
+        public Property()
         {
-            PropertyType = type;
         }
 
         public enum Type

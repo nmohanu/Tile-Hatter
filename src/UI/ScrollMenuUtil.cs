@@ -33,7 +33,7 @@ namespace tile_mapper.src.UI
             for (int i = 0; i < menu.buttons.Count; i++)
             {
                 var btn = menu.buttons[i];
-                if (btn.Action == ButtonAction.AddLayer || btn.Action == ButtonAction.CreateObjectLayer || btn.Action == ButtonAction.CreateObject)
+                if (btn.Action == ButtonAction.AddLayer || btn.Action == ButtonAction.CreateObjectLayer || btn.Action == ButtonAction.CreateObject || btn.Action == ButtonAction.CreateLayerProperty || btn.Action == ButtonAction.CreateAreaProperty || btn.Action == ButtonAction.CreateObjectProperty || btn.Action == ButtonAction.CreateObjectLayerProperty)
                 {
                     menu.buttons.Remove(btn);
                     menu.buttons.Add(btn);

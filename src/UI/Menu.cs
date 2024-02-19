@@ -206,6 +206,11 @@ namespace tile_mapper.src.UI
         SelectObject,
         RemoveObject,
         SelectObjectLayer,
-        CreateProperty
+        CreateLayerProperty,
+        CreateAreaProperty,
+        CreateObjectProperty,
+        CreateObjectLayerProperty,
+        RemoveProperty,
+        SelectProperty
     }
 }

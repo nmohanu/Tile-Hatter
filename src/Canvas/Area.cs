@@ -14,12 +14,14 @@ namespace tile_mapper.src.Canvas
         public Rectangle AreaCords;
         public string AreaName;
         public List<SpriteLayer> Layers;
+        public List<Property> Properties;
 
         public Area(Rectangle areaCords, string areaName, int LayerAmount, int ObjectLayerAmount)
         {
             AreaCords = areaCords;
             AreaName = areaName;
 
+            Properties = new List<Property>();
             Layers = new List<SpriteLayer>();
 
             for (int k = 0; k < LayerAmount; k++)
