@@ -69,8 +69,7 @@ namespace tile_mapper.src
 
         internal static DateTime GetFileWriteTime()
         {
-            DateTime lastWriteTime = File.GetLastWriteTimeUtc(Global.TileSheetPath);
-            return lastWriteTime;
+            return File.GetLastWriteTimeUtc(Global.TileSheetPath);
         }
     }
 }

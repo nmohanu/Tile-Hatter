@@ -44,7 +44,7 @@ namespace tile_mapper.src.Canvas
         public string ClassID;
         public string ID;
 
-        Type PropertyType;
+        public Type PropertyType = Type.None;
 
         public Property()
         {
@@ -56,7 +56,8 @@ namespace tile_mapper.src.Canvas
             Integer,
             Float,
             Bool,
-            Class
+            Class,
+            None
         }
     }
 }

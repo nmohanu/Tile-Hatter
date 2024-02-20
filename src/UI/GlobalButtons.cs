@@ -37,5 +37,11 @@ namespace tile_mapper.src.UI
         public static Button ClosePalette;
         public static Button CreateLayerPropertyButton;
         public static Button CreateAreaPropertyButton;
+        public static Button PropertyID;
+        public static Button PropertyTypeLeft;
+        public static Button PropertyTypeRight;
+        public static Button PropertyValue;
+        public static Button PropertyCancel;
+        public static Button PropertySave;
     }
 }

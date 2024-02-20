@@ -16,5 +16,11 @@ namespace tile_mapper.src.UI
         public static Label AreaHeight;
         public static Label AreaX;
         public static Label AreaY;
+        public static Label PropertyID;
+        public static Label PropertyType;
+        public static Label PropertyValue;
+        public static Label CurrentPropertyID;
+        public static Label CurrentPropertyType;
+        public static Label CurrentPropertyValue;
     }
 }

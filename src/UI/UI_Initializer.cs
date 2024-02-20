@@ -218,6 +218,71 @@ namespace tile_mapper.src.UI
             ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerProperties);
         }
 
+        public static void InitializePropertyEditMenu()
+        {
+            GlobalMenus.PropertyEditMenu = new UI_Menu(false, Global.PropertyEditMenuSource, Global.PropertyEditMenuDestination);
+
+            // ID label
+            GlobalLabels.PropertyID = new Label();
+            GlobalLabels.PropertyID.Text = "ID";
+            GlobalLabels.PropertyID.IsVisible = true;
+            GlobalLabels.PropertyID.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 4, 192, 32);
+            GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.PropertyID);
+
+            // Type label
+            GlobalLabels.PropertyType = new Label();
+            GlobalLabels.PropertyType.Text = "Type";
+            GlobalLabels.PropertyType.IsVisible = true;
+            GlobalLabels.PropertyType.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 68, 192, 32);
+            GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.PropertyType);
+
+            // Value label
+            GlobalLabels.PropertyValue = new Label();
+            GlobalLabels.PropertyValue.Text = "Value";
+            GlobalLabels.PropertyValue.IsVisible = true;
+            GlobalLabels.PropertyValue.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 68 + 64, 192, 32);
+            GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.PropertyValue);
+
+            // Cancel button
+            GlobalButtons.PropertyCancel = new Button("Cancel", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36, GlobalMenus.PropertyEditMenu.Destination.Y + 228, 80, 32), 1504, 1392, ButtonAction.PropertyCancel, true);
+            GlobalButtons.PropertyCancel.SourceRect = new Rectangle(1392, 1120, 80, 32);
+            GlobalMenus.PropertyEditMenu.buttons.Add(GlobalButtons.PropertyCancel);
+
+            // Save button
+            GlobalButtons.PropertyCancel = new Button("Save", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36 + 112, GlobalMenus.PropertyEditMenu.Destination.Y + 228, 80, 32), 1504, 1392, ButtonAction.PropertySave, true);
+            GlobalButtons.PropertyCancel.SourceRect = new Rectangle(1392, 1120, 80, 32);
+            GlobalMenus.PropertyEditMenu.buttons.Add(GlobalButtons.PropertyCancel);
+
+            // Type go left button
+            GlobalButtons.PropertyTypeLeft = new Button("", new Rectangle(GlobalLabels.PropertyType.LabelRect.X - 32, GlobalLabels.PropertyType.LabelRect.Y + 32, 32, 32), 1392 + 64, 1392, ButtonAction.PropertyGoLeft, true);
+            GlobalButtons.PropertyTypeLeft.SourceRect = new Rectangle(1392, 1088, 32, 32);
+            GlobalMenus.PropertyEditMenu.buttons.Add(GlobalButtons.PropertyTypeLeft);
+
+            // Type go right button
+            GlobalButtons.PropertyTypeRight = new Button("", new Rectangle(GlobalLabels.PropertyType.LabelRect.X + GlobalLabels.PropertyType.LabelRect.Width, GlobalLabels.PropertyType.LabelRect.Y + 32, 32, 32), 1392 + 96, 1392 + 32, ButtonAction.PropertyGoLeft, true);
+            GlobalButtons.PropertyTypeRight.SourceRect = new Rectangle(1392 + 32, 1088, 32, 32);
+            GlobalMenus.PropertyEditMenu.buttons.Add(GlobalButtons.PropertyTypeRight);
+
+            // Current property properties (the property that the user is editing)
+            GlobalLabels.CurrentPropertyID = new Label();
+            GlobalLabels.CurrentPropertyID.Text = "";
+            GlobalLabels.CurrentPropertyID.IsVisible = true;
+            GlobalLabels.CurrentPropertyID.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 36, 192, 32);
+            GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.CurrentPropertyID);
+
+            GlobalLabels.CurrentPropertyType = new Label();
+            GlobalLabels.CurrentPropertyType.Text = "";
+            GlobalLabels.CurrentPropertyType.IsVisible = true;
+            GlobalLabels.CurrentPropertyType.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 68 + 32, 192, 32);
+            GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.CurrentPropertyType);
+
+            GlobalLabels.CurrentPropertyValue = new Label();
+            GlobalLabels.CurrentPropertyValue.Text = "";
+            GlobalLabels.CurrentPropertyValue.IsVisible = true;
+            GlobalLabels.CurrentPropertyValue.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 68 + 96, 192, 32);
+            GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.CurrentPropertyValue);
+        }
+
         // Add buttons to the menus
         public static void AddButtonsToMenus()
         {

@@ -96,6 +96,7 @@ namespace tile_mapper.src
             Global.All_UI_Menus.Add(GlobalMenus.AreaMenu);
             Global.All_UI_Menus.Add(GlobalMenus.LayerMenu);
             Global.All_UI_Menus.Add(GlobalMenus.CollisionSpriteList);
+            Global.All_UI_Menus.Add(GlobalMenus.PropertyEditMenu);
 
             // Labels
             Global.All_UI_Menus.Add(GlobalMenus.LayerProperties);
@@ -141,6 +142,9 @@ namespace tile_mapper.src
 
             // Initialize the buttons for the side menu.
             UI_Initializer.InitializeScrollMenuButtons();
+
+            // Initialize the property edit menu
+            UI_Initializer.InitializePropertyEditMenu();
 
             // Initialize the UI menu's
             UI_Initializer.InitializeTopBar();
@@ -232,6 +236,7 @@ namespace tile_mapper.src
                     Global.TimeOfLastClick = Global.Timer;
             }
 
+            // Update tilesheet if changed.
             if (Global.Timer - Global.TimeOfLastClick > 2000 && Global.HasTileSheet)
             {
                 if(Global.LastWriteTime != FileUtil.GetFileWriteTime())

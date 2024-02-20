@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using tile_mapper.src.UI;
@@ -56,7 +57,7 @@ namespace tile_mapper.src.Canvas
 
             foreach (var area in Global.CurrentMap.areas)
             {
-                List < Property > list = area.Layers[Global.CurrentLayer].Properties;
+                List<Property> list = area.Layers[Global.CurrentLayer].Properties;
                 amount = list.Count() + 1;
                 Property property = new Property();
                 property.ID = "Property " + (list.Count() + 1).ToString();
@@ -65,8 +66,8 @@ namespace tile_mapper.src.Canvas
                 list.Add(property);
                 IsNull = false;
             }
-            
-            if(!IsNull)
+
+            if (!IsNull)
             {
                 btn.Text = "Property " + (amount).ToString();
                 GlobalMenus.LayerProperties.buttons.Add(btn);
@@ -76,7 +77,7 @@ namespace tile_mapper.src.Canvas
 
         public static void AddAreaProperty()
         {
-            if(Global.CurrentMap.areas != null && GlobalButtons.ClickedAreaButton != null && Global.CurrentMap.areas[GlobalButtons.ClickedAreaButton.HelperInt] != null)
+            if (Global.CurrentMap.areas != null && GlobalButtons.ClickedAreaButton != null && Global.CurrentMap.areas[GlobalButtons.ClickedAreaButton.HelperInt] != null)
             {
                 List<Property> list = Global.CurrentMap.areas[GlobalButtons.ClickedAreaButton.HelperInt].Properties;
                 Property property = new Property();
@@ -99,10 +100,10 @@ namespace tile_mapper.src.Canvas
 
             if (Global.CurrentMap.areas.Count > 0 && Global.CurrentMap.areas[0].Layers[Global.CurrentLayer].Properties.Count() > 0)
             {
-                
+
                 foreach (var Property in Global.CurrentMap.areas[0].Layers[Global.CurrentLayer].Properties)
                 {
-                    if(Property != null)
+                    if (Property != null)
                     {
                         Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.Properties);
                         btn.Text = Property.ID.ToString();
@@ -135,5 +136,81 @@ namespace tile_mapper.src.Canvas
             }
             ScrollMenuUtil.UpdateListOrder(GlobalMenus.AreaProperties);
         }
+
+        public static void OpenPropertyMenu(Property property)
+        {
+            GlobalMenus.PropertyEditMenu.IsVisible = true;
+            Global.PropertyCurrentlyEditing = property;
+
+            if(property.ID == null)
+            {
+                GlobalLabels.CurrentPropertyID.Text = "Null";
+            }
+            else
+            {
+                GlobalLabels.CurrentPropertyID.Text = property.ID;
+            }
+
+            if (property.PropertyType == Property.Type.None)
+            {
+                GlobalLabels.CurrentPropertyType.Text = "Null";
+            }
+            else
+            {
+                GlobalLabels.CurrentPropertyID.Text = property.PropertyType.ToString();
+            }
+
+            switch (property.PropertyType)
+            {
+                case Property.Type.None:
+                    GlobalLabels.CurrentPropertyValue.Text = "Null";
+                    break;
+                case Property.Type.Bool:
+                    GlobalLabels.CurrentPropertyValue.Text = property.Bool.ToString();
+                    break;
+                case Property.Type.Class:
+                    GlobalLabels.CurrentPropertyValue.Text = property.ClassID;
+                    break;
+                case Property.Type.Float:
+                    GlobalLabels.CurrentPropertyValue.Text = property.Float.ToString();
+                    break;
+                case Property.Type.Integer:
+                    GlobalLabels.CurrentPropertyValue.Text = property.Int.ToString();
+                    break;
+            }
+        }
+
+        public static void SaveProperty(Property property)
+        {
+            GlobalMenus.PropertyEditMenu.IsVisible = false;
+        }
+
+        public static void CancelPropertyEdit()
+        {
+            GlobalMenus.PropertyEditMenu.IsVisible = false;
+        }
+
+        public static void PropertyGoLeft()
+        {
+            int currentIndex = Array.IndexOf(Global.PropertyTypeList, Global.PropertyCurrentlyEditing.PropertyType);
+            if (currentIndex != -1)
+            {
+                int newIndex = (currentIndex + Global.PropertyTypeList.Length - 1) % Global.PropertyTypeList.Length;
+                Global.PropertyCurrentlyEditing.PropertyType = Global.PropertyTypeList[newIndex];
+            }
+            GlobalLabels.CurrentPropertyType.Text = Global.PropertyCurrentlyEditing.PropertyType.ToString();
+        }
+
+        public static void PropertyGoRight()
+        {
+            int currentIndex = Array.IndexOf(Global.PropertyTypeList, Global.PropertyCurrentlyEditing.PropertyType);
+            if (currentIndex != -1)
+            {
+                int newIndex = (currentIndex + 1) % Global.PropertyTypeList.Length;
+                Global.PropertyCurrentlyEditing.PropertyType = Global.PropertyTypeList[newIndex];
+            }
+            GlobalLabels.CurrentPropertyType.Text = Global.PropertyCurrentlyEditing.PropertyType.ToString();
+        }
+
     }
 }

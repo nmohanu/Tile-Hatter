@@ -58,6 +58,8 @@ namespace tile_mapper.src
         public static Rectangle LabelMenuDestination = new Rectangle(1660, 622 - 64, 256, 422);
         public static Rectangle CharacterSource = new Rectangle(0, 864, 32, 32);
         public static Rectangle ScrollMenuSource = new Rectangle(1660, 96, 256, 422);
+        public static Rectangle PropertyEditMenuSource = new Rectangle(1356, 796, 268, 281);
+        public static Rectangle PropertyEditMenuDestination = new Rectangle(ScreenWidth / 2 - 268 / 2, ScreenHeight / 2 - 280 / 2, 268, 280);
         public static Area StartArea;
         public static Area SelectedArea;
         public static Rectangle CharacterRect;
@@ -72,6 +74,8 @@ namespace tile_mapper.src
         public static float fps;
         public static float Timer;
         public static DateTime LastWriteTime;
+        public static Property PropertyCurrentlyEditing;
+        public static Property.Type[] PropertyTypeList = {Property.Type.None, Property.Type.String, Property.Type.Integer, Property.Type.Bool, Property.Type.Float, Property.Type.Class};
 
         // Textures
         public static Texture2D Grid;

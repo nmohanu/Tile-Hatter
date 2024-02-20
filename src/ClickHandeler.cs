@@ -69,7 +69,10 @@ namespace tile_mapper.src
                     return;
                 else // Button clicked, process.
                 {
-                    HandleButtonClick(buttonClicked, graphicsDevice);
+                    if (!IsDoubleClick)
+                        HandleButtonClick(buttonClicked, graphicsDevice);
+                    else
+                        HandleDoubleClick(buttonClicked, graphicsDevice);
 
                     // Check if the delete button (X) on the button was clicked and delete if so.
                     if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(Global.MousePos)) // The delete buttons (X)
@@ -292,6 +295,18 @@ namespace tile_mapper.src
                 case ButtonAction.CreateAreaProperty:
                     ObjectUtil.AddAreaProperty();
                     break;
+                case ButtonAction.PropertyCancel:
+                    ObjectUtil.CancelPropertyEdit();
+                    break;
+                case ButtonAction.PropertySave:
+                    ObjectUtil.SaveProperty(buttonClicked.Property);
+                    break;
+                case ButtonAction.PropertyGoLeft:
+                    ObjectUtil.PropertyGoLeft();
+                    break;
+                case ButtonAction.PropertyGoRight:
+                    ObjectUtil.PropertyGoRight();
+                    break;
             }
 
         }
@@ -345,6 +360,17 @@ namespace tile_mapper.src
                 Point TopLeft = new Point(Math.Min(Global.SelectionStart.X, Global.SelectionEnd.X), Math.Min(Global.SelectionStart.Y, Global.SelectionEnd.Y));
                 Point BottomRight = new Point(Math.Max(Global.SelectionStart.X, Global.SelectionEnd.X), Math.Max(Global.SelectionStart.Y, Global.SelectionEnd.Y));
                 Global.Selection = new Rectangle(TopLeft.X, TopLeft.Y, BottomRight.X - TopLeft.X + 1, BottomRight.Y - TopLeft.Y + 1);
+            }
+        }
+
+        public static void HandleDoubleClick(Button ButtonClicked, GraphicsDevice graphicsDevice)
+        {
+            switch(ButtonClicked.Action)
+            {
+                case ButtonAction.SelectProperty:
+                    if (ButtonClicked.Property != null)
+                        ObjectUtil.OpenPropertyMenu(ButtonClicked.Property);
+                    break;
             }
         }
     }
