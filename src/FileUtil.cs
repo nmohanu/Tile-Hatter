@@ -20,11 +20,11 @@ namespace tile_mapper.src
                 using (FileStream stream = new FileStream(Global.TileSheetPath, FileMode.Open)) // Import file.
                 {
                     Global.TileSheet = Texture2D.FromStream(graphicsDevice, stream);
-                    Global.LastWriteTime = GetFileWriteTime();
                 }
             }
             catch
             {
+                return;
             }
             
 
@@ -61,6 +61,9 @@ namespace tile_mapper.src
             Global.HasTileSheet = true;
 
             System.Diagnostics.Debug.WriteLine(Global.TileSheetPath);
+
+            Global.LastWriteTime = GetFileWriteTime();
+
 
         }
 
