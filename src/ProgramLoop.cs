@@ -232,6 +232,14 @@ namespace tile_mapper.src
                     Global.TimeOfLastClick = Global.Timer;
             }
 
+            if (Global.Timer - Global.TimeOfLastClick > 2000 && Global.HasTileSheet)
+            {
+                if(Global.LastWriteTime != FileUtil.GetFileWriteTime())
+                {
+                    FileUtil.OpenSpriteSheetFile(Global.TileSheetPath, GraphicsDevice);
+                }
+            }
+
             if (mouseState.RightButton == ButtonState.Pressed)
             {
                 if (Global.PreviousMousePos != null && Global.PreviousMousePos != Global.MousePos && Global.SpritePaletteDestination.Contains(Global.MousePos))

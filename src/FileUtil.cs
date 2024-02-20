@@ -15,10 +15,18 @@ namespace tile_mapper.src
     {
         public static void OpenSpriteSheetFile(string path, GraphicsDevice graphicsDevice)
         {
-            using (FileStream stream = new FileStream(Global.TileSheetPath, FileMode.Open)) // Import file.
+            try
             {
-                Global.TileSheet = Texture2D.FromStream(graphicsDevice, stream);
+                using (FileStream stream = new FileStream(Global.TileSheetPath, FileMode.Open)) // Import file.
+                {
+                    Global.TileSheet = Texture2D.FromStream(graphicsDevice, stream);
+                    Global.LastWriteTime = GetFileWriteTime();
+                }
             }
+            catch
+            {
+            }
+            
 
             Global.SheetWidth = Global.TileSheet.Width / Global.TILE_SIZE; // Sheet width.
             Global.SheetHeight = Global.TileSheet.Height / Global.TILE_SIZE; // Sheet height.
@@ -53,6 +61,13 @@ namespace tile_mapper.src
             Global.HasTileSheet = true;
 
             System.Diagnostics.Debug.WriteLine(Global.TileSheetPath);
+
+        }
+
+        internal static DateTime GetFileWriteTime()
+        {
+            DateTime lastWriteTime = File.GetLastWriteTimeUtc(Global.TileSheetPath);
+            return lastWriteTime;
         }
     }
 }

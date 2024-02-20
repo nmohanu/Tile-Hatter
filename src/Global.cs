@@ -71,6 +71,7 @@ namespace tile_mapper.src
         public static int CurrentLayer = 0;
         public static float fps;
         public static float Timer;
+        public static DateTime LastWriteTime;
 
         // Textures
         public static Texture2D Grid;

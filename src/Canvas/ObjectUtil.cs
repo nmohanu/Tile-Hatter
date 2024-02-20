@@ -61,6 +61,7 @@ namespace tile_mapper.src.Canvas
                 Property property = new Property();
                 property.ID = "Property " + (list.Count() + 1).ToString();
                 btn.Property = property;
+                btn.IsVisible = true;
                 list.Add(property);
                 IsNull = false;
             }
