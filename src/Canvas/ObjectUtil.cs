@@ -256,7 +256,7 @@ namespace tile_mapper.src.Canvas
 
             // STRING OR CLASS
 
-            if (Global.PropertyEditingCopy.PropertyType == Property.Type.String || Global.PropertyEditingCopy.PropertyType == Property.Type.Class)
+            if (Global.PropertyEditingCopy.PropertyType == Property.Type.String || Global.PropertyEditingCopy.PropertyType == Property.Type.Class || Global.LabelCurrentlyEditing == GlobalLabels.CurrentPropertyID)
             {
                 if (editString == "Null")
                     editString = "";

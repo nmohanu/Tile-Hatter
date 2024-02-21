@@ -313,7 +313,7 @@ namespace tile_mapper.src
         public static void HandleLeftHold(MouseState mouseState, KeyboardState keyboardState)
         {
             foreach (var menu in Global.All_UI_Menus)
-                if (menu.Destination.Contains(Global.MousePos))
+                if (menu.Destination.Contains(Global.MousePos) && menu.IsVisible)
                     return;
             // Execute each frame if mouse button is held.
             if (mouseState.LeftButton == ButtonState.Pressed && Global.selected != null && !keyboardState.IsKeyDown(Keys.LeftShift))
