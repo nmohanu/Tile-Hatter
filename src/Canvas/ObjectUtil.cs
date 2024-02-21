@@ -53,9 +53,10 @@ namespace tile_mapper.src.Canvas
 
         public static void AddLayerProperty()
         {
+            if (Global.CurrentMap.areas.Count() == 0)
+                return;
             int amount = 0;
-            bool IsNull = true;
-            Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.LayerProperties);
+            Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.Properties);
 
             foreach (var area in Global.CurrentMap.areas)
             {
@@ -66,15 +67,12 @@ namespace tile_mapper.src.Canvas
                 btn.Property = property;
                 btn.IsVisible = true;
                 list.Add(property);
-                IsNull = false;
             }
 
-            if (!IsNull)
-            {
                 btn.Text = "Property " + (amount).ToString();
                 GlobalMenus.LayerProperties.buttons.Add(btn);
-            }
-            ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerProperties);
+            
+            ReloadLayerProperties();
         }
 
         public static void AddAreaProperty()
@@ -86,7 +84,7 @@ namespace tile_mapper.src.Canvas
                 property.ID = "Property " + (list.Count() + 1).ToString();
                 list.Add(property);
 
-                Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.LayerProperties);
+                Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.Properties);
                 btn.Text = property.ID;
                 btn.Property = property;
                 GlobalMenus.AreaProperties.buttons.Add(btn);
@@ -143,8 +141,9 @@ namespace tile_mapper.src.Canvas
         {
             GlobalMenus.PropertyEditMenu.IsVisible = true;
             Global.PropertyCurrentlyEditing = property;
+            Global.keyboardTypingDest = Global.KeyboardTypingDest.EditingLabel;
 
-            if(property.ID == null)
+            if (property.ID == null)
             {
                 GlobalLabels.CurrentPropertyID.Text = "Null";
             }
@@ -187,6 +186,7 @@ namespace tile_mapper.src.Canvas
             Global.PropertyCurrentlyEditing = null;
             ReloadLayerProperties();
             ReloadAreaProperties();
+            Global.keyboardTypingDest = Global.KeyboardTypingDest.None;
         }
 
         public static void UpdateValueLabel(Property property)
@@ -218,6 +218,7 @@ namespace tile_mapper.src.Canvas
         {
             GlobalMenus.PropertyEditMenu.IsVisible = false;
             Global.PropertyEditingCopy = null;
+            Global.keyboardTypingDest = Global.KeyboardTypingDest.None;
         }
 
         public static void PropertyGoLeft()
@@ -248,6 +249,9 @@ namespace tile_mapper.src.Canvas
 
         public static void AddLetterToLabel(Microsoft.Xna.Framework.Input.Keys key)
         {
+            if (Global.LabelCurrentlyEditing == null)
+                return;
+
             string editString = Global.LabelCurrentlyEditing.Text;
 
             // STRING OR CLASS
@@ -379,7 +383,6 @@ namespace tile_mapper.src.Canvas
 
         public static void TogglePropertyBool()
         {
-            // Edit the string.
             Global.PropertyEditingCopy.Bool = !Global.PropertyEditingCopy.Bool;
             string editString = Global.PropertyEditingCopy.Bool.ToString();
             

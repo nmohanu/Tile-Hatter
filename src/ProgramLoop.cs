@@ -238,7 +238,7 @@ namespace tile_mapper.src
                         if(label != null && GlobalMenus.PropertyEditMenu.IsVisible && label.editType != Property.Type.None && label.LabelRect.Contains(Global.MousePos))
                         {
                             ObjectUtil.SelectEditLabel(label);
-                            if (Global.PropertyEditingCopy.PropertyType == Property.Type.Bool)
+                            if (Global.PropertyEditingCopy.PropertyType == Property.Type.Bool && label == GlobalLabels.CurrentPropertyValue)
                             {
                                 ObjectUtil.TogglePropertyBool();
                             }

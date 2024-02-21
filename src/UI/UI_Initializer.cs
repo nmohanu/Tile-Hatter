@@ -174,7 +174,7 @@ namespace tile_mapper.src.UI
         }
         public static void InitializeAreaLabelMenu()
         {
-            GlobalMenus.AreaProperties = new UI_Menu(true, Global.ScrollMenuSource, Global.LabelMenuDestination);
+            GlobalMenus.AreaProperties = new UI_Menu(false, Global.ScrollMenuSource, Global.LabelMenuDestination);
             GlobalMenus.AreaProperties.Scrollable = true;
             // Create layer property btn.
             GlobalButtons.CreateAreaPropertyButton = new Button("New Property", new Rectangle(GlobalMenus.AreaProperties.Destination.X + GlobalMenus.AreaProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.AreaProperties.Destination.Y + 16, 224, 48), 528, 304, ButtonAction.CreateAreaProperty, true);
