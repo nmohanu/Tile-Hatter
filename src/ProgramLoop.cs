@@ -228,6 +228,7 @@ namespace tile_mapper.src
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 Global.PreviousMouseState.LeftButton == ButtonState.Released)
             {
+                bool resetLabel = true;
                 ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, false); // Single click.
 
                 if (Global.Timer - Global.TimeOfLastClick < 500)
@@ -238,17 +239,26 @@ namespace tile_mapper.src
                         if(label != null && GlobalMenus.PropertyEditMenu.IsVisible && label.editType != Property.Type.None && label.LabelRect.Contains(Global.MousePos))
                         {
                             ObjectUtil.SelectEditLabel(label);
+                            resetLabel = false;
                             if (Global.PropertyEditingCopy.PropertyType == Property.Type.Bool && label == GlobalLabels.CurrentPropertyValue)
                             {
                                 ObjectUtil.TogglePropertyBool();
                             }
                             break;
                         }
+                        
                     }
+                    
                 }
                 else
                     Global.TimeOfLastClick = Global.Timer;
+
+                if (resetLabel)
+                    ObjectUtil.DeselectLabel();
             }
+
+            if(Global.keyboardTypingDest == Global.KeyboardTypingDest.EditingLabel && keyboardState.IsKeyDown(Keys.Enter))
+                ObjectUtil.DeselectLabel();
 
             // Update tilesheet if changed.
             if (Global.Timer - Global.TimeOfLastClick > 2000 && Global.HasTileSheet)

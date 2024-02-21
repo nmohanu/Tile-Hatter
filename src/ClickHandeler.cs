@@ -32,7 +32,9 @@ namespace tile_mapper.src
 
                 // Reset CursorState
                 if (Global.resetCursorState && Global.CursorActionState != CursorState.Eraser && Global.CursorActionState != CursorState.Draw && Global.CursorActionState != CursorState.Fill)
+                {
                     Global.CursorActionState = CursorState.None;
+                }
 
 
                 foreach (var UI in Global.All_UI_Menus)

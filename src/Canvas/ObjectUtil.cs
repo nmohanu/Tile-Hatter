@@ -377,8 +377,10 @@ namespace tile_mapper.src.Canvas
 
         public static void SelectEditLabel(Label label)
         {
+            
             Global.LabelCurrentlyEditing = label;
             Global.keyboardTypingDest = Global.KeyboardTypingDest.EditingLabel;
+            label.SourceRect = new Microsoft.Xna.Framework.Rectangle(1392, 752, 192, 32);
         }
 
         public static void TogglePropertyBool()
@@ -387,6 +389,15 @@ namespace tile_mapper.src.Canvas
             string editString = Global.PropertyEditingCopy.Bool.ToString();
             
             Global.LabelCurrentlyEditing.Text = editString;
+        }
+
+        public static void DeselectLabel()
+        {
+            if (Global.LabelCurrentlyEditing != null)
+            {
+                Global.LabelCurrentlyEditing.SourceRect = new Microsoft.Xna.Framework.Rectangle(1392, 832, 192, 32); // reset old label sprite
+                Global.LabelCurrentlyEditing = null;
+            }
         }
     }
 }

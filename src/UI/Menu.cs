@@ -158,7 +158,7 @@ namespace tile_mapper.src.UI
         public string Text;
         public int ID;
         public Rectangle LabelRect;
-        public Rectangle SourceRect = new Rectangle(320, 112, 0, 0); // Standard button
+        public Rectangle SourceRect = new Rectangle(320, 112, 0, 0); // Standard Label
         public bool IsVisible;
         public Property.Type editType = Property.Type.None;
       
