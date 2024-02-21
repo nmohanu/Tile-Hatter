@@ -22,5 +22,7 @@ namespace tile_mapper.src.UI
         public static Label CurrentPropertyID;
         public static Label CurrentPropertyType;
         public static Label CurrentPropertyValue;
+
+        public static List<Label> EditableLabels = new List<Label>();
     }
 }

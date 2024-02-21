@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using tile_mapper.src.Canvas;
 using tile_mapper.src.Layer;
 
 namespace tile_mapper.src.UI
@@ -268,7 +269,9 @@ namespace tile_mapper.src.UI
             GlobalLabels.CurrentPropertyID.Text = "";
             GlobalLabels.CurrentPropertyID.IsVisible = true;
             GlobalLabels.CurrentPropertyID.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 36, 192, 32);
+            GlobalLabels.CurrentPropertyID.editType = Property.Type.String;
             GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.CurrentPropertyID);
+            GlobalLabels.EditableLabels.Add(GlobalLabels.CurrentPropertyID);
 
             GlobalLabels.CurrentPropertyType = new Label();
             GlobalLabels.CurrentPropertyType.Text = "";
@@ -281,6 +284,7 @@ namespace tile_mapper.src.UI
             GlobalLabels.CurrentPropertyValue.IsVisible = true;
             GlobalLabels.CurrentPropertyValue.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 68 + 96, 192, 32);
             GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.CurrentPropertyValue);
+            GlobalLabels.EditableLabels.Add(GlobalLabels.CurrentPropertyValue);
         }
 
         // Add buttons to the menus

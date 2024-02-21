@@ -76,6 +76,16 @@ namespace tile_mapper.src
         public static DateTime LastWriteTime;
         public static Property PropertyCurrentlyEditing;
         public static Property.Type[] PropertyTypeList = {Property.Type.None, Property.Type.String, Property.Type.Integer, Property.Type.Bool, Property.Type.Float, Property.Type.Class};
+        public static KeyboardTypingDest keyboardTypingDest = KeyboardTypingDest.None;
+        public static Label LabelCurrentlyEditing;
+        public static Keys LastPressedKey;
+        public static Property PropertyEditingCopy;
+
+        public enum KeyboardTypingDest
+        {
+            None,
+            EditingLabel
+        }
 
         // Textures
         public static Texture2D Grid;

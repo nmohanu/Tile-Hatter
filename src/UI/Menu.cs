@@ -160,14 +160,8 @@ namespace tile_mapper.src.UI
         public Rectangle LabelRect;
         public Rectangle SourceRect = new Rectangle(320, 112, 0, 0); // Standard button
         public bool IsVisible;
-        public enum EditType
-        {
-            None,
-            Int,
-            Float,
-            String,
-            Bool
-        }
+        public Property.Type editType = Property.Type.None;
+      
     }
     public enum ButtonAction
     {

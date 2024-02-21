@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static tile_mapper.src.ProgramLoop;
+using tile_mapper.src.Canvas;
 
 namespace tile_mapper.src
 {
@@ -13,26 +14,43 @@ namespace tile_mapper.src
     {
         public static void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime)
         {
-            float Speed = Global.State == EditorState.Test ? Global.TestingSpeed : Global.MoveSpeed;
-            if (keyboardState.IsKeyDown(Keys.A))
+            if(Global.keyboardTypingDest == Global.KeyboardTypingDest.None)
             {
-                Global.Velocity.X += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
-                Global.CharacterSource.X = 96;
+                float Speed = Global.State == EditorState.Test ? Global.TestingSpeed : Global.MoveSpeed;
+                if (keyboardState.IsKeyDown(Keys.A))
+                {
+                    Global.Velocity.X += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                    Global.CharacterSource.X = 96;
+                }
+                if (keyboardState.IsKeyDown(Keys.S))
+                {
+                    Global.Velocity.Y -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                    Global.CharacterSource.X = 0;
+                }
+                if (keyboardState.IsKeyDown(Keys.D))
+                {
+                    Global.Velocity.X -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                    Global.CharacterSource.X = 64;
+                }
+                if (keyboardState.IsKeyDown(Keys.W))
+                {
+                    Global.Velocity.Y += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
+                    Global.CharacterSource.X = 32;
+                }
             }
-            if (keyboardState.IsKeyDown(Keys.S))
+            else if(Global.keyboardTypingDest == Global.KeyboardTypingDest.EditingLabel)
             {
-                Global.Velocity.Y -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
-                Global.CharacterSource.X = 0;
-            }
-            if (keyboardState.IsKeyDown(Keys.D))
-            {
-                Global.Velocity.X -= (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
-                Global.CharacterSource.X = 64;
-            }
-            if (keyboardState.IsKeyDown(Keys.W))
-            {
-                Global.Velocity.Y += (float)(Speed * gameTime.ElapsedGameTime.TotalSeconds);
-                Global.CharacterSource.X = 32;
+                Keys[] pressedKeys = keyboardState.GetPressedKeys();
+                if (pressedKeys.Length > 0 && pressedKeys[0] != Global.LastPressedKey)
+                {
+                    ObjectUtil.AddLetterToLabel(pressedKeys[0]);
+                    Global.LastPressedKey = pressedKeys[0];
+                }
+                if(pressedKeys.Length == 0)
+                {
+                    Global.LastPressedKey = Keys.None;
+                    
+                }
             }
         }
     }

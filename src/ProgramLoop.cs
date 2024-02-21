@@ -231,7 +231,21 @@ namespace tile_mapper.src
                 ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, false); // Single click.
 
                 if (Global.Timer - Global.TimeOfLastClick < 500)
+                {
                     ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, true); // Double click.
+                    foreach(var label in GlobalLabels.EditableLabels)
+                    {
+                        if(label != null && GlobalMenus.PropertyEditMenu.IsVisible && label.editType != Property.Type.None && label.LabelRect.Contains(Global.MousePos))
+                        {
+                            ObjectUtil.SelectEditLabel(label);
+                            if (Global.PropertyEditingCopy.PropertyType == Property.Type.Bool)
+                            {
+                                ObjectUtil.TogglePropertyBool();
+                            }
+                            break;
+                        }
+                    }
+                }
                 else
                     Global.TimeOfLastClick = Global.Timer;
             }

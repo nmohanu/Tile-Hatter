@@ -37,11 +37,11 @@ namespace tile_mapper.src.Canvas
 
     internal class Property // User properties.
     {
-        public string String;
-        public int Int;
-        public float Float;
+        public string String = "Null";
+        public int Int = 0;
+        public float Float = 0;
         public bool Bool;
-        public string ClassID;
+        public string ClassID = "Null";
         public string ID;
 
         public Type PropertyType = Type.None;
