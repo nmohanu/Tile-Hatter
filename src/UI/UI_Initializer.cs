@@ -14,19 +14,19 @@ namespace tile_mapper.src.UI
         // Buttons
         public static void InitializeToolsetButtons()
         {
-            GlobalButtons.DrawTool = new Button("", new Rectangle(0, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
+            GlobalButtons.DrawTool = new Button("", new Rectangle(Global.ScreenWidth/2 - 80, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
             GlobalButtons.DrawTool.SourceRect.Y = 96;
 
-            GlobalButtons.FillTool = new Button("", new Rectangle(32, 32, 32, 32), 160 + 32, 160 + 32, ButtonAction.FillTool, true);
+            GlobalButtons.FillTool = new Button("", new Rectangle(Global.ScreenWidth / 2 - 48, 32, 32, 32), 160 + 32, 160 + 32, ButtonAction.FillTool, true);
             GlobalButtons.FillTool.SourceRect.Y = 96;
 
-            GlobalButtons.EraserTool = new Button("", new Rectangle(64, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
+            GlobalButtons.EraserTool = new Button("", new Rectangle(Global.ScreenWidth / 2 - 16, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
             GlobalButtons.EraserTool.SourceRect.Y = 96;
 
-            GlobalButtons.SpecifyStartPoint = new Button("", new Rectangle(96, 32, 32, 32), 288 + 32, 288 + 32, ButtonAction.SpecifyStartPoint, true);
+            GlobalButtons.SpecifyStartPoint = new Button("", new Rectangle(Global.ScreenWidth / 2 + 16, 32, 32, 32), 288 + 32, 288 + 32, ButtonAction.SpecifyStartPoint, true);
             GlobalButtons.SpecifyStartPoint.SourceRect.Y = 96;
 
-            GlobalButtons.SpecifyDoor = new Button("", new Rectangle(128, 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
+            GlobalButtons.SpecifyDoor = new Button("", new Rectangle(Global.ScreenWidth / 2 + 48 , 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
             GlobalButtons.SpecifyDoor.SourceRect.Y = 96;
         }
         public static void InitializePaletteButtons()
