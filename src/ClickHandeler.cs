@@ -16,7 +16,7 @@ namespace tile_mapper.src
 {
     internal static class ClickHandeler
     {
-        public static void HandleLeftClick(MouseState mouseState, GraphicsDevice graphicsDevice, bool IsDoubleClick)
+        public static void HandleLeftClick(MouseState mouseState, GraphicsDevice graphicsDevice, bool IsDoubleClick, KeyboardState keyboardState)
         {
             if (mouseState.LeftButton == ButtonState.Pressed && Global.PreviousMouseState.LeftButton != ButtonState.Pressed) // Click (Left) execute once.
             {
@@ -50,8 +50,13 @@ namespace tile_mapper.src
                     Global.SelectionEnd = Global.SelectionStart;
                     Global.Selection.Width = 0;
                     Global.Selection.Height = 0;
-                    if (GlobalButtons.ClickedAreaButton != null)
-                        GlobalButtons.ClickedAreaButton.IsPressed = false;
+
+                    if (!keyboardState.IsKeyDown(Keys.LeftShift))
+                    {
+                        if (GlobalButtons.ClickedAreaButton != null)
+                            GlobalButtons.ClickedAreaButton.IsPressed = false;
+                        Global.SelectedArea = null;
+                    }
                 }
 
                 // Check whether a button is clicked.
@@ -93,8 +98,7 @@ namespace tile_mapper.src
                                 break;
                             case ButtonAction.RemoveArea:
                                 Global.CurrentMap.RemoveArea(buttonClicked.HelperInt);
-                                if (Global.SelectedArea.AreaName != null && Global.SelectedArea.AreaName == Global.CurrentMap.areas[buttonClicked.HelperInt - 1].AreaName)
-                                    Global.SelectedArea = null;
+                                Global.SelectedArea = null;
 
                                 GlobalMenus.AreaMenu.buttons.Remove(GlobalMenus.AreaMenu.buttons[buttonClicked.HelperInt]);
                                 ScrollMenuUtil.UpdateListOrder(GlobalMenus.AreaMenu);

@@ -43,5 +43,7 @@ namespace tile_mapper.src.UI
         public static Button PropertyValue;
         public static Button PropertyCancel;
         public static Button PropertySave;
+        public static Button ObjectCancel;
+        public static Button ObjectSave;
     }
 }

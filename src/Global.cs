@@ -45,6 +45,8 @@ namespace tile_mapper.src
         public static float ScaleY = 1f;
         public static int SelectedX;
         public static int SelectedY;
+        public static Point PreviousSelected;
+        public static Point SelectedPoint;
         public static float OriginalScrollWheelValue = 0f;
         public static List<List<SpriteTile>> TileSpriteList;
         public static bool HasTileSheet = false;
@@ -60,6 +62,7 @@ namespace tile_mapper.src
         public static Rectangle ScrollMenuSource = new Rectangle(1660, 96, 256, 422);
         public static Rectangle PropertyEditMenuSource = new Rectangle(1356, 796, 268, 281);
         public static Rectangle PropertyEditMenuDestination = new Rectangle(ScreenWidth / 2 - 268 / 2, ScreenHeight / 2 - 280 / 2, 268, 280);
+        public static Rectangle EditObjectMenuDestination = new Rectangle(ScreenWidth / 2 - 268 / 2, ScreenHeight / 2 - 372 / 2, 268, 372);
         public static Area StartArea;
         public static Area SelectedArea;
         public static Rectangle CharacterRect;
@@ -80,6 +83,7 @@ namespace tile_mapper.src
         public static Label LabelCurrentlyEditing;
         public static Keys LastPressedKey;
         public static Property PropertyEditingCopy;
+        public static Rectangle NewAreaCords;
 
         public enum KeyboardTypingDest
         {

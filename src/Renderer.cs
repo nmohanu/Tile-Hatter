@@ -28,7 +28,7 @@ namespace tile_mapper.src
             EndX++;
             EndY++;
 
-            Color color = Color.Gray * 0.2f;
+            Color color = Color.Gray * 0.7f;
 
             for (int i = StartX; i < EndX; i++)
             {
@@ -62,7 +62,7 @@ namespace tile_mapper.src
                         if (selected != null && CursorActionState == ProgramLoop.CursorState.Draw)
                             spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
                         else
-                            spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White * 0.3f);
+                            spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White * 0.5f);
                     }
 
 

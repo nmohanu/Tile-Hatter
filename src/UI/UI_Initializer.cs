@@ -108,14 +108,7 @@ namespace tile_mapper.src.UI
             GlobalButtons.CreateLayerButton = new Button("New Layer", new Rectangle(GlobalMenus.Properties.Destination.X + GlobalMenus.Properties.Destination.Width / 2 - 224 / 2, GlobalMenus.Properties.Destination.Y + 32 + 16 + 48 * 3, 224, 48), 528, 304, ButtonAction.AddLayer, true);
             GlobalButtons.CreateLayerButton.SourceRect.Y = 240;
             GlobalMenus.LayerMenu.buttons.Add(GlobalButtons.CreateLayerButton);
-
-            // Add the default 3 layers.
-            for (int i = 1; i <= 3; i++)
-            {
-                LayerUtil.AddLayer();
-            }
-            GlobalMenus.LayerMenu.buttons[0].IsPressed = true;
-            GlobalButtons.ClickedLayerButton = GlobalMenus.LayerMenu.buttons[0];
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerMenu);
         }
         public static void InitializeAreaScrollMenu()
         {
@@ -285,6 +278,16 @@ namespace tile_mapper.src.UI
             GlobalLabels.CurrentPropertyValue.LabelRect = new Rectangle(Global.PropertyEditMenuDestination.X + 36, Global.PropertyEditMenuDestination.Y + 68 + 96, 192, 32);
             GlobalMenus.PropertyEditMenu.labels.Add(GlobalLabels.CurrentPropertyValue);
             GlobalLabels.EditableLabels.Add(GlobalLabels.CurrentPropertyValue);
+        }
+
+        public static void InitializeEditObjectMenu()
+        {
+            GlobalMenus.EditObjectMenu = new UI_Menu(false, new Rectangle(1084, 796, 264, 372), Global.PropertyEditMenuDestination);
+
+            GlobalLabels.ObjectName = new Label();
+            GlobalLabels.ObjectName.Text = "";
+            GlobalLabels.ObjectName.IsVisible = true;
+            GlobalLabels.ObjectName.LabelRect = new Rectangle(Global.EditObjectMenuDestination.X + 36, Global.EditObjectMenuDestination.Y + 36, 192, 32);
         }
 
         // Add buttons to the menus

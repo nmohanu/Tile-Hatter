@@ -23,5 +23,6 @@ namespace tile_mapper.src.UI
         public static UI_Menu ObjectMenu;
         public static UI_Menu CollisionSpriteList;
         public static UI_Menu PropertyEditMenu;
+        public static UI_Menu EditObjectMenu;
     }
 }

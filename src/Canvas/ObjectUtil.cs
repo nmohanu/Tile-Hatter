@@ -98,7 +98,7 @@ namespace tile_mapper.src.Canvas
             GlobalButtons.CreateLayerPropertyButton.IsVisible = true;
             GlobalMenus.LayerProperties.buttons.Add(GlobalButtons.CreateLayerPropertyButton);
 
-            if (Global.CurrentMap.areas.Count > 0 && Global.CurrentMap.areas[0].Layers[Global.CurrentLayer].Properties.Count() > 0)
+            if (Global.CurrentMap.areas.Count > 0 && Global.CurrentMap.areas[0].Layers.Count() > 0 && Global.CurrentMap.areas[0].Layers[Global.CurrentLayer].Properties.Count() > 0)
             {
 
                 foreach (var Property in Global.CurrentMap.areas[0].Layers[Global.CurrentLayer].Properties)

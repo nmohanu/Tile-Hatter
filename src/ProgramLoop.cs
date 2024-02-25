@@ -229,11 +229,11 @@ namespace tile_mapper.src
                 Global.PreviousMouseState.LeftButton == ButtonState.Released)
             {
                 bool resetLabel = true;
-                ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, false); // Single click.
+                ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, false, keyboardState); // Single click.
 
                 if (Global.Timer - Global.TimeOfLastClick < 500)
                 {
-                    ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, true); // Double click.
+                    ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, true, keyboardState); // Double click.
                     foreach(var label in GlobalLabels.EditableLabels)
                     {
                         if(label != null && GlobalMenus.PropertyEditMenu.IsVisible && label.editType != Property.Type.None && label.LabelRect.Contains(Global.MousePos))
@@ -256,6 +256,8 @@ namespace tile_mapper.src
                 if (resetLabel)
                     ObjectUtil.DeselectLabel();
             }
+
+            
 
             if(Global.keyboardTypingDest == Global.KeyboardTypingDest.EditingLabel && keyboardState.IsKeyDown(Keys.Enter))
                 ObjectUtil.DeselectLabel();
@@ -395,6 +397,8 @@ namespace tile_mapper.src
                 }
                 Global.SelectedX = (int)Math.Floor(mousePosInt.X);
                 Global.SelectedY = (int)Math.Floor(mousePosInt.Y);
+
+                Global.SelectedPoint = new Point(Global.SelectedX, Global.SelectedY);
             }
 
             // Create area.
@@ -403,24 +407,57 @@ namespace tile_mapper.src
 
 
             // Undo last action.
-            if (keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !Global.PreviousKeybordState.IsKeyDown(Keys.Z))
+            if (keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.Z) && !Global.PreviousKeybordState.IsKeyDown(Keys.Z) && Global.Actions.Count > 0)
             {
+                UserAction UndoAction = Global.Actions.Peek();
 
-                if (Global.Actions.Count > 0)
+                if (UndoAction.Action == UserAction.ActionType.Draw)
                 {
-                    UserAction UndoAction = Global.Actions.Peek();
-
-                    if (UndoAction.Action == UserAction.ActionType.Draw)
+                    foreach (var area in Global.CurrentMap.areas)
                     {
-                        foreach (var area in Global.CurrentMap.areas)
+                        if (area.AreaCords.Contains(UndoAction.x, UndoAction.y))
                         {
-                            if (area.AreaCords.Contains(UndoAction.x, UndoAction.y))
-                            {
-                                area.Layers[UndoAction.Layer].TileMap[UndoAction.y - area.AreaCords.Y, UndoAction.x - area.AreaCords.X] = new Tile();
-                            }
+                            area.Layers[UndoAction.Layer].TileMap[UndoAction.y - area.AreaCords.Y, UndoAction.x - area.AreaCords.X] = new Tile();
                         }
                     }
-                    Global.Actions.Pop();
+                }
+                Global.Actions.Pop();
+            }
+
+            // User might be editing an area
+            if (Global.CurrentMap.areas.Count() > 0 && Global.SelectedArea != null && Global.SelectedArea.AreaCords.Contains(Global.PreviousSelected) && keyboardState.IsKeyDown(Keys.LeftShift) && mouseState.LeftButton == ButtonState.Pressed)
+            {
+                Global.NewAreaCords = Global.SelectedArea.AreaCords;
+                Global.Selection = Global.SelectedArea.AreaCords;
+
+                if(Global.SelectedPoint != Global.PreviousSelected)
+                {
+                    if(Global.SelectedPoint.X != Global.Selection.X && Global.PreviousSelected.X == Global.Selection.X)
+                    {
+                        Global.NewAreaCords.X = Global.SelectedPoint.X;
+                        Global.NewAreaCords.Width += Global.PreviousSelected.X - Global.SelectedPoint.X;
+                    }
+                    else if (Global.SelectedPoint.Y != Global.Selection.Y && Global.PreviousSelected.Y == Global.Selection.Y)
+                    {
+                        Global.NewAreaCords.Y = Global.SelectedPoint.Y;
+                        Global.NewAreaCords.Height += Global.PreviousSelected.Y - Global.SelectedPoint.Y;
+                    }
+                    else if (Global.SelectedPoint.Y != Global.Selection.Y + Global.Selection.Height - 1 && Global.PreviousSelected.Y == Global.Selection.Y + Global.Selection.Height - 1)
+                    {
+                        Global.NewAreaCords.Height += Global.SelectedPoint.Y - (Global.Selection.Height + Global.Selection.Y - 1);
+                    }
+                    else if (Global.SelectedPoint.X != Global.Selection.X + Global.Selection.Width - 1 && Global.PreviousSelected.X == Global.Selection.X + Global.Selection.Width - 1)
+                    {
+                        Global.NewAreaCords.Width += Global.SelectedPoint.X - (Global.Selection.Width + Global.Selection.X - 1);
+                    }
+                    foreach(var area in Global.CurrentMap.areas)
+                    {
+                        if(area != Global.SelectedArea && area.AreaCords.Intersects(Global.NewAreaCords))
+                        {
+                            return;
+                        }
+                    }
+                    Global.SelectedArea.AreaCords = Global.NewAreaCords;
                 }
             }
 
@@ -434,6 +471,7 @@ namespace tile_mapper.src
             Global.PreviousMouseState = mouseState;
             Global.PreviousKeybordState = keyboardState;
             Global.PreviousMousePos = Global.MousePos;
+            Global.PreviousSelected = Global.SelectedPoint;
 
             base.Update(gameTime);
         }
