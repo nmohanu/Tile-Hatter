@@ -119,6 +119,7 @@ namespace tile_mapper.src
             Global.ScrollableMenus.Add(GlobalMenus.ObjectMenu);
             Global.ScrollableMenus.Add(GlobalMenus.LayerProperties);
             Global.ScrollableMenus.Add(GlobalMenus.AreaProperties);
+            Global.ScrollableMenus.Add(GlobalMenus.ObjectProperties);
 
             // Keep track of these for switching menu state.
             Global.LabelMenus.Add(GlobalMenus.LayerProperties);

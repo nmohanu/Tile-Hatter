@@ -174,31 +174,6 @@ namespace tile_mapper.src.UI
             GlobalButtons.CreateAreaPropertyButton.SourceRect.Y = 240;
             GlobalMenus.AreaProperties.buttons.Add(GlobalButtons.CreateAreaPropertyButton);
             ScrollMenuUtil.UpdateListOrder(GlobalMenus.AreaProperties);
-            
-            // 
-            // GlobalLabels.LayerName = new Label();
-            // GlobalLabels.LayerName.LabelRect = new Rectangle(1660, 624 - 64, 256, 32);
-            // GlobalLabels.LayerName.IsVisible = true;
-            // 
-            // GlobalLabels.AreaName = new Label();
-            // GlobalLabels.AreaName.LabelRect = new Rectangle(1660, 624 - 32 - 32, 256, 32);
-            // GlobalLabels.AreaName.IsVisible = true;
-            // 
-            // GlobalLabels.AreaWidth = new Label();
-            // GlobalLabels.AreaWidth.LabelRect = new Rectangle(1660, 624 - 32, 256, 32);
-            // GlobalLabels.AreaWidth.IsVisible = true;
-            // 
-            // GlobalLabels.AreaHeight = new Label();
-            // GlobalLabels.AreaHeight.LabelRect = new Rectangle(1660, 624, 256, 32);
-            // GlobalLabels.AreaHeight.IsVisible = true;
-            // 
-            // GlobalLabels.AreaX = new Label();
-            // GlobalLabels.AreaX.LabelRect = new Rectangle(1660, 624 + 32, 256, 32);
-            // GlobalLabels.AreaX.IsVisible = true;
-            // 
-            // GlobalLabels.AreaY = new Label();
-            // GlobalLabels.AreaY.LabelRect = new Rectangle(1660, 624 + 64, 256, 32);
-            // GlobalLabels.AreaY.IsVisible = true;
         }
         public static void InitializeLayerLabelMenu()
         {
@@ -287,19 +262,28 @@ namespace tile_mapper.src.UI
             GlobalLabels.ObjectName = new Label();
             GlobalLabels.ObjectName.Text = "";
             GlobalLabels.ObjectName.IsVisible = true;
-            GlobalLabels.ObjectName.LabelRect = new Rectangle(Global.EditObjectMenuDestination.X + 36, Global.EditObjectMenuDestination.Y + 36, 192, 32);
+            GlobalLabels.ObjectName.LabelRect = new Rectangle(Global.EditObjectMenuDestination.X + 36, Global.EditObjectMenuDestination.Y + 20, 192, 32);
 
             GlobalMenus.EditObjectMenu.labels.Add(GlobalLabels.ObjectName);
 
             // Cancel button
-            GlobalButtons.ObjectCancel = new Button("Cancel", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36, GlobalMenus.PropertyEditMenu.Destination.Y + 324, 80, 32), 1504, 1392, ButtonAction.PropertyCancel, true);
+            GlobalButtons.ObjectCancel = new Button("Cancel", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36, GlobalMenus.EditObjectMenu.Destination.Y + 324, 80, 32), 1504, 1392, ButtonAction.CancelObject, true);
             GlobalButtons.ObjectCancel.SourceRect = new Rectangle(1392, 1120, 80, 32);
             GlobalMenus.EditObjectMenu.buttons.Add(GlobalButtons.ObjectCancel);
 
             // Save button
-            GlobalButtons.ObjectSave = new Button("Save", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36 + 112, GlobalMenus.PropertyEditMenu.Destination.Y + 324, 80, 32), 1504, 1392, ButtonAction.PropertySave, true);
+            GlobalButtons.ObjectSave = new Button("Save", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36 + 112, GlobalMenus.EditObjectMenu.Destination.Y + 324, 80, 32), 1504, 1392, ButtonAction.SaveObject, true);
             GlobalButtons.ObjectSave.SourceRect = new Rectangle(1392, 1120, 80, 32);
             GlobalMenus.EditObjectMenu.buttons.Add(GlobalButtons.ObjectSave);
+
+            GlobalMenus.ObjectProperties = new UI_Menu(false, new Rectangle(0,0,0,0), new Rectangle(GlobalMenus.EditObjectMenu.Destination.X, GlobalMenus.EditObjectMenu.Destination.Y + 64, GlobalMenus.EditObjectMenu.Destination.Width, GlobalMenus.EditObjectMenu.Destination.Height - 128));
+            GlobalMenus.ObjectProperties.Scrollable = true;
+
+            GlobalButtons.CreateObjectProperty = new Button("New Property", new Rectangle(GlobalMenus.ObjectProperties.Destination.X + GlobalMenus.ObjectProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.ObjectProperties.Destination.Y, 224, 48), 528, 304, ButtonAction.CreateObjectProperty, true);
+            GlobalButtons.CreateObjectProperty.SourceRect = new Rectangle(304, 240, 224, 48);
+            GlobalButtons.CreateObjectProperty.SourceRect.Y = 240;
+            GlobalMenus.ObjectProperties.buttons.Add(GlobalButtons.CreateObjectProperty);
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectProperties);
         }
 
         // Add buttons to the menus

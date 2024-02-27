@@ -217,6 +217,6 @@ namespace tile_mapper.src.UI
         PropertyCancel,
         PropertySave,
         PropertyGoLeft,
-        PropertyGoRight
+        PropertyGoRight,
     }
 }

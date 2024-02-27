@@ -43,6 +43,8 @@ namespace tile_mapper.src
                         Global.resetSelection = false;
                 }
 
+                
+
                 if (Global.resetSelection)
                 {
                     Global.ClickPoint = new Point(Global.SelectedX, Global.SelectedY);
@@ -125,6 +127,9 @@ namespace tile_mapper.src
 
         public static void HandleButtonClick(Button buttonClicked, GraphicsDevice graphicsDevice, bool IsDoubleClick)
         {
+            if (IsDoubleClick)
+                HandleDoubleClick(buttonClicked, graphicsDevice);
+
             switch (buttonClicked.Action)
             {
                 case ButtonAction.Import:
@@ -310,14 +315,14 @@ namespace tile_mapper.src
                 case ButtonAction.PropertyGoRight:
                     ObjectUtil.PropertyGoRight();
                     break;
-                case ButtonAction.SelectObject:
-                    if(IsDoubleClick)
-                    {
-                        GlobalMenus.EditObjectMenu.IsVisible = true;
-                        GlobalLabels.ObjectName.Text = buttonClicked.Object.ID;
-                    }
+                case ButtonAction.CancelObject:
+                    GlobalMenus.EditObjectMenu.IsVisible = false;
+                    GlobalMenus.ObjectProperties.IsVisible = false;
                     break;
+                
             }
+
+
 
         }
         public static void HandleLeftHold(MouseState mouseState, KeyboardState keyboardState)
@@ -380,6 +385,11 @@ namespace tile_mapper.src
                 case ButtonAction.SelectProperty:
                     if (ButtonClicked.Property != null)
                         ObjectUtil.OpenPropertyMenu(ButtonClicked.Property);
+                    break;
+                case ButtonAction.SelectObject:
+                        GlobalMenus.EditObjectMenu.IsVisible = true;
+                    GlobalMenus.ObjectProperties.IsVisible = true;
+                        GlobalLabels.ObjectName.Text = ButtonClicked.Object.ID;
                     break;
             }
         }
