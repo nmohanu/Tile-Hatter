@@ -32,7 +32,7 @@ namespace tile_mapper.src.Canvas
         public Rectangle TileRect; // Tile specifying.
         public Rectangle PixelRect; // To adjust pixel specific.
 
-        public List<Property> Properties;
+        public List<Property> Properties = new List<Property>();
     }
 
     internal class Property // User properties.

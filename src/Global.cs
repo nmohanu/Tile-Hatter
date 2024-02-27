@@ -10,6 +10,7 @@ using static tile_mapper.src.ProgramLoop;
 using tile_mapper.src.UI;
 using tile_mapper.src.Canvas;
 using tile_mapper.src.UserSprites;
+using Object = tile_mapper.src.Canvas.Object;
 
 namespace tile_mapper.src
 {
@@ -84,6 +85,7 @@ namespace tile_mapper.src
         public static Keys LastPressedKey;
         public static Property PropertyEditingCopy;
         public static Rectangle NewAreaCords;
+        public static Object SelectedObject;
 
         public enum KeyboardTypingDest
         {

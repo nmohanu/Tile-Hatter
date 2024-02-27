@@ -104,6 +104,7 @@ namespace tile_mapper.src
             Global.All_UI_Menus.Add(GlobalMenus.TileLabels);
             Global.All_UI_Menus.Add(GlobalMenus.ObjectMenu);
             Global.All_UI_Menus.Add(GlobalMenus.EditObjectMenu);
+            Global.All_UI_Menus.Add(GlobalMenus.ObjectProperties);
 
             // Keep track of the menus in the right UI bar.
             Global.PropertyMenu.Add(GlobalMenus.LayerMenu);

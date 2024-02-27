@@ -282,6 +282,7 @@ namespace tile_mapper.src.UI
             GlobalButtons.CreateObjectProperty = new Button("New Property", new Rectangle(GlobalMenus.ObjectProperties.Destination.X + GlobalMenus.ObjectProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.ObjectProperties.Destination.Y, 224, 48), 528, 304, ButtonAction.CreateObjectProperty, true);
             GlobalButtons.CreateObjectProperty.SourceRect = new Rectangle(304, 240, 224, 48);
             GlobalButtons.CreateObjectProperty.SourceRect.Y = 240;
+            GlobalButtons.CreateObjectProperty.SelectionX = 528;
             GlobalMenus.ObjectProperties.buttons.Add(GlobalButtons.CreateObjectProperty);
             ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectProperties);
         }

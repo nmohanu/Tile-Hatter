@@ -318,12 +318,12 @@ namespace tile_mapper.src
                 case ButtonAction.CancelObject:
                     GlobalMenus.EditObjectMenu.IsVisible = false;
                     GlobalMenus.ObjectProperties.IsVisible = false;
+                    Global.SelectedObject = null;
                     break;
-                
+                case ButtonAction.CreateObjectProperty:
+                    ObjectUtil.AddObjectProperty();
+                    break;
             }
-
-
-
         }
         public static void HandleLeftHold(MouseState mouseState, KeyboardState keyboardState)
         {
@@ -384,12 +384,18 @@ namespace tile_mapper.src
             {
                 case ButtonAction.SelectProperty:
                     if (ButtonClicked.Property != null)
+                    {
                         ObjectUtil.OpenPropertyMenu(ButtonClicked.Property);
+                        GlobalMenus.EditObjectMenu.IsVisible = false;
+                        GlobalMenus.ObjectProperties.IsVisible = false;
+                    }
                     break;
                 case ButtonAction.SelectObject:
                         GlobalMenus.EditObjectMenu.IsVisible = true;
                     GlobalMenus.ObjectProperties.IsVisible = true;
                         GlobalLabels.ObjectName.Text = ButtonClicked.Object.ID;
+                    if(Global.SelectedObject == null)
+                        Global.SelectedObject = ButtonClicked.Object;
                     break;
             }
         }

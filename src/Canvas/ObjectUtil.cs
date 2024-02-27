@@ -95,6 +95,42 @@ namespace tile_mapper.src.Canvas
             }
         }
 
+        public static void AddObjectProperty()
+        {
+            if (Global.SelectedObject == null)
+                return;
+
+            List<Property> list = Global.SelectedObject.Properties;
+            Property property = new Property();
+            property.ID = "Property " + (list.Count() + 1).ToString();
+            list.Add(property);
+
+            ReloadObjectProperties();
+        }
+
+        public static void ReloadObjectProperties()
+        {
+            GlobalMenus.ObjectProperties.buttons.Clear();
+            GlobalButtons.CreateObjectProperty.IsVisible = true;
+            GlobalMenus.ObjectProperties.buttons.Add(GlobalButtons.CreateObjectProperty);
+
+            if (Global.SelectedObject.Properties.Count() > 0)
+            {
+
+                foreach (var Property in Global.SelectedObject.Properties)
+                {
+                    if (Property != null)
+                    {
+                        Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectProperty, ButtonAction.RemoveProperty, GlobalMenus.ObjectProperties);
+                        btn.Text = Property.ID.ToString();
+                        btn.Property = Property;
+                        GlobalMenus.ObjectProperties.buttons.Add(btn);
+                    }
+                }
+            }
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectProperties);
+        }
+
         public static void ReloadLayerProperties()
         {
             GlobalMenus.LayerProperties.buttons.Clear();
