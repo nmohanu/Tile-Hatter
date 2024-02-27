@@ -457,6 +457,33 @@ namespace tile_mapper.src
                             return;
                         }
                     }
+                    foreach(var layer in Global.SelectedArea.Layers)
+                    {
+                        Tile[,] newMap = new Tile[Global.NewAreaCords.Height, Global.NewAreaCords.Width];
+                        for(int i = 0; i < Math.Min(Global.SelectedArea.AreaCords.Height, Global.NewAreaCords.Height); i++)
+                        {
+                            for (int j = 0; j < Math.Min(Global.SelectedArea.AreaCords.Width, Global.NewAreaCords.Width); j++)
+                            {
+                                if(layer.TileMap[i, j] != null)
+                                    newMap[i, j] = layer.TileMap[i, j];
+                                
+                            }
+                        }
+
+                        for (int i = 0; i < Global.NewAreaCords.Height; i++)
+                        {
+                            for (int j = 0; j < Global.NewAreaCords.Width; j++)
+                            {
+                                if (newMap[i, j] == null)
+                                {
+                                    newMap[i, j] = new Tile();
+                                    newMap[i, j].ID = "0";
+                                }
+                            }
+                        }
+
+                        layer.TileMap = newMap;
+                    }
                     Global.SelectedArea.AreaCords = Global.NewAreaCords;
                 }
             }

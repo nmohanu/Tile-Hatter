@@ -28,7 +28,7 @@ namespace tile_mapper.src
             EndX++;
             EndY++;
 
-            Color color = Color.Gray * 0.7f;
+            Color color = Color.Gray * 0.5f;
 
             for (int i = StartX; i < EndX; i++)
             {
@@ -116,7 +116,7 @@ namespace tile_mapper.src
                                     }
                                     else
                                     {
-                                        spriteBatch.Draw(TileSheet, DestRect, area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White * 0.5f);
+                                        spriteBatch.Draw(TileSheet, DestRect, area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White * 0.6f);
                                     }
                                 }
                                 else

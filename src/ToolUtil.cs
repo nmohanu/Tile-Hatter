@@ -35,6 +35,7 @@ namespace tile_mapper.src
         }
         public static void FillClicked()
         {
+            
             Area areaClicked = null;
             foreach (var area in Global.CurrentMap.areas)
             {
@@ -48,6 +49,9 @@ namespace tile_mapper.src
             {
                 return;
             }
+
+            if (areaClicked.Layers.Count() == 0)
+                return;
 
             string IDToFill = areaClicked.Layers[Global.CurrentLayer].TileMap[Global.SelectedY - areaClicked.AreaCords.Y, Global.SelectedX - areaClicked.AreaCords.X].ID;
 
