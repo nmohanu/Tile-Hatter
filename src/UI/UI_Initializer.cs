@@ -243,9 +243,9 @@ namespace tile_mapper.src.UI
             GlobalMenus.PropertyEditMenu.buttons.Add(GlobalButtons.PropertyCancel);
 
             // Save button
-            GlobalButtons.PropertyCancel = new Button("Save", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36 + 112, GlobalMenus.PropertyEditMenu.Destination.Y + 228, 80, 32), 1504, 1392, ButtonAction.PropertySave, true);
-            GlobalButtons.PropertyCancel.SourceRect = new Rectangle(1392, 1120, 80, 32);
-            GlobalMenus.PropertyEditMenu.buttons.Add(GlobalButtons.PropertyCancel);
+            GlobalButtons.PropertySave = new Button("Save", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36 + 112, GlobalMenus.PropertyEditMenu.Destination.Y + 228, 80, 32), 1504, 1392, ButtonAction.PropertySave, true);
+            GlobalButtons.PropertySave.SourceRect = new Rectangle(1392, 1120, 80, 32);
+            GlobalMenus.PropertyEditMenu.buttons.Add(GlobalButtons.PropertySave);
 
             // Type go left button
             GlobalButtons.PropertyTypeLeft = new Button("", new Rectangle(GlobalLabels.PropertyType.LabelRect.X - 32, GlobalLabels.PropertyType.LabelRect.Y + 32, 32, 32), 1392 + 64, 1392, ButtonAction.PropertyGoLeft, true);
@@ -282,12 +282,24 @@ namespace tile_mapper.src.UI
 
         public static void InitializeEditObjectMenu()
         {
-            GlobalMenus.EditObjectMenu = new UI_Menu(false, new Rectangle(1084, 796, 264, 372), Global.PropertyEditMenuDestination);
+            GlobalMenus.EditObjectMenu = new UI_Menu(false, new Rectangle(1084, 796, 264, 372), Global.EditObjectMenuDestination);
 
             GlobalLabels.ObjectName = new Label();
             GlobalLabels.ObjectName.Text = "";
             GlobalLabels.ObjectName.IsVisible = true;
             GlobalLabels.ObjectName.LabelRect = new Rectangle(Global.EditObjectMenuDestination.X + 36, Global.EditObjectMenuDestination.Y + 36, 192, 32);
+
+            GlobalMenus.EditObjectMenu.labels.Add(GlobalLabels.ObjectName);
+
+            // Cancel button
+            GlobalButtons.ObjectCancel = new Button("Cancel", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36, GlobalMenus.PropertyEditMenu.Destination.Y + 324, 80, 32), 1504, 1392, ButtonAction.PropertyCancel, true);
+            GlobalButtons.ObjectCancel.SourceRect = new Rectangle(1392, 1120, 80, 32);
+            GlobalMenus.EditObjectMenu.buttons.Add(GlobalButtons.ObjectCancel);
+
+            // Save button
+            GlobalButtons.ObjectSave = new Button("Save", new Rectangle(GlobalMenus.PropertyEditMenu.Destination.X + 36 + 112, GlobalMenus.PropertyEditMenu.Destination.Y + 324, 80, 32), 1504, 1392, ButtonAction.PropertySave, true);
+            GlobalButtons.ObjectSave.SourceRect = new Rectangle(1392, 1120, 80, 32);
+            GlobalMenus.EditObjectMenu.buttons.Add(GlobalButtons.ObjectSave);
         }
 
         // Add buttons to the menus

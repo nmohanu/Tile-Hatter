@@ -44,6 +44,7 @@ namespace tile_mapper.src.Canvas
                 foreach (var Object in Global.CurrentMap.ObjectLayers[GlobalButtons.SelectedObjectLayerButton.HelperInt].objects)
                 {
                     Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectObject, ButtonAction.RemoveObject, GlobalMenus.Properties);
+                    btn.Object = Object;
                     btn.Text = Object.ID.ToString();
                     GlobalMenus.ObjectMenu.buttons.Add(btn);
                 }
@@ -60,6 +61,8 @@ namespace tile_mapper.src.Canvas
 
             foreach (var area in Global.CurrentMap.areas)
             {
+                if(area.Layers.Count() < 1)
+                    continue;
                 List<Property> list = area.Layers[Global.CurrentLayer].Properties;
                 amount = list.Count() + 1;
                 Property property = new Property();

@@ -103,6 +103,7 @@ namespace tile_mapper.src
             Global.All_UI_Menus.Add(GlobalMenus.AreaProperties);
             Global.All_UI_Menus.Add(GlobalMenus.TileLabels);
             Global.All_UI_Menus.Add(GlobalMenus.ObjectMenu);
+            Global.All_UI_Menus.Add(GlobalMenus.EditObjectMenu);
 
             // Keep track of the menus in the right UI bar.
             Global.PropertyMenu.Add(GlobalMenus.LayerMenu);
@@ -151,6 +152,7 @@ namespace tile_mapper.src
             UI_Initializer.InitializeGeneralOverlay();
             UI_Initializer.InitializePropertyMenu();
             UI_Initializer.InitializePaletteMenu();
+            UI_Initializer.InitializeEditObjectMenu();
 
             // Scroll menus
             UI_Initializer.InitializeSpriteMenu();

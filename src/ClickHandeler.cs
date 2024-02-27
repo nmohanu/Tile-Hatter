@@ -76,10 +76,7 @@ namespace tile_mapper.src
                     return;
                 else // Button clicked, process.
                 {
-                    if (!IsDoubleClick)
-                        HandleButtonClick(buttonClicked, graphicsDevice);
-                    else
-                        HandleDoubleClick(buttonClicked, graphicsDevice);
+                    HandleButtonClick(buttonClicked, graphicsDevice, IsDoubleClick);
 
                     // Check if the delete button (X) on the button was clicked and delete if so.
                     if (buttonClicked.IsDeletable && buttonClicked.DeleteButton.ButtonRect.Contains(Global.MousePos)) // The delete buttons (X)
@@ -126,7 +123,7 @@ namespace tile_mapper.src
             }
         }
 
-        public static void HandleButtonClick(Button buttonClicked, GraphicsDevice graphicsDevice)
+        public static void HandleButtonClick(Button buttonClicked, GraphicsDevice graphicsDevice, bool IsDoubleClick)
         {
             switch (buttonClicked.Action)
             {
@@ -312,6 +309,13 @@ namespace tile_mapper.src
                     break;
                 case ButtonAction.PropertyGoRight:
                     ObjectUtil.PropertyGoRight();
+                    break;
+                case ButtonAction.SelectObject:
+                    if(IsDoubleClick)
+                    {
+                        GlobalMenus.EditObjectMenu.IsVisible = true;
+                        GlobalLabels.ObjectName.Text = buttonClicked.Object.ID;
+                    }
                     break;
             }
 

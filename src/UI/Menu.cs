@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using tile_mapper.src.Canvas;
+using Object = tile_mapper.src.Canvas.Object;
 
 namespace tile_mapper.src.UI
 {
@@ -125,6 +126,7 @@ namespace tile_mapper.src.UI
         public bool IsDeletable;
         public Button DeleteButton;
         public Property Property;
+        public Object Object;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible)
         {
             Text = text;
@@ -202,6 +204,8 @@ namespace tile_mapper.src.UI
         SelectObject,
         RemoveObject,
         SelectObjectLayer,
+        SaveObject,
+        CancelObject,
 
         // Properties
         CreateLayerProperty,
