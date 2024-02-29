@@ -99,9 +99,9 @@ namespace tile_mapper.src
                     foreach (var point in obj.Locations)
                     {
                         Rectangle DestRect = new Rectangle((int)(point.X * TILE_SIZE * Scale + Offset.X), (int)(point.Y * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
-                        for (int n = 0; n < Global.SelectedObject.TileRect.Height; n++)
+                        for (int n = 0; n < obj.TileRect.Height; n++)
                         {
-                            for (int m = 0; m < Global.SelectedObject.TileRect.Width; m++)
+                            for (int m = 0; m < obj.TileRect.Width; m++)
                             {
                                 spriteBatch.Draw(Grid, new Rectangle(DestRect.X + (int)(TILE_SIZE * m * Scale), DestRect.Y + (int)(TILE_SIZE * n * Scale), DestRect.Width, DestRect.Height), new Rectangle(352, 0, 16, 16), Color.White * 0.2f);
                                 

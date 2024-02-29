@@ -24,7 +24,7 @@ namespace tile_mapper.src
                 {
                     for (int j = Global.Selection.X; j < Global.Selection.X + Global.Selection.Width; j++)
                     {
-                        if (area.AreaCords.Contains(j, i))
+                        if (area.AreaCords.Contains(j, i) && area.Layers.Count() > 0)
                         {
                             area.Layers[Global.CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].ID = Global.selected.ID;
                             area.Layers[Global.CurrentLayer].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source = Global.selected.Source;
