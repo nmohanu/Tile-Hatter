@@ -163,7 +163,7 @@ namespace tile_mapper.src.UI
         public Rectangle SourceRect = new Rectangle(320, 112, 0, 0); // Standard Label
         public bool IsVisible;
         public Property.Type editType = Property.Type.None;
-      
+        public Global.IsEditingWhat editingWhat;
     }
     public enum ButtonAction
     {

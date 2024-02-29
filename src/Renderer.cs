@@ -63,6 +63,17 @@ namespace tile_mapper.src
                             spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
                         else
                             spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White * 0.5f);
+
+                        if(Global.SelectedObject != null)
+                        {
+                            for(int n = 0; n < Global.SelectedObject.TileRect.Height; n++)
+                            {
+                                for (int m = 0; m < Global.SelectedObject.TileRect.Width; n++)
+                                {
+                                    spriteBatch.Draw(Grid, new Rectangle(DestRect.X + TILE_SIZE * m, DestRect.Y * TILE_SIZE * n, DestRect.Width, DestRect.Height), new Rectangle(352, 0, 16, 16), Color.White * 0.5f);
+                                }
+                            }
+                        }
                     }
 
 

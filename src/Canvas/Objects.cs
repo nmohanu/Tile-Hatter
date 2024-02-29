@@ -29,10 +29,25 @@ namespace tile_mapper.src.Canvas
     {
         public string ID;
 
-        public Rectangle TileRect; // Tile specifying.
+        public Rectangle TileRect = new Rectangle(0, 0, 1, 1); // Tile specifying.
         public Rectangle PixelRect; // To adjust pixel specific.
 
         public List<Property> Properties = new List<Property>();
+
+        public Object Clone()
+        {
+            Object copy = new Object();
+            copy.TileRect = this.TileRect;
+            copy.PixelRect = this.PixelRect;
+            if(this.Properties.Count() > 0)
+            {
+                foreach (var prop in this.Properties)
+                {
+                    copy.Properties.Add(prop);
+                }
+            }
+            return copy;
+        }
     }
 
     internal class Property // User properties.

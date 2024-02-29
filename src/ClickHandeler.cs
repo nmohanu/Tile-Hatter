@@ -318,10 +318,24 @@ namespace tile_mapper.src
                 case ButtonAction.CancelObject:
                     GlobalMenus.EditObjectMenu.IsVisible = false;
                     GlobalMenus.ObjectProperties.IsVisible = false;
-                    Global.SelectedObject = null;
+                    Global.EditingObject = Global.EditingObjectOriginal;
+                    Global.EditingObject = null;
+                    Global.EditingObjectOriginal = null;
+                    Global.keyboardTypingDest = Global.KeyboardTypingDest.None;
+                    break;
+                case ButtonAction.SaveObject:
+                    GlobalMenus.EditObjectMenu.IsVisible = false;
+                    GlobalMenus.ObjectProperties.IsVisible = false;
+                    Global.EditingObject = null;
+                    Global.EditingObjectOriginal = null;
+                    ObjectUtil.ReloadObjects();
+                    Global.keyboardTypingDest = Global.KeyboardTypingDest.None;
                     break;
                 case ButtonAction.CreateObjectProperty:
                     ObjectUtil.AddObjectProperty();
+                    break;
+                case ButtonAction.SelectObject:
+                    Global.SelectedObject = buttonClicked.Object;
                     break;
             }
         }
@@ -391,11 +405,7 @@ namespace tile_mapper.src
                     }
                     break;
                 case ButtonAction.SelectObject:
-                        GlobalMenus.EditObjectMenu.IsVisible = true;
-                    GlobalMenus.ObjectProperties.IsVisible = true;
-                        GlobalLabels.ObjectName.Text = ButtonClicked.Object.ID;
-                    if(Global.SelectedObject == null)
-                        Global.SelectedObject = ButtonClicked.Object;
+                    ObjectUtil.OpenEditObjectMenu(ButtonClicked.Object);
                     break;
             }
         }

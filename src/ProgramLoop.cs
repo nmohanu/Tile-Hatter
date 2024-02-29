@@ -207,6 +207,7 @@ namespace tile_mapper.src
             }
             //UI = Content.Load<Texture2D>("UI");
             Global.Grid = Content.Load<Texture2D>("grid");
+
             Global.font = Content.Load<SpriteFont>("font");
         }
 
@@ -221,7 +222,7 @@ namespace tile_mapper.src
             // Keyboard.
             KeyboardState keyboardState = Keyboard.GetState();
             Global.Velocity = Vector2.Zero;
-            KeyboardHandeler.HandleKeyboard(keyboardState, gameTime);
+            KeyboardHandeler.HandleKeyboard(keyboardState, gameTime, Global.LabelCurrentlyEditing);
 
             // Mouse
             MouseState mouseState = Mouse.GetState();
@@ -234,28 +235,31 @@ namespace tile_mapper.src
             {
                 bool resetLabel = true;
                 ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, false, keyboardState); // Single click.
+                
 
-                if (Global.Timer - Global.TimeOfLastClick < 500)
+                if (Global.Timer - Global.TimeOfLastClick < 500 && Global.LastClickPos == Global.MousePos)
                 {
                     ClickHandeler.HandleLeftClick(mouseState, GraphicsDevice, true, keyboardState); // Double click.
                     foreach(var label in GlobalLabels.EditableLabels)
                     {
-                        if(label != null && GlobalMenus.PropertyEditMenu.IsVisible && label.editType != Property.Type.None && label.LabelRect.Contains(Global.MousePos))
+                        if(label != null && (GlobalMenus.PropertyEditMenu.IsVisible || GlobalMenus.EditObjectMenu.IsVisible) && label.editType != Property.Type.None && label.LabelRect.Contains(Global.MousePos))
                         {
                             ObjectUtil.SelectEditLabel(label);
                             resetLabel = false;
-                            if (Global.PropertyEditingCopy.PropertyType == Property.Type.Bool && label == GlobalLabels.CurrentPropertyValue)
+                            if (Global.PropertyEditingCopy != null && Global.PropertyEditingCopy.PropertyType == Property.Type.Bool && label == GlobalLabels.CurrentPropertyValue)
                             {
                                 ObjectUtil.TogglePropertyBool();
                             }
                             break;
                         }
-                        
                     }
-                    
                 }
                 else
+                {
+                    Global.LastClickPos = Global.MousePos;
                     Global.TimeOfLastClick = Global.Timer;
+                }
+                    
 
                 if (resetLabel)
                     ObjectUtil.DeselectLabel();
@@ -384,6 +388,7 @@ namespace tile_mapper.src
                 Global.CursorActionState = CursorState.None;
                 Global.Selection.Width = 0;
                 Global.Selection.Height = 0;
+                Global.SelectedObject = null;
             }
 
             // Only update the selected square if user is not using scroll wheel.

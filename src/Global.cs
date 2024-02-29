@@ -85,7 +85,16 @@ namespace tile_mapper.src
         public static Keys LastPressedKey;
         public static Property PropertyEditingCopy;
         public static Rectangle NewAreaCords;
+        public static Object EditingObject;
+        public static Object EditingObjectOriginal;
         public static Object SelectedObject;
+        public static Vector2 LastClickPos;
+
+        public enum IsEditingWhat
+        {
+            Property,
+            ObjectName
+        }
 
         public enum KeyboardTypingDest
         {

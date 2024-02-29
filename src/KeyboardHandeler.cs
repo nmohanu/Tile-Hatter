@@ -7,12 +7,13 @@ using System.Text;
 using System.Threading.Tasks;
 using static tile_mapper.src.ProgramLoop;
 using tile_mapper.src.Canvas;
+using tile_mapper.src.UI;
 
 namespace tile_mapper.src
 {
     internal static class KeyboardHandeler
     {
-        public static void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime)
+        public static void HandleKeyboard(KeyboardState keyboardState, GameTime gameTime, Label label)
         {
             if(Global.keyboardTypingDest == Global.KeyboardTypingDest.None)
             {
@@ -43,7 +44,7 @@ namespace tile_mapper.src
                 Keys[] pressedKeys = keyboardState.GetPressedKeys();
                 if (pressedKeys.Length > 0 && pressedKeys[0] != Global.LastPressedKey)
                 {
-                    ObjectUtil.AddLetterToLabel(pressedKeys[0]);
+                    ObjectUtil.AddLetterToLabel(pressedKeys[0], label);
                     Global.LastPressedKey = pressedKeys[0];
                 }
                 if(pressedKeys.Length == 0)

@@ -262,7 +262,10 @@ namespace tile_mapper.src.UI
             GlobalLabels.ObjectName = new Label();
             GlobalLabels.ObjectName.Text = "";
             GlobalLabels.ObjectName.IsVisible = true;
+            GlobalLabels.ObjectName.editType = Property.Type.String;
             GlobalLabels.ObjectName.LabelRect = new Rectangle(Global.EditObjectMenuDestination.X + 36, Global.EditObjectMenuDestination.Y + 20, 192, 32);
+            GlobalLabels.EditableLabels.Add(GlobalLabels.ObjectName);
+            GlobalLabels.ObjectName.editingWhat = Global.IsEditingWhat.ObjectName;
 
             GlobalMenus.EditObjectMenu.labels.Add(GlobalLabels.ObjectName);
 
@@ -276,7 +279,7 @@ namespace tile_mapper.src.UI
             GlobalButtons.ObjectSave.SourceRect = new Rectangle(1392, 1120, 80, 32);
             GlobalMenus.EditObjectMenu.buttons.Add(GlobalButtons.ObjectSave);
 
-            GlobalMenus.ObjectProperties = new UI_Menu(false, new Rectangle(0,0,0,0), new Rectangle(GlobalMenus.EditObjectMenu.Destination.X, GlobalMenus.EditObjectMenu.Destination.Y + 64, GlobalMenus.EditObjectMenu.Destination.Width, GlobalMenus.EditObjectMenu.Destination.Height - 128));
+            GlobalMenus.ObjectProperties = new UI_Menu(false, new Rectangle(0,0,0,0), new Rectangle(GlobalMenus.EditObjectMenu.Destination.X, GlobalMenus.EditObjectMenu.Destination.Y + 71, GlobalMenus.EditObjectMenu.Destination.Width, GlobalMenus.EditObjectMenu.Destination.Height - 135));
             GlobalMenus.ObjectProperties.Scrollable = true;
 
             GlobalButtons.CreateObjectProperty = new Button("New Property", new Rectangle(GlobalMenus.ObjectProperties.Destination.X + GlobalMenus.ObjectProperties.Destination.Width / 2 - 224 / 2, GlobalMenus.ObjectProperties.Destination.Y, 224, 48), 528, 304, ButtonAction.CreateObjectProperty, true);

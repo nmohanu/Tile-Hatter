@@ -97,10 +97,10 @@ namespace tile_mapper.src.Canvas
 
         public static void AddObjectProperty()
         {
-            if (Global.SelectedObject == null)
+            if (Global.EditingObject == null)
                 return;
 
-            List<Property> list = Global.SelectedObject.Properties;
+            List<Property> list = Global.EditingObject.Properties;
             Property property = new Property();
             property.ID = "Property " + (list.Count() + 1).ToString();
             list.Add(property);
@@ -114,10 +114,10 @@ namespace tile_mapper.src.Canvas
             GlobalButtons.CreateObjectProperty.IsVisible = true;
             GlobalMenus.ObjectProperties.buttons.Add(GlobalButtons.CreateObjectProperty);
 
-            if (Global.SelectedObject.Properties.Count() > 0)
+            if (Global.EditingObject.Properties.Count() > 0)
             {
 
-                foreach (var Property in Global.SelectedObject.Properties)
+                foreach (var Property in Global.EditingObject.Properties)
                 {
                     if (Property != null)
                     {
@@ -129,6 +129,20 @@ namespace tile_mapper.src.Canvas
                 }
             }
             ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectProperties);
+        }
+
+        public static void OpenEditObjectMenu(Object objectEditing)
+        {
+            GlobalMenus.EditObjectMenu.IsVisible = true;
+            GlobalMenus.ObjectProperties.IsVisible = true;
+            GlobalLabels.ObjectName.Text = objectEditing.ID;
+            if (Global.EditingObject == null)
+            {
+                Global.EditingObject = objectEditing;
+                Global.EditingObjectOriginal = objectEditing.Clone();
+            }
+
+            ReloadObjectProperties();
         }
 
         public static void ReloadLayerProperties()
@@ -226,6 +240,9 @@ namespace tile_mapper.src.Canvas
             ReloadLayerProperties();
             ReloadAreaProperties();
             Global.keyboardTypingDest = Global.KeyboardTypingDest.None;
+
+            if (Global.EditingObject != null)
+                ObjectUtil.OpenEditObjectMenu(Global.EditingObject);
         }
 
         public static void UpdateValueLabel(Property property)
@@ -258,6 +275,9 @@ namespace tile_mapper.src.Canvas
             GlobalMenus.PropertyEditMenu.IsVisible = false;
             Global.PropertyEditingCopy = null;
             Global.keyboardTypingDest = Global.KeyboardTypingDest.None;
+
+            if (Global.EditingObject != null)
+                ObjectUtil.OpenEditObjectMenu(Global.EditingObject);
         }
 
         public static void PropertyGoLeft()
@@ -286,40 +306,55 @@ namespace tile_mapper.src.Canvas
             UpdateValueLabel(Global.PropertyEditingCopy);
         }
 
-        public static void AddLetterToLabel(Microsoft.Xna.Framework.Input.Keys key)
+        public static void AddLetter(ref String editString, Microsoft.Xna.Framework.Input.Keys key)
+        {
+            if (editString == "Null")
+                editString = "";
+            // Edit the string.
+            if (key == Microsoft.Xna.Framework.Input.Keys.Back && editString.Length > 0)
+            {
+                editString = editString.Substring(0, editString.Length - 1);
+            }
+
+            else if (key >= Keys.A && key <= Keys.Z || key >= Keys.D0 && key <= Keys.D9)
+            {
+                // Convert the key to a char
+                char keyPressed = (char)key;
+
+                if (!Global.PreviousKeybordState.IsKeyDown(Keys.LeftShift) && !Global.PreviousKeybordState.IsKeyDown(Keys.RightShift))
+                    keyPressed = char.ToLower(keyPressed);
+
+                // Add the key to the string
+                editString += keyPressed;
+            }
+        }
+
+        public static void AddLetterToLabel(Microsoft.Xna.Framework.Input.Keys key, Label label)
         {
             if (Global.LabelCurrentlyEditing == null)
                 return;
 
+
+            // User is not editing property but an object.
             string editString = Global.LabelCurrentlyEditing.Text;
 
             // STRING OR CLASS
 
-            if (Global.PropertyEditingCopy.PropertyType == Property.Type.String || Global.PropertyEditingCopy.PropertyType == Property.Type.Class || Global.LabelCurrentlyEditing == GlobalLabels.CurrentPropertyID)
+            if(label.editingWhat == Global.IsEditingWhat.ObjectName)
             {
-                if (editString == "Null")
-                    editString = "";
-                // Edit the string.
-                if (key == Microsoft.Xna.Framework.Input.Keys.Back && editString.Length > 0)
-                {
-                    editString = editString.Substring(0, editString.Length - 1);
-                }
+                AddLetter(ref editString, key);
+                Global.EditingObject.ID = editString;
+                Global.LabelCurrentlyEditing.Text = editString;
+                return;
+            }
 
-                else if (key >= Keys.A && key <= Keys.Z || key >= Keys.D0 && key <= Keys.D9)
-                {
-                    // Convert the key to a char
-                    char keyPressed = (char)key;
+            if (Global.PropertyEditingCopy.PropertyType == Property.Type.String || Global.PropertyEditingCopy.PropertyType == Property.Type.Class || Global.LabelCurrentlyEditing == GlobalLabels.CurrentPropertyID || label.editingWhat == Global.IsEditingWhat.ObjectName)
+            {
+                AddLetter(ref editString, key);
 
-                    if (!Global.PreviousKeybordState.IsKeyDown(Keys.LeftShift) && !Global.PreviousKeybordState.IsKeyDown(Keys.RightShift))
-                        keyPressed = char.ToLower(keyPressed);
-
-                    // Add the key to the string
-                    editString += keyPressed;
-                }
-
-                if(Global.LabelCurrentlyEditing == GlobalLabels.CurrentPropertyID)
+                if (Global.LabelCurrentlyEditing == GlobalLabels.CurrentPropertyID)
                     Global.PropertyEditingCopy.ID = editString;
-                else if(Global.LabelCurrentlyEditing == GlobalLabels.CurrentPropertyValue && Global.PropertyEditingCopy.PropertyType == Property.Type.String)
+                else if (Global.LabelCurrentlyEditing == GlobalLabels.CurrentPropertyValue && Global.PropertyEditingCopy.PropertyType == Property.Type.String)
                     Global.PropertyEditingCopy.String = editString;
                 else if (Global.LabelCurrentlyEditing == GlobalLabels.CurrentPropertyValue)
                     Global.PropertyEditingCopy.ClassID = editString;
