@@ -26,6 +26,7 @@ namespace tile_mapper.src
             Draw,
             Eraser,
             Fill,
+            placingObject,
             None
         }
 
@@ -199,14 +200,19 @@ namespace tile_mapper.src
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             Global.SpriteSheet = new SpriteSheet(Global.TILE_SIZE);
-            Global.SpriteSheet.Texture = Content.Load<Texture2D>("tile_sheet");
+            // Global.SpriteSheet.Texture = Content.Load<Texture2D>("tile_sheet");
 
             using (FileStream stream = new FileStream("../../../Content/UI_new.png", FileMode.Open))
             {
                 Global.UI = Texture2D.FromStream(GraphicsDevice, stream);
             }
             //UI = Content.Load<Texture2D>("UI");
-            Global.Grid = Content.Load<Texture2D>("grid");
+            using (FileStream stream = new FileStream("../../../Content/grid.png", FileMode.Open))
+            {
+                Global.Grid = Texture2D.FromStream(GraphicsDevice, stream);
+            }
+
+            //Global.Grid = Content.Load<Texture2D>("grid");
 
             Global.font = Content.Load<SpriteFont>("font");
         }
@@ -301,6 +307,27 @@ namespace tile_mapper.src
                         button.ChangeSourceX(Global.MousePos);
             }
 
+            // Edit object size
+            if (keyboardState.IsKeyDown(Keys.OemPlus) && !Global.PreviousKeybordState.IsKeyDown(Keys.OemPlus))
+            {
+                if (Global.SelectedObject != null)
+                {
+                    if (keyboardState.IsKeyDown(Keys.LeftShift))
+                        Global.SelectedObject.TileRect.Height++;
+                    else
+                        Global.SelectedObject.TileRect.Width++;
+                }
+            }
+            else if (keyboardState.IsKeyDown(Keys.OemMinus) && !Global.PreviousKeybordState.IsKeyDown(Keys.OemMinus))
+            {
+                if (Global.SelectedObject != null)
+                {
+                    if (keyboardState.IsKeyDown(Keys.LeftShift))
+                        Global.SelectedObject.TileRect.Height--;
+                    else
+                        Global.SelectedObject.TileRect.Width--;
+                }
+            }
 
             // Tile sheet is imported.
             if (Global.HasTileSheet && GlobalMenus.TileMenu.Destination.Contains(Global.MousePos))
@@ -389,6 +416,11 @@ namespace tile_mapper.src
                 Global.Selection.Width = 0;
                 Global.Selection.Height = 0;
                 Global.SelectedObject = null;
+                if(Global.SelectedObjectButton != null)
+                {
+                    Global.SelectedObjectButton.IsPressed = false;
+                    Global.SelectedObjectButton = null;
+                }
             }
 
             // Only update the selected square if user is not using scroll wheel.

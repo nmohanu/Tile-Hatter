@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using tile_mapper.src.Layer;
+using tile_mapper.src.UI;
 using tile_mapper.src.UserSprites;
 
 
@@ -61,9 +62,10 @@ namespace tile_mapper.src.Canvas
             ObjectLayers.Remove(ObjectLayers[objectLayerIndex]);
         }
 
-        public void CreateObjectLayer()
+        public void CreateObjectLayer(ref Button btn)
         {
             ObjectLayer layer = new ObjectLayer();
+            btn.ObjectLayer = layer;
             layer.objects = new List<Object>();
             ObjectLayers.Add(layer);
         }

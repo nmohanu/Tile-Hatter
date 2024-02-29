@@ -20,7 +20,7 @@ namespace tile_mapper.src.Canvas
             btn.Text = "ObjectLayer " + (Global.CurrentMap.ObjectLayers.Count() + 1).ToString();
             GlobalMenus.ObjectLayerMenu.buttons.Add(btn);
             ScrollMenuUtil.UpdateListOrder(GlobalMenus.ObjectLayerMenu);
-            Global.CurrentMap.CreateObjectLayer();
+            Global.CurrentMap.CreateObjectLayer(ref btn);
         }
         public static void AddObject()
         {

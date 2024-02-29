@@ -127,6 +127,7 @@ namespace tile_mapper.src.UI
         public Button DeleteButton;
         public Property Property;
         public Object Object;
+        public ObjectLayer ObjectLayer;
         public Button(string text, Rectangle rect, int selectionX, int originalX, ButtonAction action, bool isVisible)
         {
             Text = text;

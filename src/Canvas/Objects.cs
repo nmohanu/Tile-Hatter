@@ -29,8 +29,10 @@ namespace tile_mapper.src.Canvas
     {
         public string ID;
 
-        public Rectangle TileRect = new Rectangle(0, 0, 1, 1); // Tile specifying.
+        public Rectangle TileRect = new Rectangle(0, 0, 2, 2); // Tile specifying.
         public Rectangle PixelRect; // To adjust pixel specific.
+
+        public List<Point> Locations = new List<Point>();
 
         public List<Property> Properties = new List<Property>();
 

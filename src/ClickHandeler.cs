@@ -31,7 +31,7 @@ namespace tile_mapper.src
                     Global.A = null;
 
                 // Reset CursorState
-                if (Global.resetCursorState && Global.CursorActionState != CursorState.Eraser && Global.CursorActionState != CursorState.Draw && Global.CursorActionState != CursorState.Fill)
+                if (Global.resetCursorState && Global.CursorActionState != CursorState.Eraser && Global.CursorActionState != CursorState.Draw && Global.CursorActionState != CursorState.Fill && Global.CursorActionState != CursorState.placingObject)
                 {
                     Global.CursorActionState = CursorState.None;
                 }
@@ -294,6 +294,7 @@ namespace tile_mapper.src
                     if (GlobalButtons.SelectedObjectLayerButton != null)
                         GlobalButtons.SelectedObjectLayerButton.IsPressed = false;
                     GlobalButtons.SelectedObjectLayerButton = buttonClicked;
+                    Global.SelectedObjectLayer = buttonClicked.ObjectLayer;
                     buttonClicked.IsPressed = true;
                     ObjectUtil.ReloadObjects();
                     break;
@@ -336,6 +337,11 @@ namespace tile_mapper.src
                     break;
                 case ButtonAction.SelectObject:
                     Global.SelectedObject = buttonClicked.Object;
+                    if(Global.SelectedObjectButton != null)
+                        Global.SelectedObjectButton.IsPressed = false;
+                    buttonClicked.IsPressed = true;
+                    Global.SelectedObjectButton = buttonClicked;
+                    Global.CursorActionState = CursorState.placingObject;
                     break;
             }
         }
@@ -345,7 +351,7 @@ namespace tile_mapper.src
                 if (menu.Destination.Contains(Global.MousePos) && menu.IsVisible)
                     return;
             // Execute each frame if mouse button is held.
-            if (mouseState.LeftButton == ButtonState.Pressed && Global.selected != null && !keyboardState.IsKeyDown(Keys.LeftShift))
+            if (mouseState.LeftButton == ButtonState.Pressed && (Global.selected != null || Global.CursorActionState == CursorState.placingObject)&& !keyboardState.IsKeyDown(Keys.LeftShift))
             {
                 foreach (var area in Global.CurrentMap.areas)
                 {
@@ -353,6 +359,12 @@ namespace tile_mapper.src
                     {
                         switch (Global.CursorActionState)
                         {
+                            case CursorState.placingObject:
+                                if (Global.SelectedObject != null)
+                                {
+                                    Global.SelectedObject.Locations.Add(new Point(Global.SelectedX, Global.SelectedY));
+                                }
+                                break;
                             case CursorState.Draw:
                                 if (Global.CurrentMap.LayerAmount > 0 && area.Layers[Global.CurrentLayer].TileMap[Global.SelectedY - area.AreaCords.Y, Global.SelectedX - area.AreaCords.X].ID != Global.selected.ID)
                                 {
@@ -378,6 +390,7 @@ namespace tile_mapper.src
                                         ToolUtil.FillClicked();
                                 }
                                 break;
+                            
                         }
                     }
                 }

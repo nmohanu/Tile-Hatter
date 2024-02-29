@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using tile_mapper.src.Canvas;
 using tile_mapper.src.UI;
 using tile_mapper.src.UserSprites;
@@ -59,21 +60,20 @@ namespace tile_mapper.src
 
                     if (j == SelectedY && i == SelectedX)
                     {
-                        if (selected != null && CursorActionState == ProgramLoop.CursorState.Draw)
-                            spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
-                        else
-                            spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White * 0.5f);
-
-                        if(Global.SelectedObject != null)
+                        if (Global.SelectedObject != null && Global.CursorActionState == ProgramLoop.CursorState.placingObject)
                         {
-                            for(int n = 0; n < Global.SelectedObject.TileRect.Height; n++)
+                            for (int n = 0; n < Global.SelectedObject.TileRect.Height; n++)
                             {
-                                for (int m = 0; m < Global.SelectedObject.TileRect.Width; n++)
+                                for (int m = 0; m < Global.SelectedObject.TileRect.Width; m++)
                                 {
-                                    spriteBatch.Draw(Grid, new Rectangle(DestRect.X + TILE_SIZE * m, DestRect.Y * TILE_SIZE * n, DestRect.Width, DestRect.Height), new Rectangle(352, 0, 16, 16), Color.White * 0.5f);
+                                    spriteBatch.Draw(Grid, new Rectangle(DestRect.X + (int)(TILE_SIZE * m * Scale), DestRect.Y + (int)(TILE_SIZE * n * Scale), DestRect.Width, DestRect.Height), new Rectangle(352, 0, 16, 16), Color.White * 0.5f);
                                 }
                             }
                         }
+                        else if (selected != null && CursorActionState == ProgramLoop.CursorState.Draw)
+                            spriteBatch.Draw(TileSheet, DestRect, selected.Source, Color.White);
+                        else
+                            spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), Color.White * 0.5f);
                     }
 
 
@@ -88,6 +88,39 @@ namespace tile_mapper.src
                         {
                             spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), color);
                         }
+                    }
+                }
+            }
+            // Draw the objects
+            foreach (var layer in Global.CurrentMap.ObjectLayers)
+            {
+                foreach (var obj in layer.objects)
+                {
+                    foreach (var point in obj.Locations)
+                    {
+                        Rectangle DestRect = new Rectangle((int)(point.X * TILE_SIZE * Scale + Offset.X), (int)(point.Y * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
+                        for (int n = 0; n < Global.SelectedObject.TileRect.Height; n++)
+                        {
+                            for (int m = 0; m < Global.SelectedObject.TileRect.Width; m++)
+                            {
+                                spriteBatch.Draw(Grid, new Rectangle(DestRect.X + (int)(TILE_SIZE * m * Scale), DestRect.Y + (int)(TILE_SIZE * n * Scale), DestRect.Width, DestRect.Height), new Rectangle(352, 0, 16, 16), Color.White * 0.2f);
+                                
+                            }
+                        }
+                        spriteBatch.DrawString(
+                                Global.font,
+                                obj.ID,
+                                        new Vector2(
+                                        DestRect.X + (int)(TILE_SIZE * Scale + 1) * obj.TileRect.Width / 2 - Global.font.MeasureString(obj.ID).X * Global.TextScale / 4 * Global.Scale,
+                                        DestRect.Y + (int)(TILE_SIZE * Scale + 1) * obj.TileRect.Height / 2 - Global.font.MeasureString(obj.ID).Y * Global.TextScale / 4 * Global.Scale
+                                        ),
+                                        Color.White,
+                                        0f, // Rotation angle, set to 0 for no rotation
+                                        Vector2.Zero, // Origin, set to Vector2.Zero for the default origin
+                                    Global.TextScale * Global.Scale / 2, // Scale factor
+                                    SpriteEffects.None, // Sprite effects, set to None for no effects
+                                    0f // Depth, set to 0 for the default depth
+                                );
                     }
                 }
             }

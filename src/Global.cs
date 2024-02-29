@@ -89,6 +89,8 @@ namespace tile_mapper.src
         public static Object EditingObjectOriginal;
         public static Object SelectedObject;
         public static Vector2 LastClickPos;
+        public static Button SelectedObjectButton;
+        public static ObjectLayer SelectedObjectLayer;
 
         public enum IsEditingWhat
         {
