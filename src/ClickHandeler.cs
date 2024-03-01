@@ -31,7 +31,7 @@ namespace tile_mapper.src
                     Global.A = null;
 
                 // Reset CursorState
-                if (Global.resetCursorState && Global.CursorActionState != CursorState.Eraser && Global.CursorActionState != CursorState.Draw && Global.CursorActionState != CursorState.Fill && Global.CursorActionState != CursorState.placingObject)
+                if (Global.resetCursorState && Global.CursorActionState != CursorState.Eraser && Global.CursorActionState != CursorState.Draw && Global.CursorActionState != CursorState.Fill && Global.CursorActionState != CursorState.placingObject || Global.CursorActionState == CursorState.DeletingObject)
                 {
                     Global.CursorActionState = CursorState.None;
                 }
@@ -343,6 +343,12 @@ namespace tile_mapper.src
                     Global.SelectedObjectButton = buttonClicked;
                     Global.CursorActionState = CursorState.placingObject;
                     break;
+                case ButtonAction.ShowGrid:
+                    Global.ShowGrid = !Global.ShowGrid; 
+                    break;
+                case ButtonAction.DeleteObjectState:
+                    Global.CursorActionState = CursorState.DeletingObject; 
+                    break;
             }
         }
         public static void HandleLeftHold(MouseState mouseState, KeyboardState keyboardState)
@@ -351,7 +357,7 @@ namespace tile_mapper.src
                 if (menu.Destination.Contains(Global.MousePos) && menu.IsVisible)
                     return;
             // Execute each frame if mouse button is held.
-            if (mouseState.LeftButton == ButtonState.Pressed && (Global.selected != null || Global.CursorActionState == CursorState.placingObject)&& !keyboardState.IsKeyDown(Keys.LeftShift))
+            if (mouseState.LeftButton == ButtonState.Pressed && (Global.selected != null || Global.CursorActionState == CursorState.placingObject || Global.CursorActionState == CursorState.DeletingObject)&& !keyboardState.IsKeyDown(Keys.LeftShift))
             {
                 foreach (var area in Global.CurrentMap.areas)
                 {
@@ -390,7 +396,28 @@ namespace tile_mapper.src
                                         ToolUtil.FillClicked();
                                 }
                                 break;
-                            
+                            case CursorState.DeletingObject:
+                                if (Global.PreviousMouseState.LeftButton != ButtonState.Pressed)
+                                {
+                                    if(Global.SelectedObjectLayer != null)
+                                    {
+                                        foreach(var obj in Global.SelectedObjectLayer.objects)
+                                        {
+                                            foreach(var point in obj.Locations)
+                                            {
+                                                Rectangle rect = obj.TileRect;
+                                                rect.X = point.X;
+                                                rect.Y = point.Y;
+                                                if(rect.Contains(Global.SelectedPoint))
+                                                {
+                                                    obj.Locations.Remove(point);
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
                         }
                     }
                 }

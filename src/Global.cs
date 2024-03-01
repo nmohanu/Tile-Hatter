@@ -91,6 +91,7 @@ namespace tile_mapper.src
         public static Vector2 LastClickPos;
         public static Button SelectedObjectButton;
         public static ObjectLayer SelectedObjectLayer;
+        public static bool ShowGrid = true;
 
         public enum IsEditingWhat
         {

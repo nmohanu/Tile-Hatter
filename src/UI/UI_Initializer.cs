@@ -14,20 +14,26 @@ namespace tile_mapper.src.UI
         // Buttons
         public static void InitializeToolsetButtons()
         {
-            GlobalButtons.DrawTool = new Button("", new Rectangle(Global.ScreenWidth/2 - 80, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
+            GlobalButtons.DrawTool = new Button("", new Rectangle(Global.ScreenWidth/2 - 80 -32, 32, 32, 32), 160, 160, ButtonAction.DrawTool, true);
             GlobalButtons.DrawTool.SourceRect.Y = 96;
 
-            GlobalButtons.FillTool = new Button("", new Rectangle(Global.ScreenWidth / 2 - 48, 32, 32, 32), 160 + 32, 160 + 32, ButtonAction.FillTool, true);
+            GlobalButtons.FillTool = new Button("", new Rectangle(Global.ScreenWidth / 2 - 48 - 32, 32, 32, 32), 160 + 32, 160 + 32, ButtonAction.FillTool, true);
             GlobalButtons.FillTool.SourceRect.Y = 96;
 
-            GlobalButtons.EraserTool = new Button("", new Rectangle(Global.ScreenWidth / 2 - 16, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
+            GlobalButtons.EraserTool = new Button("", new Rectangle(Global.ScreenWidth / 2 - 16 - 32, 32, 32, 32), 160 + 64, 160 + 64, ButtonAction.EraserTool, true);
             GlobalButtons.EraserTool.SourceRect.Y = 96;
 
-            GlobalButtons.SpecifyStartPoint = new Button("", new Rectangle(Global.ScreenWidth / 2 + 16, 32, 32, 32), 288 + 32, 288 + 32, ButtonAction.SpecifyStartPoint, true);
+            GlobalButtons.SpecifyStartPoint = new Button("", new Rectangle(Global.ScreenWidth / 2 + 16 - 32, 32, 32, 32), 288 + 32, 288 + 32, ButtonAction.SpecifyStartPoint, true);
             GlobalButtons.SpecifyStartPoint.SourceRect.Y = 96;
 
-            GlobalButtons.SpecifyDoor = new Button("", new Rectangle(Global.ScreenWidth / 2 + 48 , 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
+            GlobalButtons.SpecifyDoor = new Button("", new Rectangle(Global.ScreenWidth / 2 + 48 - 32, 32, 32, 32), 288, 288, ButtonAction.SpecifyDoor, true);
             GlobalButtons.SpecifyDoor.SourceRect.Y = 96;
+
+            GlobalButtons.DeleteObject = new Button("", new Rectangle(Global.ScreenWidth / 2 + 48 , 32, 32, 32), 256, 256, ButtonAction.DeleteObjectState, true);
+            GlobalButtons.DeleteObject.SourceRect.Y = 96;
+
+            GlobalButtons.ShowGrid = new Button("", new Rectangle(Global.ScreenWidth / 2 + 48 + 32, 32, 32, 32), 352, 352, ButtonAction.ShowGrid, true);
+            GlobalButtons.ShowGrid.SourceRect.Y = 96;
         }
         public static void InitializePaletteButtons()
         {
@@ -303,6 +309,8 @@ namespace tile_mapper.src.UI
             GlobalMenus.TopBar.buttons.Add(GlobalButtons.WorldScreen);
             GlobalMenus.TopBar.buttons.Add(GlobalButtons.SheetScreen);
             GlobalMenus.TopBar.buttons.Add(GlobalButtons.RuleSetScreen);
+            GlobalMenus.TopBar.buttons.Add(GlobalButtons.DeleteObject);
+            GlobalMenus.TopBar.buttons.Add(GlobalButtons.ShowGrid);
 
             GlobalMenus.GeneralOverlay.buttons.Add(GlobalButtons.OpenPalette);
             GlobalMenus.GeneralOverlay.buttons.Add(GlobalButtons.Import);

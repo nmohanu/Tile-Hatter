@@ -29,7 +29,7 @@ namespace tile_mapper.src
             EndX++;
             EndY++;
 
-            Color color = Color.Gray * 0.5f;
+            Color color = Color.Gray * 0.4f;
 
             for (int i = StartX; i < EndX; i++)
             {
@@ -56,7 +56,9 @@ namespace tile_mapper.src
                         SourceRect.X = 224; // Middle column, every 4th cell
 
                     Rectangle DestRect = new Rectangle((int)(i * TILE_SIZE * Scale + Offset.X), (int)(j * TILE_SIZE * Scale + Offset.Y), (int)(TILE_SIZE * Scale + 1), (int)(TILE_SIZE * Scale + 1));
-                    spriteBatch.Draw(Grid, DestRect, SourceRect, Color.White);
+
+                    if(Global.ShowGrid)
+                        spriteBatch.Draw(Grid, DestRect, SourceRect, Color.White);
 
                     if (j == SelectedY && i == SelectedX)
                     {
@@ -84,7 +86,7 @@ namespace tile_mapper.src
 
                     foreach (var area in CurrentMap.areas)
                     {
-                        if (area.AreaCords.Contains(i, j))
+                        if (area.AreaCords.Contains(i, j) && Global.ShowGrid)
                         {
                             spriteBatch.Draw(Grid, DestRect, new Rectangle(288, 0, 16, 16), color);
                         }

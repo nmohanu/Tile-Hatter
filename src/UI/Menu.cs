@@ -207,6 +207,8 @@ namespace tile_mapper.src.UI
         SelectObjectLayer,
         SaveObject,
         CancelObject,
+        DeleteObjectState,
+        ShowGrid,
 
         // Properties
         CreateLayerProperty,

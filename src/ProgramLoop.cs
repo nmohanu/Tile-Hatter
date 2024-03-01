@@ -27,6 +27,7 @@ namespace tile_mapper.src
             Eraser,
             Fill,
             placingObject,
+            DeletingObject,
             None
         }
 
@@ -641,6 +642,8 @@ namespace tile_mapper.src
                 _spriteBatch.Draw(Global.UI, new Vector2(Global.MousePos.X - 16, Global.MousePos.Y - 16), GlobalButtons.FillTool.SourceRect, Color.White);
             else if (Global.CursorActionState == CursorState.Eraser)
                 _spriteBatch.Draw(Global.UI, new Vector2(Global.MousePos.X - 16, Global.MousePos.Y - 16), GlobalButtons.EraserTool.SourceRect, Color.White);
+            else if (Global.CursorActionState == CursorState.DeletingObject)
+                _spriteBatch.Draw(Global.UI, new Vector2(Global.MousePos.X - 16, Global.MousePos.Y - 16), GlobalButtons.DeleteObject.SourceRect, Color.White);
             else
                 _spriteBatch.Draw(Global.UI, new Vector2(Global.MousePos.X - 16, Global.MousePos.Y - 16), Global.MouseSource, Color.White);
 
