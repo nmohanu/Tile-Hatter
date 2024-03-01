@@ -237,6 +237,12 @@ namespace tile_mapper.src
             Vector2 MousePosRelative = Global.MousePos - Global.Offset;
             ClickHandeler.HandleLeftHold(mouseState, keyboardState);
 
+            if(keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.S)
+                && !Global.PreviousKeybordState.IsKeyDown(Keys.S))
+            {
+                FileUtil.ExportWorld();
+            }
+
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 Global.PreviousMouseState.LeftButton == ButtonState.Released)
             {
