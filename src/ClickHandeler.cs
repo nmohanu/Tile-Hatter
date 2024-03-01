@@ -1,9 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static tile_mapper.src.ProgramLoop;
 using tile_mapper.src.Canvas;
 using tile_mapper.src.Layer;
@@ -234,6 +231,7 @@ namespace tile_mapper.src
                     Global.OriginalOffset = Global.Offset;
                     Global.Offset = new Vector2(Global.ScreenWidth / 2 - Global.CurrentMap.StartLocation.X * Global.TILE_SIZE * Global.TestingScale, Global.ScreenHeight / 2 - Global.CurrentMap.StartLocation.Y * Global.TILE_SIZE * Global.TestingScale);
                     Global.CharacterSource.X = 0;
+
                     break;
                 case ButtonAction.EditState:
                     Global.State = EditorState.Edit;
@@ -366,7 +364,7 @@ namespace tile_mapper.src
                         switch (Global.CursorActionState)
                         {
                             case CursorState.placingObject:
-                                if (Global.SelectedObject != null)
+                                if (Global.SelectedObject != null && Global.PreviousMouseState.LeftButton != ButtonState.Pressed)
                                 {
                                     Global.SelectedObject.Locations.Add(new Point(Global.SelectedX, Global.SelectedY));
                                 }
@@ -411,8 +409,8 @@ namespace tile_mapper.src
                                                 if(rect.Contains(Global.SelectedPoint))
                                                 {
                                                     obj.Locations.Remove(point);
+                                                    break;
                                                 }
-                                                break;
                                             }
                                         }
                                     }

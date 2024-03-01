@@ -105,7 +105,7 @@ namespace tile_mapper.src
                         {
                             for (int m = 0; m < obj.TileRect.Width; m++)
                             {
-                                spriteBatch.Draw(Grid, new Rectangle(DestRect.X + (int)(TILE_SIZE * m * Scale), DestRect.Y + (int)(TILE_SIZE * n * Scale), DestRect.Width, DestRect.Height), new Rectangle(352, 0, 16, 16), Color.White * 0.2f);
+                                spriteBatch.Draw(Grid, new Rectangle(DestRect.X + (int)(TILE_SIZE * m * Scale), DestRect.Y + (int)(TILE_SIZE * n * Scale), DestRect.Width, DestRect.Height), new Rectangle(352, 0, 16, 16), Color.White * 0.5f);
                                 
                             }
                         }
