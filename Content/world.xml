@@ -1,0 +1,357 @@
+<World LayerAmount="2" ObjectLayerAmount="0" AreaAmount="3" TeleportationAmount="0" CollisionTileAmount="0">
+  <Area AreaName="Area: 1" AreaCords="{X:0 Y:0 Width:69 Height:61}">
+    <Layer />
+    <Layer>
+      <Tile ID="0">
+        <Property Int="639" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="3" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="27" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="1181" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="66" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="728" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="198" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="477" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="126" />
+      </Tile>
+      <Tile ID="0">
+        <Property Int="5" />
+      </Tile>
+    </Layer>
+  </Area>
+  <Area AreaName="Area: 2" AreaCords="{X:80 Y:9 Width:31 Height:25}">
+    <Layer />
+    <Layer>
+      <Tile ID="X2Y7">
+        <Property Int="97" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="75" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="26" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="25" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="38" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="17" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="7" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="26" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="18" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="9" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="16" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="9" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="15" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="8" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="16" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="9" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="16" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="8" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="17" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="7" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X2Y7">
+        <Property Int="18" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1" />
+      </Tile>
+    </Layer>
+  </Area>
+  <Area AreaName="Area: 3" AreaCords="{X:28 Y:67 Width:473 Height:412}">
+    <Layer>
+      <Tile ID="X3Y6">
+        <Property Int="142554" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1889" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="2363" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="472" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="5202" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="8038" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="3783" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="3397" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="13151" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="2362" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="470" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="472" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="945" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="471" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="471" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="470" />
+      </Tile>
+      <Tile ID="X0Y2">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="471" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1417" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="942" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="471" />
+      </Tile>
+      <Tile ID="X0Y2">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="470" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="471" />
+      </Tile>
+    </Layer>
+    <Layer>
+      <Tile ID="X3Y6">
+        <Property Int="152616" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="463" />
+      </Tile>
+      <Tile ID="X0Y2">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="5" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="3" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="475" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="472" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="438" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="29" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="443" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="28" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="470" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="433" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="464" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="506" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="913" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="457" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="517" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="451" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="446" />
+      </Tile>
+      <Tile ID="X0Y2">
+        <Property Int="1" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="3" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="458" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="12" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="942" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="472" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="21" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="434" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="942" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="2" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="9" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="1402" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="947" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="43" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="939" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="439" />
+      </Tile>
+      <Tile ID="X3Y6">
+        <Property Int="14" />
+      </Tile>
+    </Layer>
+  </Area>
+</World>
