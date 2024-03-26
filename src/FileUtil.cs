@@ -107,7 +107,6 @@ namespace tile_mapper.src
 
                     string previousTileID = null;
                     int repeatCount = 0;
-
                     foreach (var tile in layer.TileMap)
                     {
                         if (tile.ID == previousTileID)
@@ -123,7 +122,7 @@ namespace tile_mapper.src
                                 tileElement.SetAttribute("ID", previousTileID);
 
                                 XmlElement repeatsProperty = xmlDoc.CreateElement("Property");
-                                repeatsProperty.SetAttribute("Int", repeatCount.ToString());
+                                repeatsProperty.SetAttribute("Int", (repeatCount+1).ToString());
                                 tileElement.AppendChild(repeatsProperty);
 
                                 layerElement.AppendChild(tileElement);
@@ -135,6 +134,17 @@ namespace tile_mapper.src
                             // Start counting repeats for the new tile
                             previousTileID = tile.ID;
                         }
+                    }
+                    if (repeatCount > 0)
+                    {
+                        XmlElement tileElement = xmlDoc.CreateElement("Tile");
+                        tileElement.SetAttribute("ID", previousTileID);
+
+                        XmlElement repeatsProperty = xmlDoc.CreateElement("Property");
+                        repeatsProperty.SetAttribute("Int", repeatCount.ToString());
+                        tileElement.AppendChild(repeatsProperty);
+
+                        layerElement.AppendChild(tileElement);
                     }
 
                     foreach (var property in layer.Properties)
