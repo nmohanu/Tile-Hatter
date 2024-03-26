@@ -139,8 +139,6 @@ namespace tile_mapper.src
             EndX++;
             EndY++;
 
-
-
             if (CurrentMap.areas.Count() > 0)
             {
                 foreach (var area in CurrentMap.areas)
@@ -162,7 +160,7 @@ namespace tile_mapper.src
                                     }
                                     else
                                     {
-                                        spriteBatch.Draw(TileSheet, DestRect, area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White * 0.6f);
+                                        spriteBatch.Draw(TileSheet, DestRect, area.Layers[k].TileMap[i - area.AreaCords.Y, j - area.AreaCords.X].Source, Color.White * 0.8f);
                                     }
                                 }
                                 else

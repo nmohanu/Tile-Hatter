@@ -1,9 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using tile_mapper.src.UI;
 
 namespace tile_mapper.src.Canvas
@@ -38,11 +40,20 @@ namespace tile_mapper.src.Canvas
             }
             if (allowed)
             {
-                string name = "Area: " + (Global.CurrentMap.areas.Count() + 1).ToString();
+                Global.CurrentMap.CreateArea(Global.Selection, "Area " + (Global.CurrentMap.areas.Count() + 1).ToString());
+            }
+        }
+
+        public static void ReloadAreaButtons()
+        {
+            int counter = 1;
+            GlobalMenus.AreaMenu.buttons.Clear();
+            foreach(Area area in Global.CurrentMap.areas)
+            {
+                string name = "Area: " + (counter).ToString();
+                counter++;
                 Button btn = ScrollMenuUtil.CreateRemovableButton(ButtonAction.SelectArea, ButtonAction.RemoveArea, GlobalMenus.Properties);
                 btn.Text = name;
-                Global.CurrentMap.CreateArea(Global.Selection, name);
-
                 btn.PressedSourceX = 288;
                 btn.SourceRect.Y = 128;
 

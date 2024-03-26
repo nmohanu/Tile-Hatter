@@ -78,6 +78,126 @@ namespace tile_mapper.src
             return System.IO.File.GetLastWriteTimeUtc(Global.TileSheetPath);
         }
 
+        internal static void ImportWorld()
+        {
+            if(!Global.HasTileSheet) { return; }
+
+            // Load XML document from file
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load("../../../Content/world.xml");
+
+            // Retrieve the root element
+            XmlElement worldElement = xmlDoc.DocumentElement;
+
+            // Create a new WorldCanvas object
+            WorldCanvas world = new WorldCanvas();
+
+            // Retrieve world data attributes
+            int layerAmount = int.Parse(worldElement.GetAttribute("LayerAmount"));
+            int objectLayerAmount = int.Parse(worldElement.GetAttribute("ObjectLayerAmount"));
+            int areaAmount = int.Parse(worldElement.GetAttribute("AreaAmount"));
+            int teleportationAmount = int.Parse(worldElement.GetAttribute("TeleportationAmount"));
+            int collisionTileAmount = int.Parse(worldElement.GetAttribute("CollisionTileAmount"));
+
+            // Set world data
+            world.LayerAmount = layerAmount;
+
+            // Import areas
+            XmlNodeList areaNodes = worldElement.SelectNodes("Area");
+            foreach (XmlNode areaNode in areaNodes)
+            {
+                // Parse area coordinates to construct a Rectangle
+                string areaCordsString = areaNode.Attributes["AreaCords"].Value;
+                string[] areaCords = areaCordsString.Split(' ');
+                areaCords[0] = areaCords[0].Substring(3);
+                areaCords[1] = areaCords[1].Substring(2);
+                areaCords[2] = areaCords[2].Substring(6);
+                areaCords[3] = areaCords[3].Substring(7);
+                areaCords[3] = areaCords[3].Substring(0, areaCords[3].Length - 1);
+                int x = int.Parse(areaCords[0]);
+                int y = int.Parse(areaCords[1]);
+                int width = int.Parse(areaCords[2]);
+                int height = int.Parse(areaCords[3]);
+                Rectangle areaCordsRect = new Rectangle(x, y, width, height);
+
+                // Parse other attributes
+                string areaName = areaNode.Attributes["AreaName"].Value;
+
+                // Create Area object with parsed parameters
+                Area area = new Area(areaCordsRect, areaName, 0, 0);
+
+                // Import layers within area
+                XmlNodeList layerNodes = areaNode.SelectNodes("Layer");
+                foreach (XmlNode layerNode in layerNodes)
+                {
+                    SpriteLayer layer = new SpriteLayer(area.AreaCords);
+                    
+
+                    // Import tiles within layer
+                    XmlNodeList tileNodes = layerNode.SelectNodes("Tile");
+
+                    int counter = 0; 
+
+                    foreach (XmlNode tileNode in tileNodes)
+                    {
+                        string tileID = tileNode.Attributes["ID"].Value;
+                        int repeatCount = int.Parse(tileNode.SelectSingleNode("Property").Attributes["Int"].Value);
+
+                        // Add tiles to layer based on tile ID and repeat count
+                        for (int i = 0; i < repeatCount; i++)
+                        {
+                            layer.TileMap[counter / area.AreaCords.Width, counter % area.AreaCords.Width] = new Tile();
+                            layer.TileMap[counter / area.AreaCords.Width, counter % area.AreaCords.Width].ID = tileID;
+                            if(tileID != null )
+                            {
+                                string Xstr = "";
+                                string Ystr = "";
+                                int X = 0;
+                                int Y = 0;
+                                for (int k = 0; k < tileID.Length; k++)
+                                {
+                                    if (tileID[k] == 'X')
+                                    {
+                                        k++;
+                                        while (tileID[k] != 'Y' )
+                                        {
+                                            Xstr += tileID[k];
+                                            k++;
+                                        }
+                                    }
+                                    if(tileID[k] != 'Y')
+                                    {
+                                        Ystr += tileID[k];
+                                    }
+                                }
+
+                                X = int.Parse(Xstr);
+                                Y = int.Parse(Ystr);
+
+                                layer.TileMap[counter / area.AreaCords.Width, counter % area.AreaCords.Width].Source.X = X * Global.TILE_SIZE;
+                                layer.TileMap[counter / area.AreaCords.Width, counter % area.AreaCords.Width].Source.Y = Y * Global.TILE_SIZE;
+                                layer.TileMap[counter / area.AreaCords.Width, counter % area.AreaCords.Width].Source.Width = Global.TILE_SIZE;
+                                layer.TileMap[counter / area.AreaCords.Width, counter % area.AreaCords.Width].Source.Height = Global.TILE_SIZE;
+                            }
+                            counter++;
+                        }
+                    }
+                    area.Layers.Add(layer);
+                }
+                world.areas.Add(area);
+            }
+
+            // Set the imported world as the current map
+            Global.CurrentMap = world;
+
+            // Reload all the area buttons.
+            AreaUtil.ReloadAreaButtons();
+
+            // Reload layer buttons.
+            LayerUtil.ReloadLayerButtons();
+        }
+
+
         internal static void ExportWorld()
         {
             WorldCanvas world = Global.CurrentMap;
@@ -109,7 +229,7 @@ namespace tile_mapper.src
                     int repeatCount = 0;
                     foreach (var tile in layer.TileMap)
                     {
-                        if (tile.ID == previousTileID)
+                        if (tile.ID == previousTileID || previousTileID == null)
                         {
                             repeatCount++;
                         }
@@ -119,21 +239,19 @@ namespace tile_mapper.src
                             if (repeatCount > 0)
                             {
                                 XmlElement tileElement = xmlDoc.CreateElement("Tile");
-                                tileElement.SetAttribute("ID", previousTileID);
+                                tileElement.SetAttribute("ID", tile.ID);
 
                                 XmlElement repeatsProperty = xmlDoc.CreateElement("Property");
-                                repeatsProperty.SetAttribute("Int", (repeatCount+1).ToString());
+                                repeatsProperty.SetAttribute("Int", (repeatCount).ToString());
                                 tileElement.AppendChild(repeatsProperty);
 
                                 layerElement.AppendChild(tileElement);
 
                                 // Reset repeat count
-                                repeatCount = 0;
+                                repeatCount = 1;
                             }
-
-                            // Start counting repeats for the new tile
-                            previousTileID = tile.ID;
                         }
+                        previousTileID = tile.ID;
                     }
                     if (repeatCount > 0)
                     {

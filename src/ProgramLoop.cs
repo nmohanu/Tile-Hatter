@@ -243,6 +243,12 @@ namespace tile_mapper.src
                 FileUtil.ExportWorld();
             }
 
+            if (keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.L)
+                && !Global.PreviousKeybordState.IsKeyDown(Keys.L))
+            {
+                FileUtil.ImportWorld();
+            }
+
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 Global.PreviousMouseState.LeftButton == ButtonState.Released)
             {
