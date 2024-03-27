@@ -19,10 +19,12 @@ namespace tile_mapper.src.Layer
 
         public static void ReloadLayerButtons()
         {
-            if(Global.CurrentMap.areas.Count == 0)
+            if(Global.CurrentMap.areas.Count == 0 || GlobalMenus.LayerMenu.buttons.Count < 1)
                 return; 
             
-            for(int i = 0; i < GlobalMenus.LayerMenu.buttons.Count; i++)
+
+
+            for(int i = GlobalMenus.LayerMenu.buttons.Count -1; i >= 0; i--)
             {
                 if (GlobalMenus.LayerMenu.buttons[i].IsDeletable)
                 {
@@ -39,10 +41,9 @@ namespace tile_mapper.src.Layer
                 counter++;
                 // Add button to the list.
                 GlobalMenus.LayerMenu.buttons.Add(btn);
-
-                // Update the list
-                ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerMenu);
             }
+            // Update the list
+            ScrollMenuUtil.UpdateListOrder(GlobalMenus.LayerMenu);
         }
     }
 }

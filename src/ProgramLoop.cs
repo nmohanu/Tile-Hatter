@@ -17,6 +17,8 @@ namespace tile_mapper.src
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private int fpsCounter = 0;
+        private float totalFPS = 0;
 
         // Cursor state
         public enum CursorState
@@ -224,7 +226,18 @@ namespace tile_mapper.src
             Global.Timer += gameTime.ElapsedGameTime.Milliseconds;
             
             // Calculate fps
-            Global.fps = (float)(1.0f / gameTime.ElapsedGameTime.TotalSeconds);
+            if(fpsCounter < 100)
+            {
+                fpsCounter++;
+                if(gameTime.ElapsedGameTime.TotalSeconds != 0)
+                    totalFPS += (float)(1.0f / gameTime.ElapsedGameTime.TotalSeconds);
+            }
+            else
+            {
+                Global.fps = totalFPS / fpsCounter;
+                fpsCounter = 0;
+                totalFPS = 0;
+            }
 
             // Keyboard.
             KeyboardState keyboardState = Keyboard.GetState();
@@ -640,10 +653,10 @@ namespace tile_mapper.src
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
             // Draw cordinates
             string Cords = "X: " + Global.SelectedX.ToString() + " Y: " + Global.SelectedY.ToString();
-            _spriteBatch.DrawString(Global.font, Cords, new Vector2(96 - Global.font.MeasureString(Cords).X / 2, Global.ScreenHeight - 64), Color.White, 0f, Vector2.Zero, Global.TextScale, SpriteEffects.None, 0f);
+            _spriteBatch.DrawString(Global.font, Cords, new Vector2(96 - Global.font.MeasureString(Cords).X / 2, Global.ScreenHeight - 32), Color.White, 0f, Vector2.Zero, Global.TextScale, SpriteEffects.None, 0f);
 
             // TEMP
-            // _spriteBatch.DrawString(font, fps.ToString(), new Vector2(32, ScreenHeight - 64), Color.White, 0f, Vector2.Zero, TextScale, SpriteEffects.None, 0f);
+            _spriteBatch.DrawString(Global.font, Global.fps.ToString(), new Vector2(32, Global.ScreenHeight - 64), Color.White, 0f, Vector2.Zero, Global.TextScale, SpriteEffects.None, 0f);
 
             // Draw cursor based on cursor state.
             if (Global.CursorActionState == CursorState.SpecifyingStartPoint)

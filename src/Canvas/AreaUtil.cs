@@ -41,6 +41,7 @@ namespace tile_mapper.src.Canvas
             if (allowed)
             {
                 Global.CurrentMap.CreateArea(Global.Selection, "Area " + (Global.CurrentMap.areas.Count() + 1).ToString());
+                ReloadAreaButtons();
             }
         }
 

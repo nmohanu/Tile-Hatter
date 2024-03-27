@@ -75,7 +75,7 @@ namespace tile_mapper.src
         public static Area CurrentArea;
         public static int CurrentPage = 0;
         public static int CurrentLayer = 0;
-        public static float fps;
+        public static float fps = 0f;
         public static float Timer;
         public static DateTime LastWriteTime;
         public static Property PropertyCurrentlyEditing;

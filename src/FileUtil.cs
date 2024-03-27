@@ -148,12 +148,13 @@ namespace tile_mapper.src
                         {
                             layer.TileMap[counter / area.AreaCords.Width, counter % area.AreaCords.Width] = new Tile();
                             layer.TileMap[counter / area.AreaCords.Width, counter % area.AreaCords.Width].ID = tileID;
-                            if(tileID != null )
+                            if(tileID != null && tileID != "0")
                             {
                                 string Xstr = "";
                                 string Ystr = "";
                                 int X = 0;
                                 int Y = 0;
+                                
                                 for (int k = 0; k < tileID.Length; k++)
                                 {
                                     if (tileID[k] == 'X')
@@ -239,7 +240,7 @@ namespace tile_mapper.src
                             if (repeatCount > 0)
                             {
                                 XmlElement tileElement = xmlDoc.CreateElement("Tile");
-                                tileElement.SetAttribute("ID", tile.ID);
+                                tileElement.SetAttribute("ID", previousTileID);
 
                                 XmlElement repeatsProperty = xmlDoc.CreateElement("Property");
                                 repeatsProperty.SetAttribute("Int", (repeatCount).ToString());
