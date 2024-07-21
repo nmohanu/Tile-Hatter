@@ -6,6 +6,7 @@ Features:<br />
 - Add custom objects, allowing placement of NPC's, monsters, items, etc.<br />
 - Add collision to your sprites.<br />
 - Test your world from within the engine.<br />
+- Import and export your worlds. <br />
 
 In progress:
 - More sprite property customization.
