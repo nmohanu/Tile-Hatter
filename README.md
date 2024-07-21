@@ -1,11 +1,11 @@
-A C# tile map world / game creator. 
-Features:
-Create seperate areas without limit to the size.
-Add a spritesheet and use different tools to draw / fill the areas.
-Add seperate layers for your sprites.
-Add custom objects, allowing placement of NPC's, monsters, items, etc.
-Add collision to your sprites.
-Test your world from within the engine.
+A C# tile map world / game creator. <br />
+Features:<br />
+Create seperate areas without limit to the size.<br />
+Add a spritesheet and use different tools to draw / fill the areas.<br />
+Add seperate layers for your sprites.<br />
+Add custom objects, allowing placement of NPC's, monsters, items, etc.<br />
+Add collision to your sprites.<br />
+Test your world from within the engine.<br />
 
 ![screenshot](screen_1.png)
 ![screenshot](screen_2.png)
